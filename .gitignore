@@ -1,7 +1,12 @@
 # Development Files
 .ignore
 .bmad-core
+.claude/
+.playwright-mcp/
+CLAUDE.md
+claude.md
 .setup
+guardian/
 
 # Dependencies
 node_modules/

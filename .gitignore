@@ -1,8 +1,6 @@
 # Development Files
 .ignore
-.bmad-core
 .claude/
-.playwright-mcp/
 CLAUDE.md
 claude.md
 .setup
@@ -133,3 +131,9 @@ temp/
 
 # Sentry Config File
 .sentryclirc
+
+# BMAD Core and AI Agents (keep local, don't commit)
+.bmad-core/
+
+# Playwright MCP (keep local, don't commit)
+playwright-mcp/

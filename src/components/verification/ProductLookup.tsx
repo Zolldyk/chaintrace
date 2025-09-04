@@ -53,8 +53,8 @@ const Input = React.forwardRef<
   return (
     <input
       className={cn(
-        'border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-        error && 'border-red-500 focus-visible:ring-red-500',
+        'border-secondary-300 placeholder:text-secondary-400 flex h-10 w-full animate-fade-in rounded-md border bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        error && 'border-error-500 focus:border-error-500 focus:ring-error-500',
         className
       )}
       ref={ref}
@@ -149,7 +149,7 @@ export const ProductLookup = React.forwardRef<
           <div className='space-y-2'>
             <label
               htmlFor='product-id-input'
-              className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+              className='text-base font-medium leading-none text-secondary-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
             >
               Product ID
             </label>
@@ -174,7 +174,7 @@ export const ProductLookup = React.forwardRef<
               {loading && (
                 <div className='absolute right-3 top-1/2 -translate-y-1/2'>
                   <svg
-                    className='text-muted-foreground h-4 w-4 animate-spin'
+                    className='text-secondary-400 h-4 w-4 animate-spin'
                     xmlns='http://www.w3.org/2000/svg'
                     fill='none'
                     viewBox='0 0 24 24'
@@ -200,7 +200,7 @@ export const ProductLookup = React.forwardRef<
             {hasError && (
               <p
                 id='product-id-error'
-                className='flex items-center gap-1 text-sm text-red-600'
+                className='flex items-center gap-1 text-sm text-error-700'
                 role='alert'
               >
                 <svg
@@ -230,7 +230,7 @@ export const ProductLookup = React.forwardRef<
           </Button>
         </form>
 
-        <div className='text-muted-foreground mt-4 text-center text-xs'>
+        <div className='mt-4 animate-fade-in text-center text-xs text-secondary-500'>
           <p>
             Enter a product ID to verify its authenticity and view its supply
             chain journey.

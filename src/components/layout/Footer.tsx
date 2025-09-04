@@ -20,31 +20,33 @@ export function Footer({ className }: FooterProps) {
 
   return (
     <footer
-      className={`border-t border-gray-200 bg-gray-50 ${className || ''}`}
+      className={`border-secondary-200 border-t bg-secondary-50 ${className || ''}`}
     >
       <div className='container mx-auto px-4 py-12'>
         <div className='grid grid-cols-1 gap-8 md:grid-cols-4'>
           {/* Brand */}
           <div className='space-y-4'>
             <div className='flex items-center space-x-2'>
-              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600'>
+              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600'>
                 <span className='text-lg font-bold text-white'>C</span>
               </div>
-              <span className='text-xl font-bold text-gray-900'>
+              <span className='text-xl font-bold text-primary-600'>
                 {APP_METADATA.NAME}
               </span>
             </div>
-            <p className='text-sm text-gray-600'>{APP_METADATA.DESCRIPTION}</p>
+            <p className='text-sm text-secondary-500'>
+              {APP_METADATA.DESCRIPTION}
+            </p>
           </div>
 
           {/* Product Links */}
           <div className='space-y-4'>
-            <h3 className='font-semibold text-gray-900'>Product</h3>
+            <h3 className='font-semibold text-secondary-700'>Product</h3>
             <ul className='space-y-2 text-sm'>
               <li>
                 <Link
                   href='/verify'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   Verify Products
                 </Link>
@@ -52,7 +54,7 @@ export function Footer({ className }: FooterProps) {
               <li>
                 <Link
                   href='/dashboard'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   Dashboard
                 </Link>
@@ -60,7 +62,7 @@ export function Footer({ className }: FooterProps) {
               <li>
                 <Link
                   href='/compliance'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   Compliance
                 </Link>
@@ -70,12 +72,12 @@ export function Footer({ className }: FooterProps) {
 
           {/* Company Links */}
           <div className='space-y-4'>
-            <h3 className='font-semibold text-gray-900'>Company</h3>
+            <h3 className='font-semibold text-secondary-700'>Company</h3>
             <ul className='space-y-2 text-sm'>
               <li>
                 <Link
                   href='/about'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   About
                 </Link>
@@ -83,7 +85,7 @@ export function Footer({ className }: FooterProps) {
               <li>
                 <Link
                   href='/contact'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   Contact
                 </Link>
@@ -93,7 +95,7 @@ export function Footer({ className }: FooterProps) {
                   href={APP_METADATA.GITHUB_URL}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   GitHub
                 </a>
@@ -103,12 +105,12 @@ export function Footer({ className }: FooterProps) {
 
           {/* Support Links */}
           <div className='space-y-4'>
-            <h3 className='font-semibold text-gray-900'>Support</h3>
+            <h3 className='font-semibold text-secondary-700'>Support</h3>
             <ul className='space-y-2 text-sm'>
               <li>
                 <Link
                   href='/help'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   Help Center
                 </Link>
@@ -116,7 +118,7 @@ export function Footer({ className }: FooterProps) {
               <li>
                 <a
                   href={`mailto:${APP_METADATA.SUPPORT_EMAIL}`}
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   Support
                 </a>
@@ -124,7 +126,7 @@ export function Footer({ className }: FooterProps) {
               <li>
                 <Link
                   href='/privacy'
-                  className='text-gray-600 hover:text-gray-900'
+                  className='text-secondary-500 hover:text-primary-600'
                 >
                   Privacy Policy
                 </Link>
@@ -134,12 +136,12 @@ export function Footer({ className }: FooterProps) {
         </div>
 
         {/* Copyright */}
-        <div className='mt-8 border-t border-gray-200 pt-8'>
+        <div className='border-secondary-200 mt-8 border-t pt-8'>
           <div className='flex flex-col items-center justify-between sm:flex-row'>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-secondary-500'>
               © {currentYear} {APP_METADATA.NAME}. All rights reserved.
             </p>
-            <p className='mt-2 text-sm text-gray-600 sm:mt-0'>
+            <p className='mt-2 text-sm text-secondary-500 sm:mt-0'>
               Built with Hedera blockchain technology
             </p>
           </div>

@@ -63,9 +63,9 @@ const statusConfig: Record<
     label: 'Verified',
     description:
       'This product has been successfully verified and is authentic.',
-    color: 'text-green-700',
-    bgColor: 'bg-green-50 border-green-200',
-    textColor: 'text-green-900',
+    color: 'text-success-700',
+    bgColor: 'bg-success-50 border-success-200',
+    textColor: 'text-success-700',
     icon: (
       <svg
         className='h-5 w-5'
@@ -85,9 +85,9 @@ const statusConfig: Record<
     label: 'Pending',
     description:
       'This product is currently being verified. Please check back later.',
-    color: 'text-yellow-700',
-    bgColor: 'bg-yellow-50 border-yellow-200',
-    textColor: 'text-yellow-900',
+    color: 'text-warning-700',
+    bgColor: 'bg-warning-50 border-warning-200',
+    textColor: 'text-warning-700',
     icon: (
       <svg
         className='h-5 w-5'
@@ -107,9 +107,9 @@ const statusConfig: Record<
     label: 'Unverified',
     description:
       'This product has not been verified yet or verification data is unavailable.',
-    color: 'text-gray-700',
-    bgColor: 'bg-gray-50 border-gray-200',
-    textColor: 'text-gray-900',
+    color: 'text-secondary-700',
+    bgColor: 'bg-secondary-50 border-secondary-200',
+    textColor: 'text-secondary-700',
     icon: (
       <svg
         className='h-5 w-5'
@@ -129,9 +129,9 @@ const statusConfig: Record<
     label: 'Rejected',
     description:
       'This product failed verification or has been flagged as potentially fraudulent.',
-    color: 'text-red-700',
-    bgColor: 'bg-red-50 border-red-200',
-    textColor: 'text-red-900',
+    color: 'text-error-700',
+    bgColor: 'bg-error-50 border-error-200',
+    textColor: 'text-error-700',
     icon: (
       <svg
         className='h-5 w-5'
@@ -151,9 +151,9 @@ const statusConfig: Record<
     label: 'Expired',
     description:
       "This product's verification has expired and needs to be re-verified.",
-    color: 'text-orange-700',
-    bgColor: 'bg-orange-50 border-orange-200',
-    textColor: 'text-orange-900',
+    color: 'text-warning-700',
+    bgColor: 'bg-warning-50 border-warning-200',
+    textColor: 'text-warning-700',
     icon: (
       <svg
         className='h-5 w-5'
@@ -228,7 +228,7 @@ export const VerificationStatus = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          'rounded-lg border p-4',
+          'animate-slide-up rounded-xl border p-4',
           displayConfig.bgColor,
           {
             'p-2': size === 'sm',
@@ -293,15 +293,11 @@ export const VerificationStatus = React.forwardRef<
             {showDetails && (
               <>
                 <p
-                  className={cn(
-                    'mt-1',
-                    displayConfig.textColor.replace('-900', '-700'),
-                    {
-                      'text-xs': size === 'sm',
-                      'text-sm': size === 'md',
-                      'text-base': size === 'lg',
-                    }
-                  )}
+                  className={cn('mt-1', displayConfig.textColor, {
+                    'text-xs': size === 'sm',
+                    'text-sm': size === 'md',
+                    'text-base': size === 'lg',
+                  })}
                 >
                   {customMessage || displayConfig.description}
                 </p>
@@ -310,7 +306,7 @@ export const VerificationStatus = React.forwardRef<
                   <p
                     className={cn(
                       'mt-2 text-xs',
-                      displayConfig.textColor.replace('-900', '-600')
+                      displayConfig.textColor.replace('-700', '-600')
                     )}
                   >
                     Last verified: {getRelativeTime(lastVerified)}
@@ -321,7 +317,7 @@ export const VerificationStatus = React.forwardRef<
                   <p
                     className={cn(
                       'mt-1 text-xs',
-                      displayConfig.textColor.replace('-900', '-600')
+                      displayConfig.textColor.replace('-700', '-600')
                     )}
                   >
                     Expires: {formatDate(new Date(expiresAt).getTime())}

@@ -55,21 +55,21 @@ export default function ConsumerHomePage() {
       <div className='mx-auto max-w-4xl'>
         {/* Header Section */}
         <div className='mb-8 text-center'>
-          <h1 className='mb-4 text-3xl font-bold text-gray-900'>
+          <h1 className='mb-4 animate-fade-in text-4xl font-bold text-secondary-700'>
             Verify Product Authenticity
           </h1>
-          <p className='mx-auto max-w-2xl text-lg text-gray-600'>
+          <p className='mx-auto max-w-2xl text-lg text-secondary-500'>
             Enter a product ID or scan a QR code to verify authenticity and
             trace the complete supply chain journey on the Hedera blockchain.
           </p>
         </div>
 
         {/* QR Scanner Placeholder Section */}
-        <div className='mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+        <div className='border-secondary-200 mb-8 animate-fade-in rounded-xl border bg-white p-6 shadow-card'>
           <div className='text-center'>
-            <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100'>
+            <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-secondary-100'>
               <svg
-                className='h-8 w-8 text-gray-400'
+                className='text-secondary-400 h-8 w-8'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -82,13 +82,13 @@ export default function ConsumerHomePage() {
                 />
               </svg>
             </div>
-            <h3 className='mb-2 text-lg font-medium text-gray-900'>
+            <h3 className='mb-2 text-lg font-medium text-secondary-700'>
               QR Code Scanner
             </h3>
-            <p className='mb-4 text-sm text-gray-600'>
+            <p className='mb-4 text-sm text-secondary-500'>
               QR code scanning will be available in future updates
             </p>
-            <div className='inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700'>
+            <div className='inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700'>
               <svg className='h-3 w-3' fill='currentColor' viewBox='0 0 20 20'>
                 <path
                   fillRule='evenodd'
@@ -102,12 +102,12 @@ export default function ConsumerHomePage() {
         </div>
 
         {/* Product Lookup Section */}
-        <div className='rounded-lg border border-gray-200 bg-white p-6 shadow-sm'>
+        <div className='border-secondary-200 animate-fade-in rounded-xl border bg-white p-6 shadow-card'>
           <div className='mb-6 text-center'>
-            <h2 className='mb-2 text-xl font-semibold text-gray-900'>
+            <h2 className='mb-2 text-2xl font-semibold text-secondary-600'>
               Manual Product Lookup
             </h2>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-secondary-500'>
               Enter your product ID below to verify its authenticity
             </p>
           </div>
@@ -136,9 +136,9 @@ export default function ConsumerHomePage() {
         {/* Features Section */}
         <div className='mt-12 grid grid-cols-1 gap-6 md:grid-cols-3'>
           <div className='p-6 text-center'>
-            <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-green-100'>
+            <div className='border-success-200 mx-auto mb-4 flex h-12 w-12 animate-slide-up items-center justify-center rounded-lg border bg-success-50'>
               <svg
-                className='h-6 w-6 text-green-600'
+                className='h-6 w-6 text-success-700'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -151,18 +151,18 @@ export default function ConsumerHomePage() {
                 />
               </svg>
             </div>
-            <h3 className='mb-2 font-semibold text-gray-900'>
+            <h3 className='mb-2 font-semibold text-secondary-700'>
               Instant Verification
             </h3>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-secondary-500'>
               Get immediate verification status from the Hedera blockchain
             </p>
           </div>
 
           <div className='p-6 text-center'>
-            <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100'>
+            <div className='border-primary-200 mx-auto mb-4 flex h-12 w-12 animate-slide-up items-center justify-center rounded-lg border bg-primary-50'>
               <svg
-                className='h-6 w-6 text-blue-600'
+                className='h-6 w-6 text-primary-700'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -175,18 +175,18 @@ export default function ConsumerHomePage() {
                 />
               </svg>
             </div>
-            <h3 className='mb-2 font-semibold text-gray-900'>
+            <h3 className='mb-2 font-semibold text-secondary-700'>
               Supply Chain Journey
             </h3>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-secondary-500'>
               Trace the complete journey from origin to current location
             </p>
           </div>
 
           <div className='p-6 text-center'>
-            <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100'>
+            <div className='border-secondary-200 mx-auto mb-4 flex h-12 w-12 animate-slide-up items-center justify-center rounded-lg border bg-secondary-100'>
               <svg
-                className='h-6 w-6 text-purple-600'
+                className='h-6 w-6 text-secondary-600'
                 fill='none'
                 stroke='currentColor'
                 viewBox='0 0 24 24'
@@ -199,10 +199,10 @@ export default function ConsumerHomePage() {
                 />
               </svg>
             </div>
-            <h3 className='mb-2 font-semibold text-gray-900'>
+            <h3 className='mb-2 font-semibold text-secondary-700'>
               Blockchain Security
             </h3>
-            <p className='text-sm text-gray-600'>
+            <p className='text-sm text-secondary-500'>
               Tamper-proof verification powered by Hedera&apos;s secure network
             </p>
           </div>

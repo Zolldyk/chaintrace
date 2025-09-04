@@ -17,16 +17,18 @@ export interface HeaderProps {
 
 export function Header({ className }: HeaderProps) {
   return (
-    <header className={`border-b border-gray-200 bg-white ${className || ''}`}>
+    <header
+      className={`border-secondary-200 border-b bg-white ${className || ''}`}
+    >
       <div className='container mx-auto px-4'>
         <div className='flex h-16 items-center justify-between'>
           {/* Logo and Brand */}
           <div className='flex items-center'>
             <Link href={ROUTES.HOME} className='flex items-center space-x-2'>
-              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600'>
+              <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600'>
                 <span className='text-lg font-bold text-white'>C</span>
               </div>
-              <span className='text-xl font-bold text-gray-900'>
+              <span className='text-xl font-bold text-primary-600'>
                 ChainTrace
               </span>
             </Link>
@@ -36,19 +38,19 @@ export function Header({ className }: HeaderProps) {
           <nav className='hidden items-center space-x-8 md:flex'>
             <Link
               href={ROUTES.VERIFY}
-              className='font-medium text-gray-600 transition-colors hover:text-gray-900'
+              className='font-medium text-secondary-600 transition-colors hover:text-primary-600'
             >
               Verify Product
             </Link>
             <Link
               href={ROUTES.MANAGER_DASHBOARD}
-              className='font-medium text-gray-600 transition-colors hover:text-gray-900'
+              className='font-medium text-secondary-600 transition-colors hover:text-primary-600'
             >
               Manager Dashboard
             </Link>
             <Link
               href={ROUTES.COMPLIANCE_DASHBOARD}
-              className='font-medium text-gray-600 transition-colors hover:text-gray-900'
+              className='font-medium text-secondary-600 transition-colors hover:text-primary-600'
             >
               Compliance
             </Link>
@@ -57,7 +59,7 @@ export function Header({ className }: HeaderProps) {
           {/* Actions */}
           <div className='flex items-center space-x-4'>
             {/* Placeholder for wallet connection - will be implemented in wallet story */}
-            <div className='rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-600'>
+            <div className='border-secondary-300 rounded-md border px-4 py-2 text-sm text-secondary-600 transition-colors hover:bg-secondary-50'>
               Connect Wallet
             </div>
           </div>

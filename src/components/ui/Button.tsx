@@ -35,15 +35,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          'focus-visible:ring-ring ring-offset-background inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+          'inline-flex items-center justify-center rounded-md font-medium shadow-card transition-colors hover:shadow-card-hover focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
           {
-            'bg-primary text-primary-foreground hover:bg-primary/90':
+            'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500':
               variant === 'primary',
-            'bg-secondary text-secondary-foreground hover:bg-secondary/80':
+            'hover:bg-secondary-200 bg-secondary-100 text-secondary-700 focus:ring-secondary-500':
               variant === 'secondary',
-            'border-input hover:bg-accent hover:text-accent-foreground border':
+            'border-secondary-300 border text-secondary-700 hover:bg-secondary-50 focus:ring-secondary-500':
               variant === 'outline',
-            'hover:bg-accent hover:text-accent-foreground': variant === 'ghost',
+            'text-secondary-700 hover:bg-secondary-100 focus:ring-secondary-500':
+              variant === 'ghost',
           },
           {
             'h-9 px-3 text-sm': size === 'sm',

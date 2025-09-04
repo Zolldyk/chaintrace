@@ -16,7 +16,7 @@ interface ConsumerLayoutProps {
 
 export default function ConsumerLayout({ children }: ConsumerLayoutProps) {
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <div className='min-h-screen bg-secondary-50'>
       <Header />
 
       <main className='flex-1'>{children}</main>

@@ -137,3 +137,6 @@ temp/
 
 # Playwright MCP (keep local, don't commit)
 playwright-mcp/
+
+# Documentation (keep local, don't commit)
+docs/

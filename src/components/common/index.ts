@@ -20,6 +20,14 @@ export {
   InlineErrorState,
 } from './ErrorState';
 
-// LoadingState and EmptyState components not yet implemented
-// export { LoadingState } from './LoadingState';
+export {
+  LoadingSpinner,
+  LoadingSkeleton,
+  LoadingCard,
+  LoadingTimeline,
+  LoadingState,
+  LoadingButton,
+} from './LoadingState';
+
+// EmptyState component not yet implemented
 // export { EmptyState } from './EmptyState';

@@ -30,13 +30,13 @@
     "zustand": "^4.4.7",
     "tailwindcss": "^3.3.5",
     "postcss": "^8.4.31",
-    "autoprefixer": "^10.4.16"
+    "autoprefixer": "^10.4.16",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16"
   },
   "devDependencies": {
     "@netlify/plugin-nextjs": "^5.13.0",
     "@playwright/test": "^1.40.0",
-    "@tailwindcss/forms": "^0.5.10",
-    "@tailwindcss/typography": "^0.5.16",
     "@testing-library/jest-dom": "^6.1.4",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.6.1",

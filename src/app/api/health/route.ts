@@ -41,6 +41,9 @@ import { logger } from '@/lib/logger';
  * @security Public endpoint for monitoring - no authentication required
  * @ratelimit 60 requests per minute per IP
  */
+// Force dynamic rendering for this API route
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

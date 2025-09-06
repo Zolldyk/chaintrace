@@ -169,6 +169,50 @@ const statusConfig: Record<
       </svg>
     ),
   },
+  created: {
+    label: 'Created',
+    description: 'This product has been created and registered in the system.',
+    color: 'text-secondary-700',
+    bgColor: 'bg-secondary-50 border-secondary-200',
+    textColor: 'text-secondary-700',
+    icon: (
+      <svg
+        className='h-5 w-5'
+        fill='currentColor'
+        viewBox='0 0 20 20'
+        xmlns='http://www.w3.org/2000/svg'
+      >
+        <path
+          fillRule='evenodd'
+          d='M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z'
+          clipRule='evenodd'
+        />
+      </svg>
+    ),
+  },
+  processing: {
+    label: 'Processing',
+    description:
+      'This product is being processed through the verification system.',
+    color: 'text-warning-700',
+    bgColor: 'bg-warning-50 border-warning-200',
+    textColor: 'text-warning-700',
+    icon: (
+      <svg
+        className='h-5 w-5'
+        fill='currentColor'
+        viewBox='0 0 20 20'
+        xmlns='http://www.w3.org/2000/svg'
+        aria-hidden='true'
+      >
+        <path
+          clipRule='evenodd'
+          fillRule='evenodd'
+          d='M15.312 11.424a5.5 5.5 0 01-9.201 2.466l-.312-.311h2.433a.75.75 0 000-1.5H4.989a.75.75 0 00-.75.75v3.242a.75.75 0 001.5 0v-2.43l.31.31a7 7 0 0011.712-3.138.75.75 0 00-1.449-.39zm-3.068-9.93a7 7 0 00-11.712 3.138.75.75 0 101.449.39 5.5 5.5 0 019.201-2.466l.312.311h-2.433a.75.75 0 000 1.5h3.243a.75.75 0 00.75-.75V1.375a.75.75 0 00-1.5 0v2.43l-.31-.31z'
+        />
+      </svg>
+    ),
+  },
 };
 
 /**

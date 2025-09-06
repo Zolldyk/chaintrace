@@ -226,3 +226,371 @@ export function debounce<T extends (...args: any[]) => any>(
     timeoutId = setTimeout(() => func(...args), delay);
   };
 }
+
+// ============================================================================
+// Enhanced utilities for Story 1.4: Core Data Models and Services
+// ============================================================================
+
+import type { VerificationStatus } from '../types/product';
+
+/**
+ * Product ID generation utilities with ChainTrace format
+ */
+export class ProductIdGenerator {
+  private static readonly PREFIX = 'CT';
+  private static readonly YEAR = new Date().getFullYear();
+  private static sequenceCounter = 0;
+
+  /**
+   * Generate unique product ID in format CT-YYYY-XXX-ABCDEF
+   *
+   * @example
+   * ```typescript
+   * const productId = ProductIdGenerator.generate();
+   * // Returns: "CT-2024-001-A3B7F2"
+   * ```
+   */
+  static generate(): string {
+    this.sequenceCounter = (this.sequenceCounter + 1) % 1000;
+    const sequence = this.sequenceCounter.toString().padStart(3, '0');
+    const random = this.generateRandomHex(6);
+
+    return `${this.PREFIX}-${this.YEAR}-${sequence}-${random}`;
+  }
+
+  /**
+   * Validate product ID format
+   */
+  static validateFormat(productId: string): boolean {
+    const pattern = /^CT-\d{4}-\d{3}-[A-F0-9]{6}$/;
+    return pattern.test(productId);
+  }
+
+  /**
+   * Extract components from product ID
+   */
+  static parse(productId: string): {
+    prefix: string;
+    year: number;
+    sequence: number;
+    random: string;
+  } | null {
+    if (!this.validateFormat(productId)) {
+      return null;
+    }
+
+    const parts = productId.split('-');
+    return {
+      prefix: parts[0],
+      year: parseInt(parts[1], 10),
+      sequence: parseInt(parts[2], 10),
+      random: parts[3],
+    };
+  }
+
+  private static generateRandomHex(length: number): string {
+    const chars = 'ABCDEF0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+}
+
+/**
+ * Status mapping functions for ChainTrace Design System
+ */
+export class StatusMapper {
+  private static readonly STATUS_COLORS = {
+    created: {
+      bg: 'bg-secondary-50',
+      border: 'border-secondary-200',
+      text: 'text-secondary-700',
+    },
+    processing: {
+      bg: 'bg-warning-50',
+      border: 'border-warning-200',
+      text: 'text-warning-700',
+    },
+    verified: {
+      bg: 'bg-success-50',
+      border: 'border-success-200',
+      text: 'text-success-700',
+    },
+    rejected: {
+      bg: 'bg-error-50',
+      border: 'border-error-200',
+      text: 'text-error-700',
+    },
+    expired: {
+      bg: 'bg-neutral-50',
+      border: 'border-neutral-200',
+      text: 'text-neutral-700',
+    },
+    pending: {
+      bg: 'bg-warning-50',
+      border: 'border-warning-200',
+      text: 'text-warning-700',
+    },
+    unverified: {
+      bg: 'bg-neutral-50',
+      border: 'border-neutral-200',
+      text: 'text-neutral-700',
+    },
+  } as const;
+
+  private static readonly STATUS_ICONS = {
+    created: 'DocumentPlusIcon',
+    processing: 'ArrowPathIcon',
+    verified: 'CheckCircleIcon',
+    rejected: 'XCircleIcon',
+    expired: 'ClockIcon',
+    pending: 'ClockIcon',
+    unverified: 'QuestionMarkCircleIcon',
+  } as const;
+
+  private static readonly STATUS_DISPLAY_NAMES = {
+    created: 'Created',
+    processing: 'Processing',
+    verified: 'Verified',
+    rejected: 'Rejected',
+    expired: 'Expired',
+    pending: 'Pending',
+    unverified: 'Unverified',
+  } as const;
+
+  private static readonly STATUS_PROGRESS = {
+    created: 20,
+    processing: 60,
+    verified: 100,
+    rejected: 0,
+    expired: 0,
+    pending: 40,
+    unverified: 0,
+  } as const;
+
+  private static readonly STATUS_ANIMATIONS = {
+    created: 'animate-fade-in',
+    processing: 'animate-pulse',
+    verified: 'animate-slide-up',
+    rejected: 'animate-bounce',
+    expired: 'animate-fade-out',
+    pending: 'animate-pulse',
+    unverified: 'animate-fade-in',
+  } as const;
+
+  /**
+   * Map Mirror Node status to ChainTrace verification status
+   */
+  static mapMirrorNodeStatus(status: string): VerificationStatus {
+    const statusMap: Record<string, VerificationStatus> = {
+      SUCCESS: 'verified',
+      PENDING: 'processing',
+      FAILED: 'rejected',
+      CREATED: 'created',
+      EXPIRED: 'expired',
+    };
+
+    return statusMap[status.toUpperCase()] || 'created';
+  }
+
+  /**
+   * Map Custom Compliance Engine status to ChainTrace verification status
+   */
+  static mapComplianceEngineStatus(status: string): VerificationStatus {
+    const statusMap: Record<string, VerificationStatus> = {
+      COMPLIANT: 'verified',
+      NON_COMPLIANT: 'rejected',
+      UNDER_REVIEW: 'processing',
+      SUBMITTED: 'created',
+      EXPIRED: 'expired',
+    };
+
+    return statusMap[status.toUpperCase()] || 'created';
+  }
+
+  /**
+   * Get human-readable status display name
+   */
+  static getStatusDisplayName(status: VerificationStatus): string {
+    return this.STATUS_DISPLAY_NAMES[status];
+  }
+
+  /**
+   * Get ChainTrace semantic colors for status
+   */
+  static getStatusSemanticColors(status: VerificationStatus): {
+    bg: string;
+    border: string;
+    text: string;
+  } {
+    return this.STATUS_COLORS[status];
+  }
+
+  /**
+   * Get Heroicon name for status (NO emojis)
+   */
+  static getStatusIcon(status: VerificationStatus): string {
+    return this.STATUS_ICONS[status];
+  }
+
+  /**
+   * Get progress percentage for status (0-100)
+   */
+  static getStatusProgress(status: VerificationStatus): number {
+    return this.STATUS_PROGRESS[status];
+  }
+
+  /**
+   * Get ChainTrace animation class for status
+   */
+  static getStatusAnimationClass(status: VerificationStatus): string {
+    return this.STATUS_ANIMATIONS[status];
+  }
+}
+
+/**
+ * Enhanced error handling utilities
+ */
+export class ChainTraceError extends Error {
+  constructor(
+    message: string,
+    public code: string,
+    public details?: Record<string, any>
+  ) {
+    super(message);
+    this.name = 'ChainTraceError';
+  }
+}
+
+/**
+ * Create data validation error
+ */
+export function createDataValidationError(
+  field: string,
+  value: any,
+  constraint?: string
+): ChainTraceError {
+  return new ChainTraceError(
+    `Validation failed for field '${field}': ${constraint || 'Invalid value'}`,
+    'VALIDATION_ERROR',
+    { field, value, constraint }
+  );
+}
+
+/**
+ * Create service connection error
+ */
+export function createServiceConnectionError(
+  service: string,
+  originalError?: Error
+): ChainTraceError {
+  return new ChainTraceError(
+    `Failed to connect to ${service} service`,
+    'SERVICE_CONNECTION_ERROR',
+    { service, originalError: originalError?.message }
+  );
+}
+
+/**
+ * Sanitize error for user display (remove sensitive information)
+ */
+export function sanitizeErrorForUser(error: Error): {
+  message: string;
+  code: string;
+  timestamp: Date;
+  supportCode: string;
+} {
+  // Generate support code for customer service
+  const supportCode = `ERR-${Date.now().toString(36).toUpperCase()}`;
+
+  // Map technical errors to user-friendly messages
+  let userMessage: string;
+  let errorCode: string;
+
+  if (error instanceof ChainTraceError) {
+    errorCode = error.code;
+    if (error.code === 'VALIDATION_ERROR') {
+      userMessage =
+        'The information provided is not valid. Please check your input and try again.';
+    } else if (error.code === 'SERVICE_CONNECTION_ERROR') {
+      userMessage =
+        'We are experiencing technical difficulties. Please try again in a moment.';
+    } else {
+      userMessage = error.message;
+    }
+  } else if (error.message.includes('timeout')) {
+    userMessage =
+      'The operation is taking longer than expected. Please try again.';
+    errorCode = 'TIMEOUT_ERROR';
+  } else if (error.message.includes('not found')) {
+    userMessage = 'The requested information could not be found.';
+    errorCode = 'NOT_FOUND';
+  } else {
+    userMessage =
+      'An unexpected error occurred. Please try again or contact support.';
+    errorCode = 'UNKNOWN_ERROR';
+  }
+
+  return {
+    message: userMessage,
+    code: errorCode,
+    timestamp: new Date(),
+    supportCode,
+  };
+}
+
+/**
+ * Enhanced timestamp formatting with multiple options
+ */
+export function formatTimestampAdvanced(
+  timestamp: Date | string,
+  format: 'relative' | 'absolute' | 'detailed' = 'relative'
+): string {
+  const date = typeof timestamp === 'string' ? new Date(timestamp) : timestamp;
+
+  if (format === 'relative') {
+    return getRelativeTime(date);
+  } else if (format === 'absolute') {
+    return date.toLocaleDateString('en-NG', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } else {
+    return date.toLocaleDateString('en-NG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+}
+
+/**
+ * Get relative time string
+ */
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffMinutes < 1) {
+    return 'just now';
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes}m ago`;
+  } else if (diffHours < 24) {
+    return `${diffHours}h ago`;
+  } else if (diffDays < 7) {
+    return `${diffDays}d ago`;
+  } else {
+    return date.toLocaleDateString('en-NG', {
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+}

@@ -41,11 +41,13 @@ vi.mock('@hashgraph/sdk', () => ({
   PrivateKey: {
     fromString: vi.fn(key => key),
   },
+  AccountBalanceQuery: vi.fn(),
 }));
 
-// Import mocked Client for reference
-import { Client } from '@hashgraph/sdk';
+// Import mocked Client and AccountBalanceQuery for reference
+import { Client, AccountBalanceQuery } from '@hashgraph/sdk';
 const mockedClient = vi.mocked(Client);
+const mockedAccountBalanceQuery = vi.mocked(AccountBalanceQuery);
 
 // Create a configurable ComplianceService mock
 const mockComplianceHealthCheck = vi.fn().mockResolvedValue({
@@ -560,7 +562,11 @@ describe('HealthCheckService', () => {
   function mockHederaSDKSuccess(balance = 5.0, delay = 100) {
     const mockClient = {
       setOperator: vi.fn(),
-      getAccountBalance: vi.fn().mockImplementation(
+    };
+
+    const mockBalanceQueryInstance = {
+      setAccountId: vi.fn().mockReturnThis(),
+      execute: vi.fn().mockImplementation(
         () =>
           new Promise(resolve =>
             setTimeout(
@@ -580,17 +586,25 @@ describe('HealthCheckService', () => {
 
     // Use the mocked Client reference
     mockedClient.forTestnet.mockReturnValue(mockClient as any);
+    mockedAccountBalanceQuery.mockImplementation(
+      () => mockBalanceQueryInstance as any
+    );
   }
 
   function mockHederaSDKFailure() {
     const mockClient = {
       setOperator: vi.fn(),
-      getAccountBalance: vi
-        .fn()
-        .mockRejectedValue(new Error('Connection failed')),
+    };
+
+    const mockBalanceQueryInstance = {
+      setAccountId: vi.fn().mockReturnThis(),
+      execute: vi.fn().mockRejectedValue(new Error('Connection failed')),
     };
 
     // Use the mocked Client reference
     mockedClient.forTestnet.mockReturnValue(mockClient as any);
+    mockedAccountBalanceQuery.mockImplementation(
+      () => mockBalanceQueryInstance as any
+    );
   }
 });

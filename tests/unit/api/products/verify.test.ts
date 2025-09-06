@@ -10,11 +10,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET, OPTIONS } from '@/app/api/products/[productId]/verify/route';
-import {
-  ProductWithEvents,
-  ProductVerificationResponse,
-  ProductVerificationError,
-} from '@/types';
+import { ProductVerificationResponse, ProductVerificationError } from '@/types';
 
 // Mock the dependencies
 vi.mock('@/services/hedera/MirrorNodeService', () => ({
@@ -35,6 +31,47 @@ vi.mock('@/lib/logger', () => ({
 describe('Product Verification API Route', () => {
   let mockMirrorNodeService: any;
   let mockLogger: any;
+
+  // Mock helper functions available to all tests
+  const mockRequest = (
+    url: string = 'http://localhost:3000/api/products/PROD-2024-001/verify'
+  ) => {
+    return new NextRequest(url, {
+      method: 'GET',
+      headers: {
+        'user-agent': 'test-user-agent',
+      },
+    });
+  };
+
+  const mockContext = (productId: string) => ({
+    params: { productId },
+  });
+
+  const mockProductData = {
+    name: 'Test Product',
+    description: 'A test product for verification',
+    category: 'Electronics',
+    origin: {
+      address: '123 Manufacturing St, Factory City',
+      country: 'United States',
+    },
+    status: 'verified',
+    verified: true,
+    createdAt: '2024-09-01T08:00:00Z',
+    lastUpdated: '2024-09-03T10:00:00Z',
+    events: [
+      {
+        eventType: 'created',
+        timestamp: '2024-09-01T08:00:00Z',
+        actor: {
+          name: 'John Manufacturer',
+          role: 'Quality Inspector',
+        },
+      },
+    ],
+    expiresAt: '2024-12-01T00:00:00Z',
+  };
 
   beforeEach(() => {
     // Reset all mocks
@@ -66,46 +103,6 @@ describe('Product Verification API Route', () => {
   });
 
   describe('GET /api/products/[productId]/verify', () => {
-    const mockRequest = (
-      url: string = 'http://localhost:3000/api/products/PROD-2024-001/verify'
-    ) => {
-      return new NextRequest(url, {
-        method: 'GET',
-        headers: {
-          'user-agent': 'test-user-agent',
-        },
-      });
-    };
-
-    const mockContext = (productId: string) => ({
-      params: { productId },
-    });
-
-    const mockProductData = {
-      name: 'Test Product',
-      description: 'A test product for verification',
-      category: 'Electronics',
-      origin: {
-        address: '123 Manufacturing St, Factory City',
-        country: 'United States',
-      },
-      status: 'verified',
-      verified: true,
-      createdAt: '2024-09-01T08:00:00Z',
-      lastUpdated: '2024-09-03T10:00:00Z',
-      events: [
-        {
-          eventType: 'created',
-          timestamp: '2024-09-01T08:00:00Z',
-          actor: {
-            name: 'John Manufacturer',
-            role: 'Quality Inspector',
-          },
-        },
-      ],
-      expiresAt: '2024-12-01T00:00:00Z',
-    };
-
     describe('Successful Verification', () => {
       beforeEach(() => {
         mockMirrorNodeService.getProductVerification.mockResolvedValue(
@@ -310,12 +307,6 @@ describe('Product Verification API Route', () => {
       });
 
       it('manages cache size to prevent memory leaks', async () => {
-        // Mock the cache map to track size
-        const cacheMap = new Map();
-        const originalGet = cacheMap.get.bind(cacheMap);
-        const originalSet = cacheMap.set.bind(cacheMap);
-        const originalDelete = cacheMap.delete.bind(cacheMap);
-
         // Create many cached entries
         for (let i = 0; i < 1001; i++) {
           const productId = `PROD-${i.toString().padStart(4, '0')}`;

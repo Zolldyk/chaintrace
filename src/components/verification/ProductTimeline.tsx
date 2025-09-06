@@ -162,13 +162,43 @@ const TimelineEvent: React.FC<{
           <h4 className='text-sm font-medium text-gray-900'>{config.label}</h4>
           <time
             className='text-xs text-gray-500'
-            dateTime={event.timestamp}
-            title={formatDate(new Date(event.timestamp).getTime(), {
-              dateStyle: 'full',
-              timeStyle: 'medium',
-            })}
+            dateTime={(() => {
+              try {
+                if (event.timestamp instanceof Date) {
+                  return isNaN(event.timestamp.getTime())
+                    ? ''
+                    : event.timestamp.toISOString();
+                }
+                const date = new Date(event.timestamp);
+                return isNaN(date.getTime()) ? '' : date.toISOString();
+              } catch {
+                return '';
+              }
+            })()}
+            title={(() => {
+              try {
+                const date = new Date(event.timestamp);
+                return isNaN(date.getTime())
+                  ? 'Invalid date'
+                  : formatDate(date.getTime(), {
+                      dateStyle: 'full',
+                      timeStyle: 'medium',
+                    });
+              } catch {
+                return 'Invalid date';
+              }
+            })()}
           >
-            {formatDate(new Date(event.timestamp).getTime())}
+            {(() => {
+              try {
+                const date = new Date(event.timestamp);
+                return isNaN(date.getTime())
+                  ? 'Invalid date'
+                  : formatDate(date.getTime());
+              } catch {
+                return 'Invalid date';
+              }
+            })()}
           </time>
         </div>
 

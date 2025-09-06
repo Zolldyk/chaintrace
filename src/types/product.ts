@@ -6,101 +6,289 @@
 
 /**
  * Product verification status enumeration
+ * Comprehensive status tracking for supply chain verification workflow
  */
 export type VerificationStatus =
+  | 'created'
+  | 'processing'
   | 'verified'
-  | 'unverified'
-  | 'pending'
   | 'rejected'
-  | 'expired';
+  | 'expired'
+  | 'pending'
+  | 'unverified';
 
 /**
- * Product event actor information
+ * Product categories for classification
+ */
+export type ProductCategory =
+  | 'agricultural'
+  | 'processed_food'
+  | 'manufactured'
+  | 'other';
+
+/**
+ * Quantity units for product measurements
+ */
+export type QuantityUnit = 'kg' | 'tons' | 'pieces' | 'liters' | 'boxes';
+
+/**
+ * Event types for product journey tracking
+ */
+export type EventType =
+  | 'created'
+  | 'processed'
+  | 'quality_check'
+  | 'transported'
+  | 'verified'
+  | 'rejected';
+
+/**
+ * Supply chain participant performing actions on products
+ *
+ * @interface Actor
+ * @since 1.4.0
  */
 export interface Actor {
-  /** Wallet address of the actor */
+  /** Hedera wallet address of the actor */
   walletAddress: string;
 
   /** Role of the actor in the supply chain */
-  role: string;
+  role: 'producer' | 'processor' | 'distributor' | 'verifier' | 'regulator';
 
-  /** Optional actor name or identifier */
-  name?: string;
+  /** Actor name or organization identifier */
+  name: string;
+
+  /** Contact information */
+  contactInfo?: {
+    email?: string;
+    phone?: string;
+  };
 }
 
 /**
- * Location information for product events
+ * Location interface with Nigeria-focused geographic data
+ *
+ * @interface Location
+ * @since 1.4.0
  */
 export interface Location {
+  /** Street address */
+  address: string;
+
+  /** City name */
+  city: string;
+
+  /** Nigerian state */
+  state: string;
+
+  /** Country - enforced to Nigeria for MVP */
+  country: 'Nigeria';
+
   /** Geographic coordinates */
-  coordinates?: {
+  coordinates: {
     latitude: number;
     longitude: number;
   };
 
-  /** Human-readable address */
-  address?: string;
-
-  /** Country code */
-  country?: string;
-
-  /** Region or state */
-  region?: string;
+  /** Geographic region */
+  region: string;
 }
 
 /**
- * Product event in the supply chain journey
+ * Cooperative organization managing producer groups
+ *
+ * @interface Cooperative
+ * @since 1.4.0
  */
-export interface ProductEvent {
-  /** Event timestamp */
-  timestamp: string;
+export interface Cooperative {
+  /** Unique cooperative identifier */
+  id: string;
 
-  /** Type of event */
-  eventType: string;
+  /** Cooperative organization name */
+  name: string;
 
-  /** Actor who performed the event */
-  actor: Actor;
+  /** Registration details */
+  registration: {
+    number: string;
+    authority: string;
+    date: Date;
+  };
 
-  /** Location where event occurred */
-  location?: Location;
+  /** Primary contact information */
+  contactInfo: {
+    email: string;
+    phone: string;
+    address: Location;
+  };
 
-  /** Additional event data */
-  data?: Record<string, any>;
+  /** Associated producers */
+  producerIds: string[];
 
-  /** Transaction ID on Hedera */
-  transactionId?: string;
+  /** Cooperative status */
+  status: 'active' | 'inactive' | 'suspended';
 }
 
 /**
- * Basic product information
+ * Token reward tracking for HTS reward distribution
+ *
+ * @interface TokenReward
+ * @since 1.4.0
  */
-export interface Product {
-  /** Unique product identifier */
+export interface TokenReward {
+  /** Unique reward identifier */
+  id: string;
+
+  /** Associated product ID */
   productId: string;
 
-  /** Product name or title */
-  name?: string;
+  /** Recipient wallet address */
+  recipientAddress: string;
 
-  /** Product description */
-  description?: string;
+  /** Token amount (in smallest unit) */
+  amount: string;
 
-  /** Product category */
-  category?: string;
+  /** HTS token ID */
+  tokenId: string;
 
-  /** Product origin location */
-  origin?: Location;
+  /** Reward reason/type */
+  rewardType: 'verification' | 'quality' | 'sustainability' | 'compliance';
 
-  /** Creation timestamp */
-  createdAt: string;
+  /** Distribution timestamp */
+  distributedAt: Date;
 
-  /** Last update timestamp */
-  updatedAt: string;
+  /** Hedera transaction ID */
+  transactionId: string;
+
+  /** Distribution status */
+  status: 'pending' | 'distributed' | 'failed';
+}
+
+/**
+ * Product event in the supply chain journey with complete audit trail
+ *
+ * @interface ProductEvent
+ * @since 1.4.0
+ */
+export interface ProductEvent {
+  /** Unique event identifier */
+  id: string;
+
+  /** Reference to associated product */
+  productId: string;
+
+  /** Type of event in the supply chain */
+  eventType: EventType;
+
+  /** Entity performing the action */
+  actor: Actor;
+
+  /** Precise event occurrence time */
+  timestamp: Date;
+
+  /** Geographic coordinates and address */
+  location: Location;
+
+  /** Event-specific data */
+  data: Record<string, any>;
+
+  /** HCS message ID for blockchain verification */
+  hcsMessageId: string;
+
+  /** Hedera transaction ID for blockchain reference */
+  transactionId?: string;
+
+  /** Cryptographic signature for integrity */
+  signature: string;
+}
+
+/**
+ * Comprehensive product interface with all required fields from architecture
+ *
+ * @interface Product
+ * @since 1.4.0
+ *
+ * @example
+ * ```typescript
+ * const product: Product = {
+ *   id: 'CT-2024-001-ABC123',
+ *   batchId: 'BATCH-001',
+ *   name: 'Organic Tomatoes',
+ *   category: 'agricultural',
+ *   status: 'created',
+ *   origin: {
+ *     address: '123 Farm Road',
+ *     city: 'Lagos',
+ *     state: 'Lagos',
+ *     country: 'Nigeria',
+ *     coordinates: { latitude: 6.5244, longitude: 3.3792 },
+ *     region: 'Southwest'
+ *   },
+ *   quantity: { amount: 100, unit: 'kg' },
+ *   createdAt: new Date(),
+ *   updatedAt: new Date(),
+ *   qrCode: 'qr_data_string',
+ *   guardianCredentialId: null,
+ *   hcsTopicId: '0.0.12345'
+ * };
+ * ```
+ */
+export interface Product {
+  /** Unique product identifier (format: CT-YYYY-XXX-ABCDEF) */
+  id: string;
+
+  /** Groups products created together by cooperative */
+  batchId: string;
+
+  /** Human-readable product name */
+  name: string;
+
+  /** Product classification */
+  category: ProductCategory;
+
+  /** Current verification state */
+  status: VerificationStatus;
+
+  /** Geographic origin with cooperative details */
+  origin: Location;
+
+  /** Amount/weight with units */
+  quantity: {
+    amount: number;
+    unit: QuantityUnit;
+  };
+
+  /** Initial product logging timestamp */
+  createdAt: Date;
+
+  /** Last modification timestamp */
+  updatedAt: Date;
+
+  /** Generated QR code data for scanning */
+  qrCode: string;
+
+  /** Custom Compliance Engine credential ID */
+  guardianCredentialId: string | null;
+
+  /** HCS topic containing event log */
+  hcsTopicId: string;
+
+  /** Additional product-specific data */
+  metadata?: Record<string, any>;
 }
 
 /**
  * Product with full verification data and events
  */
 export interface ProductWithEvents extends Product {
+  /** Product identifier (inherited from Product but explicit for component usage) */
+  productId?: string;
+
+  /** Product name (inherited from Product but explicit for component usage) */
+  name: string;
+
+  /** Product description for detailed views */
+  description?: string;
+
   /** Current verification status */
   status: VerificationStatus;
 

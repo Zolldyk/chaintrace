@@ -144,14 +144,31 @@ function transformProductData(
   const now = new Date().toISOString();
 
   return {
-    productId: productId,
-    name: mirrorNodeData.name || undefined,
-    description: mirrorNodeData.description || undefined,
-    category: mirrorNodeData.category || undefined,
-    origin: mirrorNodeData.origin || undefined,
-    createdAt: mirrorNodeData.createdAt || now,
-    updatedAt: mirrorNodeData.lastUpdated || now,
+    // Required Product fields
+    id: productId,
+    batchId: mirrorNodeData.batchId || 'UNKNOWN',
+    name: mirrorNodeData.name || 'Unknown Product',
+    category: mirrorNodeData.category || 'other',
     status: mirrorNodeData.status || 'unverified',
+    origin: mirrorNodeData.origin || {
+      address: 'Unknown',
+      city: 'Unknown',
+      state: 'Unknown',
+      country: 'Nigeria',
+      coordinates: { latitude: 0, longitude: 0 },
+      region: 'Unknown',
+    },
+    quantity: mirrorNodeData.quantity || { amount: 0, unit: 'pieces' },
+    createdAt: new Date(mirrorNodeData.createdAt || now),
+    updatedAt: new Date(mirrorNodeData.lastUpdated || now),
+    qrCode: mirrorNodeData.qrCode || productId,
+    guardianCredentialId: mirrorNodeData.guardianCredentialId || null,
+    hcsTopicId: mirrorNodeData.hcsTopicId || '0.0.0',
+    metadata: mirrorNodeData.metadata || {},
+
+    // ProductWithEvents additional fields
+    productId: productId,
+    description: mirrorNodeData.description || undefined,
     verified: mirrorNodeData.verified || false,
     events: mirrorNodeData.events || [],
     lastVerified: mirrorNodeData.verified

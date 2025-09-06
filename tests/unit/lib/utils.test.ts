@@ -11,6 +11,12 @@ import {
   capitalize,
   isValidAccountId,
   safeJsonParse,
+  ProductIdGenerator,
+  StatusMapper,
+  ChainTraceError,
+  createDataValidationError,
+  sanitizeErrorForUser,
+  formatTimestampAdvanced,
 } from '@/lib/utils';
 
 describe('utils', () => {
@@ -119,6 +125,155 @@ describe('utils', () => {
     it('should handle null fallback', () => {
       const result = safeJsonParse('invalid json', null);
       expect(result).toBe(null);
+    });
+  });
+
+  // ============================================================================
+  // Tests for Story 1.4 Enhanced Utilities
+  // ============================================================================
+
+  describe('ProductIdGenerator', () => {
+    it('should generate valid product ID format', () => {
+      const id = ProductIdGenerator.generate();
+      expect(id).toMatch(/^CT-\d{4}-\d{3}-[A-F0-9]{6}$/);
+    });
+
+    it('should generate unique sequential IDs', () => {
+      const id1 = ProductIdGenerator.generate();
+      const id2 = ProductIdGenerator.generate();
+      expect(id1).not.toBe(id2);
+    });
+
+    it('should validate product ID format correctly', () => {
+      expect(ProductIdGenerator.validateFormat('CT-2024-001-A3B7F2')).toBe(
+        true
+      );
+      expect(ProductIdGenerator.validateFormat('CT-2024-001-A3B7F')).toBe(
+        false
+      );
+      expect(ProductIdGenerator.validateFormat('XX-2024-001-A3B7F2')).toBe(
+        false
+      );
+      expect(ProductIdGenerator.validateFormat('invalid')).toBe(false);
+    });
+
+    it('should parse valid product ID correctly', () => {
+      const result = ProductIdGenerator.parse('CT-2024-123-ABC123');
+      expect(result).toEqual({
+        prefix: 'CT',
+        year: 2024,
+        sequence: 123,
+        random: 'ABC123',
+      });
+    });
+
+    it('should return null for invalid product ID', () => {
+      const result = ProductIdGenerator.parse('invalid-id');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('StatusMapper', () => {
+    it('should map Mirror Node status correctly', () => {
+      expect(StatusMapper.mapMirrorNodeStatus('SUCCESS')).toBe('verified');
+      expect(StatusMapper.mapMirrorNodeStatus('PENDING')).toBe('processing');
+      expect(StatusMapper.mapMirrorNodeStatus('FAILED')).toBe('rejected');
+      expect(StatusMapper.mapMirrorNodeStatus('CREATED')).toBe('created');
+      expect(StatusMapper.mapMirrorNodeStatus('unknown')).toBe('created');
+    });
+
+    it('should map Compliance Engine status correctly', () => {
+      expect(StatusMapper.mapComplianceEngineStatus('COMPLIANT')).toBe(
+        'verified'
+      );
+      expect(StatusMapper.mapComplianceEngineStatus('NON_COMPLIANT')).toBe(
+        'rejected'
+      );
+      expect(StatusMapper.mapComplianceEngineStatus('UNDER_REVIEW')).toBe(
+        'processing'
+      );
+      expect(StatusMapper.mapComplianceEngineStatus('unknown')).toBe('created');
+    });
+
+    it('should return correct display names', () => {
+      expect(StatusMapper.getStatusDisplayName('created')).toBe('Created');
+      expect(StatusMapper.getStatusDisplayName('verified')).toBe('Verified');
+      expect(StatusMapper.getStatusDisplayName('rejected')).toBe('Rejected');
+    });
+
+    it('should return ChainTrace semantic colors', () => {
+      const colors = StatusMapper.getStatusSemanticColors('verified');
+      expect(colors.bg).toBe('bg-success-50');
+      expect(colors.border).toBe('border-success-200');
+      expect(colors.text).toBe('text-success-700');
+    });
+
+    it('should return Heroicons (not emojis)', () => {
+      expect(StatusMapper.getStatusIcon('verified')).toBe('CheckCircleIcon');
+      expect(StatusMapper.getStatusIcon('processing')).toBe('ArrowPathIcon');
+      expect(StatusMapper.getStatusIcon('rejected')).toBe('XCircleIcon');
+    });
+  });
+
+  describe('ChainTraceError', () => {
+    it('should create error with code and details', () => {
+      const error = new ChainTraceError('Test message', 'TEST_CODE', {
+        field: 'test',
+      });
+
+      expect(error.message).toBe('Test message');
+      expect(error.code).toBe('TEST_CODE');
+      expect(error.details).toEqual({ field: 'test' });
+      expect(error.name).toBe('ChainTraceError');
+    });
+  });
+
+  describe('createDataValidationError', () => {
+    it('should create validation error with field details', () => {
+      const error = createDataValidationError(
+        'email',
+        'invalid-email',
+        'Must be valid email'
+      );
+
+      expect(error.message).toContain('email');
+      expect(error.code).toBe('VALIDATION_ERROR');
+      expect(error.details?.field).toBe('email');
+    });
+  });
+
+  describe('sanitizeErrorForUser', () => {
+    it('should sanitize validation errors', () => {
+      const error = createDataValidationError(
+        'email',
+        'test',
+        'Invalid format'
+      );
+      const sanitized = sanitizeErrorForUser(error);
+
+      expect(sanitized.message).toBe(
+        'The information provided is not valid. Please check your input and try again.'
+      );
+      expect(sanitized.code).toBe('VALIDATION_ERROR');
+      expect(sanitized.supportCode).toMatch(/^ERR-[A-Z0-9]+$/);
+    });
+
+    it('should handle timeout errors', () => {
+      const error = new Error('Request timeout occurred');
+      const sanitized = sanitizeErrorForUser(error);
+
+      expect(sanitized.code).toBe('TIMEOUT_ERROR');
+    });
+  });
+
+  describe('formatTimestampAdvanced', () => {
+    it('should handle string timestamps', () => {
+      const result = formatTimestampAdvanced(
+        '2024-09-05T10:30:00Z',
+        'absolute'
+      );
+      expect(typeof result).toBe('string');
+      expect(result.length).toBeGreaterThan(0);
     });
   });
 });

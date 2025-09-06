@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProductLookup } from '@/components/verification/ProductLookup';
 import { ProductVerificationError } from '@/types';
@@ -280,7 +280,8 @@ describe('ProductLookup', () => {
       const error: ProductVerificationError = {
         code: 'PRODUCT_NOT_FOUND',
         message: 'Product not found',
-        statusCode: 404,
+        timestamp: new Date().toISOString(),
+        retryable: false,
       };
 
       render(<ProductLookup {...defaultProps} error={error} />);
@@ -297,7 +298,8 @@ describe('ProductLookup', () => {
       const error: ProductVerificationError = {
         code: 'INVALID_PRODUCT_ID',
         message: 'Invalid product ID format',
-        statusCode: 400,
+        timestamp: new Date().toISOString(),
+        retryable: false,
       };
 
       render(<ProductLookup {...defaultProps} error={error} />);
@@ -310,7 +312,8 @@ describe('ProductLookup', () => {
       const error: ProductVerificationError = {
         code: 'PRODUCT_NOT_FOUND',
         message: 'Product not found',
-        statusCode: 404,
+        timestamp: new Date().toISOString(),
+        retryable: false,
       };
 
       const user = userEvent.setup();
@@ -332,9 +335,10 @@ describe('ProductLookup', () => {
 
     it('displays error icon in error message', () => {
       const error: ProductVerificationError = {
-        code: 'SERVICE_UNAVAILABLE',
+        code: 'MIRROR_NODE_ERROR',
         message: 'Service temporarily unavailable',
-        statusCode: 503,
+        timestamp: new Date().toISOString(),
+        retryable: true,
       };
 
       render(<ProductLookup {...defaultProps} error={error} />);
@@ -359,9 +363,10 @@ describe('ProductLookup', () => {
 
     it('has proper ARIA attributes with error', () => {
       const error: ProductVerificationError = {
-        code: 'INVALID_INPUT',
+        code: 'INVALID_PRODUCT_ID',
         message: 'Invalid input',
-        statusCode: 400,
+        timestamp: new Date().toISOString(),
+        retryable: false,
       };
 
       render(<ProductLookup {...defaultProps} error={error} />);
@@ -399,9 +404,10 @@ describe('ProductLookup', () => {
 
     it('provides descriptive error messages for screen readers', () => {
       const error: ProductVerificationError = {
-        code: 'TIMEOUT',
+        code: 'MIRROR_NODE_TIMEOUT',
         message: 'Request timed out. Please try again.',
-        statusCode: 408,
+        timestamp: new Date().toISOString(),
+        retryable: true,
       };
 
       render(<ProductLookup {...defaultProps} error={error} />);

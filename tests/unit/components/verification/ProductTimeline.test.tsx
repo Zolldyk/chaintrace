@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProductTimeline } from '@/components/verification/ProductTimeline';
 import { ProductWithEvents, ProductEvent, Actor, Location } from '@/types';
@@ -45,55 +45,80 @@ vi.mock('@/lib/utils', () => ({
 describe('ProductTimeline', () => {
   const mockLocation: Location = {
     address: '123 Manufacturing St, Factory City, FC 12345',
+    city: 'Lagos',
+    state: 'Lagos',
     coordinates: {
       latitude: 40.7128,
       longitude: -74.006,
     },
-    country: 'United States',
+    country: 'Nigeria',
+    region: 'Southwest',
   };
 
   const mockActor: Actor = {
     name: 'John Manufacturer',
-    role: 'Quality Inspector',
+    role: 'producer',
     walletAddress: '0x1234567890abcdef1234567890abcdef12345678',
   };
 
   const mockEvents: ProductEvent[] = [
     {
+      id: 'event-001',
+      productId: 'PROD-2024-001',
       eventType: 'created',
-      timestamp: '2024-09-01T08:00:00Z',
+      timestamp: new Date('2024-09-01T08:00:00Z'),
       actor: mockActor,
       location: mockLocation,
-      transactionId: '0xabcdef1234567890abcdef1234567890abcdef12',
       data: { batchNumber: 'BATCH-001', quality: 'Grade A' },
+      hcsMessageId: 'hcs-msg-001',
+      transactionId: '0xabcdef1234567890abcdef1234567890abcdef12',
+      signature: 'signature-001',
     },
     {
+      id: 'event-002',
+      productId: 'PROD-2024-001',
       eventType: 'verified',
-      timestamp: '2024-09-02T10:30:00Z',
-      actor: { ...mockActor, name: 'Jane Verifier', role: 'Quality Assurance' },
+      timestamp: new Date('2024-09-02T10:30:00Z'),
+      actor: { ...mockActor, name: 'Jane Verifier', role: 'verifier' },
       location: mockLocation,
+      data: {},
+      hcsMessageId: 'hcs-msg-002',
       transactionId: '0xfedcba0987654321fedcba0987654321fedcba09',
+      signature: 'signature-002',
     },
     {
-      eventType: 'shipped',
-      timestamp: '2024-09-03T14:15:00Z',
-      actor: { ...mockActor, name: 'Bob Shipper', role: 'Logistics' },
+      id: 'event-003',
+      productId: 'PROD-2024-001',
+      eventType: 'transported',
+      timestamp: new Date('2024-09-03T14:15:00Z'),
+      actor: { ...mockActor, name: 'Bob Shipper', role: 'distributor' },
       location: {
         ...mockLocation,
         address: '456 Shipping Hub, Port City, PC 67890',
       },
+      data: {},
+      hcsMessageId: 'hcs-msg-003',
       transactionId: '0x1111222233334444555566667777888899990000',
+      signature: 'signature-003',
     },
   ];
 
   const mockProduct: ProductWithEvents = {
+    id: 'PROD-2024-001',
     productId: 'PROD-2024-001',
     name: 'Test Product',
     description: 'A test product for verification',
-    category: 'Electronics',
+    batchId: 'BATCH-001',
+    category: 'agricultural',
     status: 'verified',
-    createdAt: '2024-09-01T08:00:00Z',
+    createdAt: new Date('2024-09-01T08:00:00Z'),
+    updatedAt: new Date('2024-09-03T10:00:00Z'),
     origin: mockLocation,
+    quantity: { amount: 100, unit: 'kg' },
+    qrCode: 'qr-code-data',
+    guardianCredentialId: null,
+    hcsTopicId: 'topic-001',
+    verified: true,
     events: mockEvents,
   };
 
@@ -116,7 +141,7 @@ describe('ProductTimeline', () => {
     });
 
     it('displays product ID when name is not available', () => {
-      const productWithoutName = { ...mockProduct, name: undefined };
+      const productWithoutName = { ...mockProduct, name: '' };
       render(<ProductTimeline product={productWithoutName} />);
 
       expect(screen.getByText('PROD-2024-001')).toBeInTheDocument();
@@ -155,9 +180,20 @@ describe('ProductTimeline', () => {
 
     it('handles missing product fields gracefully', () => {
       const minimalProduct: ProductWithEvents = {
+        id: 'MINIMAL-001',
         productId: 'MINIMAL-001',
+        name: 'Minimal Product',
+        batchId: 'BATCH-MINIMAL',
+        category: 'agricultural',
         status: 'unverified',
-        createdAt: '2024-09-01T08:00:00Z',
+        origin: mockLocation,
+        quantity: { amount: 1, unit: 'kg' },
+        qrCode: 'qr-minimal',
+        guardianCredentialId: null,
+        hcsTopicId: 'topic-minimal',
+        createdAt: new Date('2024-09-01T08:00:00Z'),
+        updatedAt: new Date('2024-09-01T08:00:00Z'),
+        verified: false,
         events: [],
       };
 
@@ -230,8 +266,12 @@ describe('ProductTimeline', () => {
           {
             ...mockEvents[0],
             location: {
+              address: 'Test Address',
+              city: 'Lagos',
+              state: 'Lagos',
               coordinates: { latitude: 40.7128, longitude: -74.006 },
-              country: 'United States',
+              country: 'Nigeria',
+              region: 'Southwest',
             },
           },
         ],
@@ -278,8 +318,15 @@ describe('ProductTimeline', () => {
         ...mockProduct,
         events: [
           {
-            eventType: 'simple',
-            timestamp: '2024-09-01T08:00:00Z',
+            id: 'event-simple-001',
+            productId: 'PROD-2024-001',
+            eventType: 'created',
+            timestamp: new Date('2024-09-01T08:00:00Z'),
+            actor: mockActor,
+            location: mockLocation,
+            data: {},
+            hcsMessageId: 'hcs-msg-simple-001',
+            signature: 'signature-simple-001',
           },
         ],
       };
@@ -315,8 +362,15 @@ describe('ProductTimeline', () => {
         ...mockProduct,
         events: [
           {
-            eventType: 'unknown_type',
-            timestamp: '2024-09-01T08:00:00Z',
+            id: 'event-unknown-001',
+            productId: 'PROD-2024-001',
+            eventType: 'created',
+            timestamp: new Date('2024-09-01T08:00:00Z'),
+            actor: mockActor,
+            location: mockLocation,
+            data: {},
+            hcsMessageId: 'hcs-msg-unknown-001',
+            signature: 'signature-unknown-001',
           },
         ],
       };
@@ -488,10 +542,15 @@ describe('ProductTimeline', () => {
       const manyEvents: ProductEvent[] = Array.from(
         { length: 100 },
         (_, index) => ({
+          id: `event-perf-${index}`,
+          productId: 'PROD-2024-001',
           eventType: 'processed',
-          timestamp: new Date(2024, 8, 1 + index).toISOString(),
+          timestamp: new Date(2024, 8, 1 + index),
           actor: mockActor,
           location: mockLocation,
+          data: { index },
+          hcsMessageId: `hcs-msg-perf-${index}`,
+          signature: `signature-perf-${index}`,
         })
       );
 
@@ -527,8 +586,15 @@ describe('ProductTimeline', () => {
         ...mockProduct,
         events: [
           {
-            eventType: 'automated',
-            timestamp: '2024-09-01T08:00:00Z',
+            id: 'event-automated-001',
+            productId: 'PROD-2024-001',
+            eventType: 'processed',
+            timestamp: new Date('2024-09-01T08:00:00Z'),
+            actor: mockActor,
+            location: mockLocation,
+            data: {},
+            hcsMessageId: 'hcs-msg-automated-001',
+            signature: 'signature-automated-001',
           },
         ],
       };
@@ -544,9 +610,15 @@ describe('ProductTimeline', () => {
         ...mockProduct,
         events: [
           {
+            id: 'event-no-location-001',
+            productId: 'PROD-2024-001',
             eventType: 'created',
-            timestamp: '2024-09-01T08:00:00Z',
+            timestamp: new Date('2024-09-01T08:00:00Z'),
             actor: mockActor,
+            location: mockLocation,
+            data: {},
+            hcsMessageId: 'hcs-msg-no-location-001',
+            signature: 'signature-no-location-001',
           },
         ],
       };
@@ -569,8 +641,15 @@ describe('ProductTimeline', () => {
         ...mockProduct,
         events: [
           {
+            id: 'event-bad-timestamp-001',
+            productId: 'PROD-2024-001',
             eventType: 'created',
-            timestamp: 'invalid-timestamp',
+            timestamp: new Date('invalid-timestamp'), // Will create Invalid Date
+            actor: mockActor,
+            location: mockLocation,
+            data: {},
+            hcsMessageId: 'hcs-msg-bad-timestamp-001',
+            signature: 'signature-bad-timestamp-001',
           },
         ],
       };

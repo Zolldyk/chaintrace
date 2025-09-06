@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm ci && npm run build"
   publish = ".next"
 
 [build.environment]
@@ -47,9 +47,15 @@
 # Environment-specific settings
 [context.production.environment]
   NODE_ENV = "production"
+  NEXT_PUBLIC_HEDERA_NETWORK = "testnet"
+  NEXT_PUBLIC_MIRROR_NODE_URL = "https://testnet.mirrornode.hedera.com"
 
 [context.deploy-preview.environment]
   NODE_ENV = "production"
+  NEXT_PUBLIC_HEDERA_NETWORK = "testnet"
+  NEXT_PUBLIC_MIRROR_NODE_URL = "https://testnet.mirrornode.hedera.com"
 
 [context.branch-deploy.environment]
   NODE_ENV = "development"
+  NEXT_PUBLIC_HEDERA_NETWORK = "testnet"
+  NEXT_PUBLIC_MIRROR_NODE_URL = "https://testnet.mirrornode.hedera.com"

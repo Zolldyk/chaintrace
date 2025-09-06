@@ -13,7 +13,7 @@
     "setup:hcs": "tsx scripts/setup-hcs-topic.ts",
     "setup:token": "tsx scripts/setup-hts-token.ts",
     "setup:env": "cp .env.example .env.local",
-    "prepare": "husky"
+    "prepare": "node -e \"if(process.env.NETLIFY || process.env.VERCEL) process.exit(0); else require('child_process').exec('husky')\""
   },
   "dependencies": {
     "@hashgraph/hedera-wallet-snap": "latest",

@@ -1,0 +1,33 @@
+# Exclude large directories and files that shouldn't be deployed
+guardian/
+.next/
+node_modules/
+.git/
+.bmad-core/
+docs/
+.claude/
+playwright-report/
+test-results/
+tests/
+
+# Exclude config files
+.env.local
+.env.*.local
+.env.development
+.env.test
+
+# Exclude IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude build artifacts
+*.tgz
+*.tar.gz
+dist/
+
+# Exclude cache directories
+.cache/
+.temp/
+.tmp/

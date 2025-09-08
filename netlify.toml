@@ -1,6 +1,5 @@
 [build]
   command = "npm ci && npm run build"
-  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
@@ -12,11 +11,6 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
-# API routes configuration
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/__nextjs_api_handler"
-  status = 200
 
 # Static file optimization
 [[headers]]
@@ -38,12 +32,6 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
 
-# Handle client-side routing
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  conditions = {Role = ["admin", "editor"]} # Optional: restrict access
 
 # Environment-specific settings
 [context.production.environment]

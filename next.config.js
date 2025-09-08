@@ -55,8 +55,8 @@ const nextConfig = {
     ];
   },
 
-  // Build optimization
-  output: 'standalone',
+  // Build optimization for Netlify
+  trailingSlash: false,
 
   // ESLint configuration during build
   eslint: {

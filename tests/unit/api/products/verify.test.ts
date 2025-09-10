@@ -11,13 +11,18 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET, OPTIONS } from '@/app/api/products/[productId]/verify/route';
 import { ProductVerificationResponse, ProductVerificationError } from '@/types';
+import type { getMirrorNodeService } from '@/services/hedera/MirrorNodeService';
 
 // Mock the dependencies
-vi.mock('@/services/hedera/MirrorNodeService', () => ({
-  getMirrorNodeService: vi.fn(() => ({
-    getProductVerification: vi.fn(),
-  })),
-}));
+vi.mock('@/services/hedera/MirrorNodeService', async () => {
+  const actual = await vi.importActual('@/services/hedera/MirrorNodeService');
+  return {
+    ...actual,
+    getMirrorNodeService: vi.fn(() => ({
+      getProductVerification: vi.fn(),
+    })),
+  };
+});
 
 vi.mock('@/lib/logger', () => ({
   logger: {
@@ -73,15 +78,16 @@ describe('Product Verification API Route', () => {
     expiresAt: '2024-12-01T00:00:00Z',
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Reset all mocks
     vi.clearAllMocks();
 
     // Get mock references
-    const {
-      getMirrorNodeService,
-    } = require('@/services/hedera/MirrorNodeService');
-    const { logger } = require('@/lib/logger');
+    const mirrorNodeService = await import('@/services/hedera/MirrorNodeService');
+    const loggerModule = await import('@/lib/logger');
+    
+    const getMirrorNodeService = mirrorNodeService.getMirrorNodeService;
+    const logger = loggerModule.logger;
 
     mockMirrorNodeService = {
       getProductVerification: vi.fn(),
@@ -92,9 +98,9 @@ describe('Product Verification API Route', () => {
     getMirrorNodeService.mockReturnValue(mockMirrorNodeService);
 
     // Clear any existing cache
-    const route = require('@/app/api/products/[productId]/verify/route');
-    if (route.verificationCache) {
-      route.verificationCache.clear();
+    const routeModule = await import('@/app/api/products/[productId]/verify/route');
+    if (routeModule.verificationCache) {
+      routeModule.verificationCache.clear();
     }
   });
 
@@ -438,9 +444,8 @@ describe('Product Verification API Route', () => {
       });
 
       it('respects custom timeout parameter', async () => {
-        const {
-          getMirrorNodeService,
-        } = require('@/services/hedera/MirrorNodeService');
+        const mirrorNodeService = await import('@/services/hedera/MirrorNodeService');
+        const getMirrorNodeService = mirrorNodeService.getMirrorNodeService;
 
         const request = mockRequest(
           'http://localhost:3000/api/products/PROD-2024-001/verify?timeout=60000'
@@ -467,9 +472,8 @@ describe('Product Verification API Route', () => {
       });
 
       it('uses default timeout when not specified', async () => {
-        const {
-          getMirrorNodeService,
-        } = require('@/services/hedera/MirrorNodeService');
+        const mirrorNodeService = await import('@/services/hedera/MirrorNodeService');
+        const getMirrorNodeService = mirrorNodeService.getMirrorNodeService;
 
         const request = mockRequest();
         const context = mockContext('PROD-2024-001');

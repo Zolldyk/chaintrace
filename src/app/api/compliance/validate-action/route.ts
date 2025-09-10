@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  ComplianceService,
-  ComplianceValidationRequest,
-} from '@/services/hedera/ComplianceService';
+  CustomComplianceRuleEngine,
+  ActionValidationRequest,
+} from '@/services/hedera/CustomComplianceRuleEngine';
+import { ComplianceCacheAdapter } from '@/services/hedera/ComplianceCacheAdapter';
+import { HCSClient } from '@/services/hedera/HCSClient';
+import { cacheService } from '@/lib/cache/CacheService';
+import type { SupplyChainRole } from '@/types/hedera';
 
 /**
  * Compliance action validation endpoint
  *
  * @route POST /api/compliance/validate-action
- * @param request - Compliance validation request with action details
- * @returns {ComplianceValidationResult} Validation result with compliance status
+ * @param request - Action validation request with business context
+ * @returns {ValidationResult} Validation result with compliance status
  * @throws {400} Invalid request parameters or missing required fields
  * @throws {401} Unauthorized access or invalid authentication
  * @throws {500} Compliance engine connectivity issues or internal errors
@@ -43,7 +47,7 @@ import {
 export async function POST(request: NextRequest) {
   try {
     // Parse request body
-    const body = (await request.json()) as ComplianceValidationRequest;
+    const body = (await request.json()) as ActionValidationRequest;
 
     // Validate required fields
     if (!body.action || !body.productId || !body.actor) {
@@ -63,18 +67,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize compliance service
-    const complianceService = new ComplianceService({
-      baseUrl: process.env.COMPLIANCE_ENGINE_URL || 'http://localhost:3001',
-      apiKey: process.env.COMPLIANCE_API_KEY || 'dev-key-123',
-      timeout: 30000,
+    // Validate role type
+    const validRoles: SupplyChainRole[] = ['Producer', 'Processor', 'Verifier'];
+    if (!validRoles.includes(body.actor.role as SupplyChainRole)) {
+      return NextResponse.json(
+        { error: `Invalid role: ${body.actor.role}. Must be one of: ${validRoles.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Initialize services
+    const cacheAdapter = new ComplianceCacheAdapter(cacheService);
+    const hcsClient = new HCSClient({
+      networkType: 'testnet',
+      hcsTopicId: process.env.HCS_TOPIC_ID || '0.0.12345',
+      operatorAccountId: process.env.HEDERA_OPERATOR_ACCOUNT_ID,
+      operatorPrivateKey: process.env.HEDERA_OPERATOR_PRIVATE_KEY
     });
 
-    // Validate the action
-    const validationResult = await complianceService.validateAction(body);
+    // Initialize compliance rule engine
+    const ruleEngine = new CustomComplianceRuleEngine({
+      cacheService: cacheAdapter,
+      hcsService: hcsClient,
+      cacheTtl: {
+        rules: 3600,    // 1 hour for rules
+        state: 86400    // 24 hours for workflow state
+      }
+    });
+
+    // Validate the action using the new rule engine
+    const validationResult = await ruleEngine.validateAction(body);
 
     // Return validation result
-    return NextResponse.json(validationResult, { status: 200 });
+    return NextResponse.json({
+      approved: validationResult.isValid,
+      complianceId: validationResult.complianceId,
+      violations: validationResult.violations,
+      reason: validationResult.reason,
+      validatedAt: validationResult.validatedAt,
+      metadata: validationResult.metadata
+    }, { status: 200 });
   } catch (error) {
     console.error('Compliance validation error:', error);
 
@@ -87,17 +119,24 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (error.message.includes('HTTP 401')) {
+      if (error.message.includes('SEQUENCE_VIOLATION')) {
         return NextResponse.json(
-          { error: 'Unauthorized access to compliance engine' },
-          { status: 401 }
+          { error: error.message },
+          { status: 400 }
         );
       }
 
-      if (error.message.includes('HTTP 429')) {
+      if (error.message.includes('RULES_NOT_FOUND')) {
         return NextResponse.json(
-          { error: 'Rate limit exceeded - please try again later' },
-          { status: 429 }
+          { error: 'No compliance rules found for the specified role and action' },
+          { status: 404 }
+        );
+      }
+
+      if (error.message.includes('UNAUTHORIZED')) {
+        return NextResponse.json(
+          { error: 'Unauthorized access to compliance engine' },
+          { status: 401 }
         );
       }
     }

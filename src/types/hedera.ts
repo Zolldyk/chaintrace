@@ -5,6 +5,217 @@
  */
 
 /**
+ * Supply chain role types for compliance validation
+ *
+ * @since 2.1.0
+ */
+export type SupplyChainRole = 'Producer' | 'Processor' | 'Verifier';
+
+/**
+ * Compliance rule interface for supply chain workflow validation
+ *
+ * @interface ComplianceRule
+ * @since 2.1.0
+ *
+ * @example
+ * ```typescript
+ * const producerRule: ComplianceRule = {
+ *   id: 'producer_initial_creation',
+ *   type: 'supply_chain',
+ *   roleType: 'Producer',
+ *   conditions: {
+ *     requiredFields: ['productType', 'quantity', 'origin', 'processingDetails'],
+ *     allowedActions: ['product_creation', 'initial_logging']
+ *   },
+ *   actions: ['validate_metadata', 'log_to_hcs', 'update_sequence_state'],
+ *   sequencePosition: 1,
+ *   description: 'Validates initial product creation by Producer role'
+ * };
+ * ```
+ */
+export interface ComplianceRule {
+  /** Unique rule identifier */
+  id: string;
+
+  /** Rule category type */
+  type: 'supply_chain' | 'carbon_credit' | 'regulatory';
+
+  /** Supply chain role this rule applies to */
+  roleType: SupplyChainRole;
+
+  /** Rule conditions and constraints */
+  conditions: Record<string, any>;
+
+  /** Actions to execute when rule passes */
+  actions: string[];
+
+  /** Position in the workflow sequence */
+  sequencePosition: number;
+
+  /** Human-readable rule description */
+  description: string;
+
+  /** Optional dependencies on other rules */
+  dependencies?: string[];
+}
+
+/**
+ * Validation result interface for compliance checks
+ *
+ * @interface ValidationResult
+ * @since 2.1.0
+ *
+ * @example
+ * ```typescript
+ * const result: ValidationResult = {
+ *   isValid: false,
+ *   violations: ['SEQUENCE_VIOLATION: Processor action attempted before Producer initialization for product CT-001'],
+ *   complianceId: 'COMP-2024-001-ABC123',
+ *   reason: 'Workflow sequence violation detected'
+ * };
+ * ```
+ */
+export interface ValidationResult {
+  /** Whether the validation passed */
+  isValid: boolean;
+
+  /** List of violation messages */
+  violations: string[];
+
+  /** Unique compliance validation ID */
+  complianceId: string;
+
+  /** Reason for validation result */
+  reason: string | null;
+
+  /** Validation timestamp */
+  validatedAt?: Date;
+
+  /** Additional validation metadata */
+  metadata?: {
+    /** Current sequence step */
+    sequenceStep?: number;
+
+    /** Previous workflow state */
+    previousState?: string;
+
+    /** Next required action */
+    nextAction?: string;
+  };
+}
+
+/**
+ * Authentication context for compliance operations
+ *
+ * @interface AuthContext
+ * @since 2.1.0
+ */
+export interface AuthContext {
+  /** Wallet address of the authenticated user */
+  walletAddress: string;
+
+  /** User's role in the supply chain */
+  userRole: SupplyChainRole;
+
+  /** Whether the user is authenticated */
+  isAuthenticated: boolean;
+
+  /** Optional permissions list */
+  permissions?: string[];
+
+  /** Authentication timestamp */
+  authenticatedAt?: Date;
+}
+
+/**
+ * Product workflow state for sequence tracking
+ *
+ * @interface ProductWorkflowState
+ * @since 2.1.0
+ */
+export interface ProductWorkflowState {
+  /** Product identifier */
+  productId: string;
+
+  /** Current workflow step */
+  currentStep: number;
+
+  /** Completed workflow stages */
+  completedStages: SupplyChainRole[];
+
+  /** Last action timestamp */
+  lastActionAt: Date;
+
+  /** Last actor wallet address */
+  lastActor: string;
+
+  /** Workflow status */
+  status: 'initialized' | 'in_progress' | 'completed' | 'blocked';
+
+  /** Optional workflow metadata */
+  metadata?: {
+    /** Producer completion timestamp */
+    producerCompletedAt?: Date;
+
+    /** Processor completion timestamp */
+    processorCompletedAt?: Date;
+
+    /** Verifier completion timestamp */
+    verifierCompletedAt?: Date;
+  };
+}
+
+/**
+ * Compliance credential metadata for automated issuance
+ *
+ * @interface ComplianceCredentialMetadata
+ * @since 2.1.0
+ */
+export interface ComplianceCredentialMetadata {
+  /** Credential issuer information */
+  issuer: {
+    /** Issuer wallet address */
+    walletAddress: string;
+
+    /** Issuer role */
+    role: SupplyChainRole;
+  };
+
+  /** Issuance timestamp (ISO 8601 with timezone) */
+  timestamp: string;
+
+  /** Compliance validation details */
+  validationDetails: {
+    /** Applied rule IDs */
+    ruleIds: string[];
+
+    /** Validation results */
+    validationResults: ValidationResult[];
+
+    /** Sequence confirmation */
+    sequenceConfirmed: boolean;
+  };
+
+  /** Product workflow completion status */
+  workflowStatus: {
+    /** Producer stage completed */
+    producerCompleted: boolean;
+
+    /** Processor stage completed */
+    processorCompleted: boolean;
+
+    /** Verifier stage approved */
+    verifierApproved: boolean;
+  };
+
+  /** Credential expiration date */
+  expirationDate: string;
+
+  /** Renewal requirements */
+  renewalRequirements?: string[];
+}
+
+/**
  * Standard HCS message structure for ChainTrace events
  *
  * @interface HCSMessage
@@ -57,6 +268,58 @@ export interface HCSMessage {
     /** Message sequence number */
     sequenceNumber: number;
   };
+}
+
+/**
+ * Compliance event structure for HCS logging
+ *
+ * @interface ComplianceEvent
+ * @since 2.1.0
+ *
+ * @example
+ * ```typescript
+ * const complianceEvent: ComplianceEvent = {
+ *   action: 'product_verification',
+ *   productId: 'CT-2024-001-ABC123',
+ *   result: 'APPROVED',
+ *   timestamp: '2024-09-05T10:30:00Z',
+ *   walletAddress: '0.0.67890',
+ *   complianceId: 'COMP-2024-001',
+ *   roleType: 'Verifier',
+ *   sequenceStep: 3
+ * };
+ * ```
+ */
+export interface ComplianceEvent {
+  /** Action being validated */
+  action: string;
+
+  /** Product identifier */
+  productId: string;
+
+  /** Validation result */
+  result: 'APPROVED' | 'REJECTED';
+
+  /** Event timestamp (ISO 8601) */
+  timestamp: string;
+
+  /** Acting wallet address */
+  walletAddress: string;
+
+  /** Compliance validation ID */
+  complianceId: string;
+
+  /** Actor's role type */
+  roleType: SupplyChainRole;
+
+  /** Sequence step number */
+  sequenceStep: number;
+
+  /** Optional violation details */
+  violations?: string[];
+
+  /** Optional additional metadata */
+  metadata?: Record<string, any>;
 }
 
 /**
@@ -126,6 +389,10 @@ export enum ApiErrorCode {
   HCS_SERVICE_ERROR = 'HCS_SERVICE_ERROR',
   HTS_SERVICE_ERROR = 'HTS_SERVICE_ERROR',
   COMPLIANCE_ENGINE_ERROR = 'COMPLIANCE_ENGINE_ERROR',
+  SEQUENCE_VIOLATION = 'SEQUENCE_VIOLATION',
+  RULES_NOT_FOUND = 'RULES_NOT_FOUND',
+  CREDENTIAL_ISSUANCE_FAILED = 'CREDENTIAL_ISSUANCE_FAILED',
+  WORKFLOW_STATE_ERROR = 'WORKFLOW_STATE_ERROR',
 
   // Data errors
   PRODUCT_NOT_FOUND = 'PRODUCT_NOT_FOUND',
@@ -176,6 +443,10 @@ export interface HederaServiceConfig {
   complianceEngine?: {
     endpoint: string;
     apiKey: string;
+    /** Maximum cache TTL for compliance rules in seconds */
+    ruleCacheTtl?: number;
+    /** Maximum cache TTL for workflow state in seconds */
+    stateCacheTtl?: number;
   };
 
   /** Timeout configuration */

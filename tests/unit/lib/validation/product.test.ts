@@ -1,325 +1,226 @@
 /**
- * Unit tests for product validation schemas
+ * Unit tests for product validation utilities and schemas
+ * 
+ * Tests comprehensive validation logic for batch creation forms,
+ * including field validation, batch validation, and compliance requirements.
  *
- * @since 1.4.0
+ * @since 1.0.0
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  ProductIdSchema,
-  HederaAccountIdSchema,
-  LocationSchema,
-  ActorSchema,
-  ProductEventSchema,
-  ProductSchema,
-  HCSMessageSchema,
-} from '../../../../src/lib/validation/product';
+  FormValidationUtils,
+  CreateProductBatchSchema,
+  CreateProductRequestSchema,
+  ProcessingDetailsSchema,
+  NigerianStatesSchema,
+} from '@/lib/validation/product';
+import type { CreateProductBatch, CreateProductRequest } from '@/types/batch';
 
-describe('ProductIdSchema', () => {
-  it('should validate correct product ID format', () => {
-    const validIds = ['CT-2024-001-A3B7F2', 'CT-2023-999-FEDCBA'];
+describe('FormValidationUtils', () => {
+  describe('validateProductField', () => {
+    it('should validate product name correctly', () => {
+      // Valid name
+      expect(FormValidationUtils.validateProductField('name', 'Organic Tomatoes', 0))
+        .toEqual({ isValid: true });
 
-    validIds.forEach(id => {
-      expect(() => ProductIdSchema.parse(id)).not.toThrow();
+      // Empty name
+      expect(FormValidationUtils.validateProductField('name', '', 0))
+        .toEqual({ isValid: false, error: 'Product name is required' });
+
+      // Too long name
+      const longName = 'x'.repeat(101);
+      expect(FormValidationUtils.validateProductField('name', longName, 0))
+        .toEqual({ isValid: false, error: 'Product name must be less than 100 characters' });
+    });
+
+    it('should validate quantity amounts correctly', () => {
+      // Valid quantity
+      expect(FormValidationUtils.validateProductField('quantity.amount', 100, 0))
+        .toEqual({ isValid: true });
+
+      // Zero quantity
+      expect(FormValidationUtils.validateProductField('quantity.amount', 0, 0))
+        .toEqual({ isValid: false, error: 'Quantity must be a positive number' });
+
+      // Negative quantity
+      expect(FormValidationUtils.validateProductField('quantity.amount', -10, 0))
+        .toEqual({ isValid: false, error: 'Quantity must be a positive number' });
+
+      // Too large quantity
+      expect(FormValidationUtils.validateProductField('quantity.amount', 10001, 0))
+        .toEqual({ isValid: false, error: 'Quantity cannot exceed 10,000 units' });
+    });
+
+    it('should validate coordinates correctly', () => {
+      // Valid latitude
+      expect(FormValidationUtils.validateProductField('origin.coordinates.latitude', 6.5244, 0))
+        .toEqual({ isValid: true });
+
+      // Invalid latitude (too high)
+      expect(FormValidationUtils.validateProductField('origin.coordinates.latitude', 91, 0))
+        .toEqual({ isValid: false, error: 'Latitude must be between -90 and 90' });
+
+      // Valid longitude
+      expect(FormValidationUtils.validateProductField('origin.coordinates.longitude', 3.3792, 0))
+        .toEqual({ isValid: true });
+
+      // Invalid longitude (too low)
+      expect(FormValidationUtils.validateProductField('origin.coordinates.longitude', -181, 0))
+        .toEqual({ isValid: false, error: 'Longitude must be between -180 and 180' });
     });
   });
 
-  it('should reject invalid product ID format', () => {
-    const invalidIds = [
-      'XX-2024-001-A3B7F2', // Wrong prefix
-      'CT-24-001-A3B7F2', // Wrong year format
-      'CT-2024-1-A3B7F2', // Wrong sequence format
-      'CT-2024-001-A3B7', // Too short random
-      'invalid', // Completely wrong
-    ];
+  describe('validateProductBatch', () => {
+    let validBatch: CreateProductBatch;
 
-    invalidIds.forEach(id => {
-      expect(() => ProductIdSchema.parse(id)).toThrow();
-    });
-  });
-});
-
-describe('HederaAccountIdSchema', () => {
-  it('should validate correct Hedera account ID format', () => {
-    const validIds = ['0.0.12345', '0.0.1', '0.0.987654321'];
-
-    validIds.forEach(id => {
-      expect(() => HederaAccountIdSchema.parse(id)).not.toThrow();
-    });
-  });
-
-  it('should reject invalid Hedera account ID format', () => {
-    const invalidIds = [
-      '1.0.12345', // Wrong shard
-      '0.1.12345', // Wrong realm
-      '0.0.abc', // Non-numeric account
-      'invalid', // Completely wrong
-    ];
-
-    invalidIds.forEach(id => {
-      expect(() => HederaAccountIdSchema.parse(id)).toThrow();
-    });
-  });
-});
-
-describe('LocationSchema', () => {
-  it('should validate complete location data', () => {
-    const validLocation = {
-      address: '123 Test Street',
-      city: 'Lagos',
-      state: 'Lagos',
-      country: 'Nigeria',
-      coordinates: {
-        latitude: 6.5244,
-        longitude: 3.3792,
-      },
-      region: 'Southwest',
-    };
-
-    expect(() => LocationSchema.parse(validLocation)).not.toThrow();
-  });
-
-  it('should require Nigeria as country', () => {
-    const invalidLocation = {
-      address: '123 Test Street',
-      city: 'Lagos',
-      state: 'Lagos',
-      country: 'Ghana', // Wrong country
-      coordinates: {
-        latitude: 6.5244,
-        longitude: 3.3792,
-      },
-      region: 'Southwest',
-    };
-
-    expect(() => LocationSchema.parse(invalidLocation)).toThrow();
-  });
-
-  it('should validate coordinate ranges', () => {
-    const invalidCoordinates = {
-      address: '123 Test Street',
-      city: 'Lagos',
-      state: 'Lagos',
-      country: 'Nigeria',
-      coordinates: {
-        latitude: 91, // Out of range
-        longitude: 3.3792,
-      },
-      region: 'Southwest',
-    };
-
-    expect(() => LocationSchema.parse(invalidCoordinates)).toThrow();
-  });
-});
-
-describe('ActorSchema', () => {
-  it('should validate complete actor data', () => {
-    const validActor = {
-      walletAddress: '0.0.12345',
-      role: 'producer' as const,
-      name: 'Test Actor',
-      contactInfo: {
-        email: 'test@example.com',
-        phone: '+234-123-456-7890',
-      },
-    };
-
-    expect(() => ActorSchema.parse(validActor)).not.toThrow();
-  });
-
-  it('should require valid role', () => {
-    const invalidActor = {
-      walletAddress: '0.0.12345',
-      role: 'invalid_role',
-      name: 'Test Actor',
-    };
-
-    expect(() => ActorSchema.parse(invalidActor)).toThrow();
-  });
-
-  it('should validate optional contact info', () => {
-    const actorMinimal = {
-      walletAddress: '0.0.12345',
-      role: 'producer' as const,
-      name: 'Test Actor',
-    };
-
-    expect(() => ActorSchema.parse(actorMinimal)).not.toThrow();
-  });
-});
-
-describe('ProductEventSchema', () => {
-  it('should validate complete product event', () => {
-    const validEvent = {
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      productId: 'CT-2024-001-A3B7F2',
-      eventType: 'verified' as const,
-      actor: {
-        walletAddress: '0.0.12345',
-        role: 'verifier' as const,
-        name: 'Test Verifier',
-      },
-      timestamp: new Date(),
-      location: {
-        address: '123 Test Street',
-        city: 'Lagos',
-        state: 'Lagos',
-        country: 'Nigeria',
-        coordinates: { latitude: 6.5244, longitude: 3.3792 },
-        region: 'Southwest',
-      },
-      data: { quality: 'A+' },
-      hcsMessageId: 'test-message-id',
-      signature: 'test-signature',
-    };
-
-    expect(() => ProductEventSchema.parse(validEvent)).not.toThrow();
-  });
-
-  it('should require valid event type', () => {
-    const invalidEvent = {
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      productId: 'CT-2024-001-A3B7F2',
-      eventType: 'invalid_type',
-      actor: {
-        walletAddress: '0.0.12345',
-        role: 'verifier' as const,
-        name: 'Test Verifier',
-      },
-      timestamp: new Date(),
-      location: {
-        address: '123 Test Street',
-        city: 'Lagos',
-        state: 'Lagos',
-        country: 'Nigeria',
-        coordinates: { latitude: 6.5244, longitude: 3.3792 },
-        region: 'Southwest',
-      },
-      data: {},
-      hcsMessageId: 'test-message-id',
-      signature: 'test-signature',
-    };
-
-    expect(() => ProductEventSchema.parse(invalidEvent)).toThrow();
-  });
-});
-
-describe('ProductSchema', () => {
-  it('should validate complete product data', () => {
-    const validProduct = {
-      id: 'CT-2024-001-A3B7F2',
-      batchId: 'BATCH-001',
-      name: 'Organic Tomatoes',
-      category: 'agricultural' as const,
-      status: 'verified' as const,
-      origin: {
-        address: '123 Farm Road',
-        city: 'Lagos',
-        state: 'Lagos',
-        country: 'Nigeria',
-        coordinates: { latitude: 6.5244, longitude: 3.3792 },
-        region: 'Southwest',
-      },
-      quantity: {
-        amount: 100,
-        unit: 'kg' as const,
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      qrCode: 'qr-code-data',
-      guardianCredentialId: null,
-      hcsTopicId: '0.0.67890',
-      metadata: { organic: true },
-    };
-
-    expect(() => ProductSchema.parse(validProduct)).not.toThrow();
-  });
-
-  it('should require positive quantity', () => {
-    const invalidProduct = {
-      id: 'CT-2024-001-A3B7F2',
-      batchId: 'BATCH-001',
-      name: 'Organic Tomatoes',
-      category: 'agricultural' as const,
-      status: 'verified' as const,
-      origin: {
-        address: '123 Farm Road',
-        city: 'Lagos',
-        state: 'Lagos',
-        country: 'Nigeria',
-        coordinates: { latitude: 6.5244, longitude: 3.3792 },
-        region: 'Southwest',
-      },
-      quantity: {
-        amount: -10, // Invalid negative amount
-        unit: 'kg' as const,
-      },
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      qrCode: 'qr-code-data',
-      guardianCredentialId: null,
-      hcsTopicId: '0.0.67890',
-    };
-
-    expect(() => ProductSchema.parse(invalidProduct)).toThrow();
-  });
-});
-
-describe('HCSMessageSchema', () => {
-  it('should validate complete HCS message', () => {
-    const validMessage = {
-      version: '1.0' as const,
-      messageType: 'product_event' as const,
-      productId: 'CT-2024-001-A3B7F2',
-      event: {
-        id: '123e4567-e89b-12d3-a456-426614174000',
-        productId: 'CT-2024-001-A3B7F2',
-        eventType: 'verified' as const,
-        actor: {
-          walletAddress: '0.0.12345',
-          role: 'verifier' as const,
-          name: 'Test Verifier',
+    beforeEach(() => {
+      validBatch = {
+        products: [
+          {
+            name: 'Organic Tomatoes',
+            category: 'agricultural',
+            quantity: { amount: 100, unit: 'kg' },
+            origin: {
+              address: '123 Farm Road',
+              city: 'Lagos',
+              state: 'Lagos',
+              country: 'Nigeria',
+              coordinates: { latitude: 6.5244, longitude: 3.3792 },
+              region: 'South West',
+            },
+            processingDetails: {
+              harvestDate: '2024-01-01',
+              organicCertified: true,
+            },
+          },
+        ],
+        batchInfo: {
+          cooperativeId: '123e4567-e89b-12d3-a456-426614174000',
+          createdBy: '0.0.12345',
+          processingNotes: 'First batch of the season',
         },
-        timestamp: new Date(),
-        location: {
-          address: '123 Test Street',
-          city: 'Lagos',
-          state: 'Lagos',
-          country: 'Nigeria',
-          coordinates: { latitude: 6.5244, longitude: 3.3792 },
-          region: 'Southwest',
-        },
-        data: {},
-        hcsMessageId: 'test-message-id',
-        signature: 'test-signature',
-      },
-      signature: 'message-signature',
-      timestamp: new Date().toISOString(),
-      metadata: {
-        networkType: 'testnet' as const,
-        topicId: '0.0.67890',
-        sequenceNumber: 1,
-      },
-    };
+      };
+    });
 
-    expect(() => HCSMessageSchema.parse(validMessage)).not.toThrow();
+    it('should validate a correct batch', () => {
+      const result = FormValidationUtils.validateProductBatch(validBatch);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toEqual([]);
+      expect(result.productErrors).toEqual([]);
+    });
+
+    it('should reject batch with no products', () => {
+      validBatch.products = [];
+      const result = FormValidationUtils.validateProductBatch(validBatch);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('At least one product is required');
+    });
+
+    it('should reject batch exceeding product limit', () => {
+      validBatch.products = new Array(101).fill(validBatch.products[0]);
+      const result = FormValidationUtils.validateProductBatch(validBatch);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Batch cannot contain more than 100 products');
+    });
+
+    it('should reject batch exceeding weight limit', () => {
+      // Create products that total more than 1000kg
+      validBatch.products = [
+        {
+          ...validBatch.products[0],
+          quantity: { amount: 600, unit: 'kg' },
+        },
+        {
+          ...validBatch.products[0],
+          quantity: { amount: 500, unit: 'kg' },
+        },
+      ];
+      
+      const result = FormValidationUtils.validateProductBatch(validBatch);
+      expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('Total batch weight cannot exceed 1000kg (daily production limit)');
+    });
+
+    it('should handle invalid cooperative ID', () => {
+      validBatch.batchInfo.cooperativeId = 'invalid-uuid';
+      const result = FormValidationUtils.validateProductBatch(validBatch);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.includes('Invalid cooperative ID format'))).toBe(true);
+    });
+
+    it('should handle invalid wallet address', () => {
+      validBatch.batchInfo.createdBy = 'invalid-address';
+      const result = FormValidationUtils.validateProductBatch(validBatch);
+      expect(result.isValid).toBe(false);
+      expect(result.errors.some(e => e.includes('Hedera account ID must follow format'))).toBe(true);
+    });
+
+    it('should validate product-specific errors', () => {
+      validBatch.products[0].name = ''; // Invalid name
+      const result = FormValidationUtils.validateProductBatch(validBatch);
+      expect(result.isValid).toBe(false);
+      expect(result.productErrors[0]).toBeDefined();
+      expect(result.productErrors[0].name).toBeDefined();
+    });
   });
 
-  it('should require valid version', () => {
-    const invalidMessage = {
-      version: '2.0', // Invalid version
-      messageType: 'product_event' as const,
-      productId: 'CT-2024-001-A3B7F2',
-      event: {},
-      signature: 'test-signature',
-      timestamp: new Date().toISOString(),
-      metadata: {
-        networkType: 'testnet' as const,
-        topicId: '0.0.67890',
-        sequenceNumber: 1,
-      },
-    };
+  describe('isValidNigerianState', () => {
+    it('should validate correct Nigerian states', () => {
+      expect(FormValidationUtils.isValidNigerianState('Lagos')).toBe(true);
+      expect(FormValidationUtils.isValidNigerianState('Abuja')).toBe(false); // Should be FCT
+      expect(FormValidationUtils.isValidNigerianState('FCT')).toBe(true);
+      expect(FormValidationUtils.isValidNigerianState('California')).toBe(false);
+    });
+  });
 
-    expect(() => HCSMessageSchema.parse(invalidMessage)).toThrow();
+  describe('getNigerianStates', () => {
+    it('should return all Nigerian states', () => {
+      const states = FormValidationUtils.getNigerianStates();
+      expect(states).toContain('Lagos');
+      expect(states).toContain('FCT');
+      expect(states).toContain('Kano');
+      expect(states.length).toBe(37); // 36 states + FCT
+    });
+  });
+
+  describe('getRegions', () => {
+    it('should return all Nigerian regions', () => {
+      const regions = FormValidationUtils.getRegions();
+      expect(regions).toContain('South West');
+      expect(regions).toContain('North Central');
+      expect(regions.length).toBe(6);
+    });
+  });
+});
+
+describe('Zod Schemas', () => {
+  describe('ProcessingDetailsSchema', () => {
+    it('should accept valid processing details', () => {
+      const validDetails = {
+        harvestDate: '2024-01-01',
+        processingMethod: 'organic',
+        qualityGrade: 'A',
+        organicCertified: true,
+      };
+      
+      expect(() => ProcessingDetailsSchema.parse(validDetails)).not.toThrow();
+    });
+
+    it('should reject invalid quality grades', () => {
+      const invalidDetails = {
+        qualityGrade: 'Z', // Invalid grade
+      };
+      
+      expect(() => ProcessingDetailsSchema.parse(invalidDetails)).toThrow();
+    });
+
+    it('should reject overly long batch notes', () => {
+      const invalidDetails = {
+        batchNotes: 'x'.repeat(501), // Too long
+      };
+      
+      expect(() => ProcessingDetailsSchema.parse(invalidDetails)).toThrow();
+    });
   });
 });

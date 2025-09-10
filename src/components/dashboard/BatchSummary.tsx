@@ -279,12 +279,12 @@ export function BatchSummary({
     <div className='space-y-8'>
       {/* Main Statistics Card */}
       <Card className='p-6'>
-        <div className='mb-6 flex items-center justify-between'>
+        <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <h3 className='text-lg font-semibold text-gray-900'>Batch Summary</h3>
-          <div className='flex gap-2'>
+          <div className='flex flex-wrap gap-3'>
             <Button
               variant='outline'
-              size='sm'
+              size='md'
               onClick={() => handleBulkAction('selectAll')}
               disabled={disabled || selectedProducts.length === products.length}
             >
@@ -292,7 +292,7 @@ export function BatchSummary({
             </Button>
             <Button
               variant='outline'
-              size='sm'
+              size='md'
               onClick={() => handleBulkAction('deselectAll')}
               disabled={disabled || selectedProducts.length === 0}
             >
@@ -300,10 +300,10 @@ export function BatchSummary({
             </Button>
             <Button
               variant='outline'
-              size='sm'
+              size='md'
               onClick={() => handleBulkAction('clearAll')}
               disabled={disabled || products.length === 0}
-              className='text-red-600 hover:text-red-700'
+              className='text-red-600 hover:border-red-300 hover:text-red-700'
             >
               Clear All
             </Button>
@@ -343,21 +343,21 @@ export function BatchSummary({
 
         {/* Totals */}
         <div className='mt-10 grid grid-cols-1 gap-6 md:grid-cols-3'>
-          <div className='rounded-lg bg-gray-50 p-3'>
+          <div className='rounded-lg bg-gray-50 p-4'>
             <div className='text-lg font-semibold text-gray-900'>
               {stats.totalWeight.toFixed(1)} kg
             </div>
             <div className='text-sm text-gray-500'>Total Weight</div>
           </div>
 
-          <div className='rounded-lg bg-gray-50 p-3'>
+          <div className='rounded-lg bg-gray-50 p-4'>
             <div className='text-lg font-semibold text-gray-900'>
               {stats.totalVolume.toFixed(1)} L
             </div>
             <div className='text-sm text-gray-500'>Total Volume</div>
           </div>
 
-          <div className='rounded-lg bg-gray-50 p-3'>
+          <div className='rounded-lg bg-gray-50 p-4'>
             <div className='text-lg font-semibold text-gray-900'>
               {Math.floor(stats.estimatedProcessingTime / 60)}m{' '}
               {stats.estimatedProcessingTime % 60}s

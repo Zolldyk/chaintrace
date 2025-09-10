@@ -606,7 +606,15 @@ export function useBatchCreation(
         return false;
       }
 
-      setFormState(backup.formState);
+      // Convert lastBackup string back to Date object if it exists
+      const restoredFormState = {
+        ...backup.formState,
+        lastBackup: backup.formState.lastBackup
+          ? new Date(backup.formState.lastBackup)
+          : null,
+      };
+
+      setFormState(restoredFormState);
       setHasChanges(true);
       return true;
     } catch (error) {
@@ -694,7 +702,7 @@ export function useBatchCreation(
         if (selectedProducts.length === 0) return;
 
         for (const index of selectedProducts) {
-          await revalidateCompliance(index);
+          revalidateCompliance(index);
         }
       },
     }),

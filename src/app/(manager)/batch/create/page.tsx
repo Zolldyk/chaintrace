@@ -292,7 +292,10 @@ export default function BatchCreatePage() {
                 )}
                 {formState.lastBackup && (
                   <div>
-                    Last backup: {formState.lastBackup.toLocaleTimeString()}
+                    Last backup:{' '}
+                    {formState.lastBackup instanceof Date
+                      ? formState.lastBackup.toLocaleTimeString()
+                      : new Date(formState.lastBackup).toLocaleTimeString()}
                   </div>
                 )}
               </div>

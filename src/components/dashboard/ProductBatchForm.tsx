@@ -38,14 +38,9 @@ import type {
   CreateProductRequest,
   BatchFormState,
   ProductFormValidation,
-  FormError,
 } from '@/types/batch';
 import type { ProductCategory, QuantityUnit } from '@/types/product';
-import {
-  FormValidationUtils,
-  CreateProductBatchSchema,
-  CreateProductRequestSchema,
-} from '@/lib/validation/product';
+import { FormValidationUtils } from '@/lib/validation/product';
 
 /**
  * Product category options for form dropdown
@@ -71,7 +66,7 @@ const QUANTITY_UNITS: Array<{ value: QuantityUnit; label: string }> = [
 /**
  * Nigerian regions for form dropdown
  */
-const REGIONS = FormValidationUtils.getRegions().map((region) => ({
+const REGIONS = FormValidationUtils.getRegions().map(region => ({
   value: region,
   label: region,
 }));
@@ -79,12 +74,10 @@ const REGIONS = FormValidationUtils.getRegions().map((region) => ({
 /**
  * Nigerian states for form dropdown
  */
-const NIGERIAN_STATES = FormValidationUtils.getNigerianStates().map(
-  (state) => ({
-    value: state,
-    label: state,
-  })
-);
+const NIGERIAN_STATES = FormValidationUtils.getNigerianStates().map(state => ({
+  value: state,
+  label: state,
+}));
 
 /**
  * Default empty product for new rows
@@ -137,11 +130,14 @@ export function ProductBatchForm({
   const [formState, setFormState] = React.useState<BatchFormState>(() => ({
     products: initialData?.products || [createEmptyProduct()],
     batchInfo: {
-      cooperativeId: initialData?.batchInfo?.cooperativeId || defaultCooperativeId,
+      cooperativeId:
+        initialData?.batchInfo?.cooperativeId || defaultCooperativeId,
       createdBy: initialData?.batchInfo?.createdBy || defaultCreatedBy,
       processingNotes: initialData?.batchInfo?.processingNotes || '',
     },
-    productValidations: initialData?.productValidations || [createEmptyValidation()],
+    productValidations: initialData?.productValidations || [
+      createEmptyValidation(),
+    ],
     batchValidation: initialData?.batchValidation || {
       isValid: false,
       errors: [],
@@ -164,9 +160,12 @@ export function ProductBatchForm({
           version: '1.0.0',
           sessionId: Date.now().toString(),
         };
-        
+
         try {
-          localStorage.setItem('chaintrace_form_backup', JSON.stringify(backupData));
+          localStorage.setItem(
+            'chaintrace_form_backup',
+            JSON.stringify(backupData)
+          );
           setFormState(prev => ({ ...prev, lastBackup: new Date() }));
           onBackup?.(backupData);
         } catch (error) {
@@ -235,7 +234,11 @@ export function ProductBatchForm({
       updatedProducts[index] = product;
 
       // Validate the updated field
-      const validation = FormValidationUtils.validateProductField(field, value, index);
+      const validation = FormValidationUtils.validateProductField(
+        field,
+        value,
+        index
+      );
       const updatedValidations = [...prev.productValidations];
       updatedValidations[index] = {
         ...updatedValidations[index],
@@ -253,7 +256,8 @@ export function ProductBatchForm({
       });
 
       // Update product validity
-      updatedValidations[index].isValid = Object.keys(updatedValidations[index].errors).length === 0;
+      updatedValidations[index].isValid =
+        Object.keys(updatedValidations[index].errors).length === 0;
 
       return {
         ...prev,
@@ -266,7 +270,10 @@ export function ProductBatchForm({
   /**
    * Update batch information field
    */
-  const updateBatchInfo = (field: keyof typeof formState.batchInfo, value: string) => {
+  const updateBatchInfo = (
+    field: keyof typeof formState.batchInfo,
+    value: string
+  ) => {
     setFormState(prev => ({
       ...prev,
       batchInfo: {
@@ -295,10 +302,12 @@ export function ProductBatchForm({
           isValid: false,
           errors: validationResult.errors,
         },
-        productValidations: prev.productValidations.map((validation, index) => ({
-          ...validation,
-          errors: validationResult.productErrors[index] || {},
-        })),
+        productValidations: prev.productValidations.map(
+          (validation, index) => ({
+            ...validation,
+            errors: validationResult.productErrors[index] || {},
+          })
+        ),
       }));
       return;
     }
@@ -350,48 +359,48 @@ export function ProductBatchForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className='space-y-6'>
       {/* Batch Information Section */}
-      <Card className="p-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">
+      <Card className='p-6'>
+        <h2 className='mb-4 text-lg font-semibold text-gray-900'>
           Batch Information
         </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
           <Input
-            label="Cooperative ID"
+            label='Cooperative ID'
             value={formState.batchInfo.cooperativeId}
-            onChange={(e) => updateBatchInfo('cooperativeId', e.target.value)}
+            onChange={e => updateBatchInfo('cooperativeId', e.target.value)}
             required
-            placeholder="Enter cooperative ID"
+            placeholder='Enter cooperative ID'
           />
           <Input
-            label="Created By (Wallet Address)"
+            label='Created By (Wallet Address)'
             value={formState.batchInfo.createdBy}
-            onChange={(e) => updateBatchInfo('createdBy', e.target.value)}
+            onChange={e => updateBatchInfo('createdBy', e.target.value)}
             required
-            placeholder="0.0.12345"
+            placeholder='0.0.12345'
           />
         </div>
-        <div className="mt-4">
+        <div className='mt-4'>
           <Input
-            label="Processing Notes"
+            label='Processing Notes'
             value={formState.batchInfo.processingNotes}
-            onChange={(e) => updateBatchInfo('processingNotes', e.target.value)}
-            placeholder="Optional notes about batch processing"
-            description="Add any relevant information about this batch"
+            onChange={e => updateBatchInfo('processingNotes', e.target.value)}
+            placeholder='Optional notes about batch processing'
+            description='Add any relevant information about this batch'
           />
         </div>
       </Card>
 
       {/* Products Section */}
-      <Card className="p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <Card className='p-6'>
+        <div className='mb-4 flex items-center justify-between'>
+          <h2 className='text-lg font-semibold text-gray-900'>
             Products ({formState.products.length})
           </h2>
           <Button
-            type="button"
-            variant="outline"
+            type='button'
+            variant='outline'
             onClick={addProduct}
             disabled={formState.products.length >= maxBatchSize}
           >
@@ -399,7 +408,7 @@ export function ProductBatchForm({
           </Button>
         </div>
 
-        <div className="space-y-6">
+        <div className='space-y-6'>
           {formState.products.map((product, index) => (
             <ProductRow
               key={index}
@@ -416,9 +425,11 @@ export function ProductBatchForm({
 
       {/* Batch Validation Errors */}
       {formState.batchValidation.errors.length > 0 && (
-        <Card className="border-red-200 bg-red-50 p-4">
-          <h3 className="mb-2 font-medium text-red-800">Batch Validation Errors</h3>
-          <ul className="list-disc list-inside space-y-1 text-sm text-red-700">
+        <Card className='border-red-200 bg-red-50 p-4'>
+          <h3 className='mb-2 font-medium text-red-800'>
+            Batch Validation Errors
+          </h3>
+          <ul className='list-inside list-disc space-y-1 text-sm text-red-700'>
             {formState.batchValidation.errors.map((error, index) => (
               <li key={index}>{error}</li>
             ))}
@@ -428,18 +439,18 @@ export function ProductBatchForm({
 
       {/* Submission Error */}
       {formState.submission.error && (
-        <Card className="border-red-200 bg-red-50 p-4">
-          <p className="text-sm text-red-700">{formState.submission.error}</p>
+        <Card className='border-red-200 bg-red-50 p-4'>
+          <p className='text-sm text-red-700'>{formState.submission.error}</p>
         </Card>
       )}
 
       {/* Submit Button */}
-      <div className="flex justify-end">
+      <div className='flex justify-end'>
         <Button
-          type="submit"
+          type='submit'
           loading={loading || formState.submission.isSubmitting}
           disabled={!formState.batchValidation.isValid}
-          size="lg"
+          size='lg'
         >
           Create Batch ({formState.products.length} products)
         </Button>
@@ -447,7 +458,7 @@ export function ProductBatchForm({
 
       {/* Backup Status */}
       {formState.lastBackup && (
-        <p className="text-xs text-gray-500 text-center">
+        <p className='text-center text-xs text-gray-500'>
           Last backup: {formState.lastBackup.toLocaleTimeString()}
         </p>
       )}
@@ -476,59 +487,63 @@ function ProductRow({
   canRemove,
 }: ProductRowProps) {
   return (
-    <Card className="border-l-4 border-l-primary-500 bg-gray-50 p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="font-medium text-gray-900">Product {index + 1}</h3>
+    <Card className='border-l-4 border-l-primary-500 bg-gray-50 p-4'>
+      <div className='mb-4 flex items-center justify-between'>
+        <h3 className='font-medium text-gray-900'>Product {index + 1}</h3>
         {canRemove && (
           <Button
-            type="button"
-            variant="ghost"
-            size="sm"
+            type='button'
+            variant='ghost'
+            size='sm'
             onClick={onRemove}
-            className="text-red-600 hover:text-red-700"
+            className='text-red-600 hover:text-red-700'
           >
             Remove
           </Button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
         {/* Basic Product Information */}
         <Input
-          label="Product Name"
+          label='Product Name'
           value={product.name}
-          onChange={(e) => onUpdate(index, 'name', e.target.value)}
+          onChange={e => onUpdate(index, 'name', e.target.value)}
           error={validation.errors.name}
           required
-          placeholder="Enter product name"
+          placeholder='Enter product name'
         />
 
         <Select
-          label="Category"
+          label='Category'
           value={product.category}
-          onChange={(value) => onUpdate(index, 'category', value)}
+          onChange={value => onUpdate(index, 'category', value)}
           options={PRODUCT_CATEGORIES}
           error={validation.errors.category}
           required
         />
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className='grid grid-cols-2 gap-2'>
           <Input
-            label="Quantity"
-            type="number"
+            label='Quantity'
+            type='number'
             value={product.quantity.amount || ''}
-            onChange={(e) =>
-              onUpdate(index, 'quantity.amount', parseFloat(e.target.value) || 0)
+            onChange={e =>
+              onUpdate(
+                index,
+                'quantity.amount',
+                parseFloat(e.target.value) || 0
+              )
             }
             error={validation.errors['quantity.amount']}
             required
-            min="0"
-            step="0.01"
+            min='0'
+            step='0.01'
           />
           <Select
-            label="Unit"
+            label='Unit'
             value={product.quantity.unit}
-            onChange={(value) => onUpdate(index, 'quantity.unit', value)}
+            onChange={value => onUpdate(index, 'quantity.unit', value)}
             options={QUANTITY_UNITS}
             error={validation.errors['quantity.unit']}
             required
@@ -537,47 +552,47 @@ function ProductRow({
 
         {/* Origin Information */}
         <Input
-          label="Address"
+          label='Address'
           value={product.origin.address}
-          onChange={(e) => onUpdate(index, 'origin.address', e.target.value)}
+          onChange={e => onUpdate(index, 'origin.address', e.target.value)}
           error={validation.errors['origin.address']}
           required
-          placeholder="Street address"
+          placeholder='Street address'
         />
 
         <Input
-          label="City"
+          label='City'
           value={product.origin.city}
-          onChange={(e) => onUpdate(index, 'origin.city', e.target.value)}
+          onChange={e => onUpdate(index, 'origin.city', e.target.value)}
           error={validation.errors['origin.city']}
           required
-          placeholder="City name"
+          placeholder='City name'
         />
 
         <Select
-          label="State"
+          label='State'
           value={product.origin.state}
-          onChange={(value) => onUpdate(index, 'origin.state', value)}
+          onChange={value => onUpdate(index, 'origin.state', value)}
           options={NIGERIAN_STATES}
           error={validation.errors['origin.state']}
           required
         />
 
         <Select
-          label="Region"
+          label='Region'
           value={product.origin.region}
-          onChange={(value) => onUpdate(index, 'origin.region', value)}
+          onChange={value => onUpdate(index, 'origin.region', value)}
           options={REGIONS}
           error={validation.errors['origin.region']}
           required
         />
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className='grid grid-cols-2 gap-2'>
           <Input
-            label="Latitude"
-            type="number"
+            label='Latitude'
+            type='number'
             value={product.origin.coordinates.latitude || ''}
-            onChange={(e) =>
+            onChange={e =>
               onUpdate(
                 index,
                 'origin.coordinates.latitude',
@@ -585,16 +600,16 @@ function ProductRow({
               )
             }
             error={validation.errors['origin.coordinates.latitude']}
-            placeholder="6.5244"
-            step="0.000001"
-            min="-90"
-            max="90"
+            placeholder='6.5244'
+            step='0.000001'
+            min='-90'
+            max='90'
           />
           <Input
-            label="Longitude"
-            type="number"
+            label='Longitude'
+            type='number'
             value={product.origin.coordinates.longitude || ''}
-            onChange={(e) =>
+            onChange={e =>
               onUpdate(
                 index,
                 'origin.coordinates.longitude',
@@ -602,17 +617,17 @@ function ProductRow({
               )
             }
             error={validation.errors['origin.coordinates.longitude']}
-            placeholder="3.3792"
-            step="0.000001"
-            min="-180"
-            max="180"
+            placeholder='3.3792'
+            step='0.000001'
+            min='-180'
+            max='180'
           />
         </div>
       </div>
 
       {/* Compliance Status */}
       {validation.complianceStatus !== 'pending' && (
-        <div className="mt-4">
+        <div className='mt-4'>
           <div
             className={cn('rounded-md border p-3 text-sm', {
               'border-green-200 bg-green-50 text-green-800':
@@ -625,11 +640,11 @@ function ProductRow({
                 validation.complianceStatus === 'error',
             })}
           >
-            <p className="font-medium">
+            <p className='font-medium'>
               Compliance Status: {validation.complianceStatus}
             </p>
             {validation.complianceMessages.length > 0 && (
-              <ul className="mt-1 list-disc list-inside space-y-1">
+              <ul className='mt-1 list-inside list-disc space-y-1'>
                 {validation.complianceMessages.map((message, i) => (
                   <li key={i}>{message}</li>
                 ))}

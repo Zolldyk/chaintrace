@@ -74,10 +74,7 @@ import type {
 } from '@/types/batch';
 import type { ProductEvent } from '@/types/product';
 import { ProductIdGenerator, generateId } from '@/lib/utils';
-import {
-  FormValidationUtils,
-  CreateProductBatchSchema,
-} from '@/lib/validation/product';
+import { FormValidationUtils } from '@/lib/validation/product';
 import {
   CustomComplianceRuleEngine,
   ActionValidationRequest,
@@ -109,7 +106,8 @@ class BatchProcessingMonitor {
   getProcessingReport() {
     const totalTime = this.getElapsedTime();
     const steps = this.checkpoints.map((checkpoint, index) => {
-      const prevTime = index === 0 ? this.startTime : this.checkpoints[index - 1].timestamp;
+      const prevTime =
+        index === 0 ? this.startTime : this.checkpoints[index - 1].timestamp;
       const stepTime = checkpoint.timestamp.getTime() - prevTime.getTime();
       return {
         step: checkpoint.name,
@@ -203,7 +201,8 @@ export async function POST(request: NextRequest) {
     // Check processing time limit (2 minutes = 120,000ms)
     const timeLimit = 120000;
     const checkTimeLimit = () => {
-      if (monitor.getElapsedTime() > timeLimit * 0.9) { // 90% of limit
+      if (monitor.getElapsedTime() > timeLimit * 0.9) {
+        // 90% of limit
         throw new Error(`Processing approaching time limit (${timeLimit}ms)`);
       }
     };
@@ -236,7 +235,7 @@ export async function POST(request: NextRequest) {
 
       // Generate product ID
       const productId = ProductIdGenerator.generate();
-      
+
       // Create compliance validation request
       const complianceRequest: ActionValidationRequest = {
         action: 'producer_initial_creation',
@@ -257,7 +256,8 @@ export async function POST(request: NextRequest) {
 
       try {
         // Validate with Compliance Engine
-        const complianceResult = await ruleEngine.validateAction(complianceRequest);
+        const complianceResult =
+          await ruleEngine.validateAction(complianceRequest);
 
         // Generate QR code
         const qrCode = generateQRCode(productId);
@@ -286,27 +286,24 @@ export async function POST(request: NextRequest) {
 
           // Log to HCS (fire and forget for performance)
           hcsClient
-            .logEvent({
-              version: '1.0',
-              messageType: 'product_event',
-              productId,
-              event: productEvent,
-              signature: productEvent.signature,
-              timestamp: new Date().toISOString(),
-              metadata: {
-                networkType: 'testnet',
-                topicId: process.env.HCS_TOPIC_ID || '0.0.12345',
-                sequenceNumber: index + 1,
-              },
+            .submitProductEvent(productEvent, productEvent.signature || '', {
+              topicId: process.env.HCS_TOPIC_ID || '0.0.12345',
+              sequenceNumber: index + 1,
             })
             .catch((error: unknown) => {
-              console.warn(`Failed to log HCS event for product ${productId}:`, error);
+              console.warn(
+                `Failed to log HCS event for product ${productId}:`,
+                error
+              );
             });
         }
 
         return productResult;
       } catch (error) {
-        console.error(`Compliance validation failed for product ${index}:`, error);
+        console.error(
+          `Compliance validation failed for product ${index}:`,
+          error
+        );
 
         // Return failed product result
         return {
@@ -333,7 +330,7 @@ export async function POST(request: NextRequest) {
 
     // Check if any products were successfully created
     const successfulProducts = results.filter(
-      (result) => result.complianceValidation.approved
+      result => result.complianceValidation.approved
     );
 
     if (successfulProducts.length === 0) {
@@ -349,7 +346,9 @@ export async function POST(request: NextRequest) {
             details: {
               totalProducts: results.length,
               rejectedProducts: results.length,
-              violations: results.flatMap(r => r.complianceValidation.violations),
+              violations: results.flatMap(
+                r => r.complianceValidation.violations
+              ),
             },
           },
         } as BatchCreationResponse,
@@ -379,7 +378,9 @@ export async function POST(request: NextRequest) {
 
     // Add performance warning if approaching time limit
     if (processingReport.totalTime > timeLimit * 0.8) {
-      console.warn(`Batch processing time approaching limit: ${processingReport.totalTime}ms`);
+      console.warn(
+        `Batch processing time approaching limit: ${processingReport.totalTime}ms`
+      );
     }
 
     return NextResponse.json(response, { status: 201 });
@@ -401,7 +402,7 @@ export async function POST(request: NextRequest) {
               message: 'Batch processing exceeded time limit',
               details: {
                 processingTime: monitor.getElapsedTime(),
-                timeLimit: timeLimit,
+                timeLimit: 120000,
               },
             },
           } as BatchCreationResponse,

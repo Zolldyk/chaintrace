@@ -140,3 +140,5 @@ playwright-mcp/
 
 # Documentation (keep local, don't commit)
 docs/
+# Local Netlify folder
+.netlify

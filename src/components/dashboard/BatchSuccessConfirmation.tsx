@@ -34,7 +34,6 @@ import { Card } from '@/components/ui/Card';
 import type {
   BatchCreationResponse,
   ProductCreationResult,
-  SuccessNotification,
   BatchProcessingMetrics,
 } from '@/types/batch';
 import type { VerificationStatus } from '@/types/product';
@@ -42,9 +41,9 @@ import type { VerificationStatus } from '@/types/product';
 /**
  * Navigation action types
  */
-export type NavigationAction = 
-  | 'view_dashboard' 
-  | 'create_another' 
+export type NavigationAction =
+  | 'view_dashboard'
+  | 'create_another'
   | 'view_products'
   | 'download_qr';
 
@@ -76,7 +75,10 @@ interface BatchSuccessConfirmationProps {
   onNavigate?: (action: NavigationAction, data?: any) => void;
 
   /** Callback for QR code downloads */
-  onDownloadQR?: (productIds: string[], format: QRDownloadFormat) => Promise<void>;
+  onDownloadQR?: (
+    productIds: string[],
+    format: QRDownloadFormat
+  ) => Promise<void>;
 
   /** Callback for copying product IDs */
   onCopyProductIds?: (productIds: string[]) => void;
@@ -142,7 +144,7 @@ function StatusBadge({ status }: { status: VerificationStatus }) {
         config.className
       )}
     >
-      <span aria-hidden="true">{config.icon}</span>
+      <span aria-hidden='true'>{config.icon}</span>
       {config.label}
     </span>
   );
@@ -183,55 +185,60 @@ function ProductResultCard({
           : 'border-red-200 bg-red-50'
       )}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="mb-2 flex items-center gap-2">
-            <h4 className="font-medium text-gray-900">
+      <div className='flex items-start justify-between'>
+        <div className='flex-1'>
+          <div className='mb-2 flex items-center gap-2'>
+            <h4 className='font-medium text-gray-900'>
               {product.name} #{index + 1}
             </h4>
             <StatusBadge status={product.status} />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Product ID:</span>
-              <code className="rounded bg-gray-100 px-2 py-1 text-sm font-mono">
+          <div className='space-y-2'>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm text-gray-600'>Product ID:</span>
+              <code className='rounded bg-gray-100 px-2 py-1 font-mono text-sm'>
                 {product.id}
               </code>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={handleCopy}
-                className="h-6 px-2 text-xs"
+                className='h-6 px-2 text-xs'
               >
                 {copied ? '✓ Copied' : 'Copy'}
               </Button>
             </div>
 
             {product.complianceValidation.complianceId && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Compliance ID:</span>
-                <code className="rounded bg-gray-100 px-2 py-1 text-sm font-mono">
+              <div className='flex items-center gap-2'>
+                <span className='text-sm text-gray-600'>Compliance ID:</span>
+                <code className='rounded bg-gray-100 px-2 py-1 font-mono text-sm'>
                   {product.complianceValidation.complianceId}
                 </code>
               </div>
             )}
           </div>
 
-          {product.complianceValidation.violations.length > 0 && (
-            <div className="mt-3">
-              <p className="mb-1 text-sm font-medium text-red-700">Violations:</p>
-              <ul className="list-disc list-inside space-y-1 text-sm text-red-600">
-                {product.complianceValidation.violations.map((violation, i) => (
-                  <li key={i}>{violation}</li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {product.complianceValidation?.violations &&
+            product.complianceValidation.violations.length > 0 && (
+              <div className='mt-3'>
+                <p className='mb-1 text-sm font-medium text-red-700'>
+                  Violations:
+                </p>
+                <ul className='list-inside list-disc space-y-1 text-sm text-red-600'>
+                  {product.complianceValidation.violations.map(
+                    (violation, i) => (
+                      <li key={i}>{violation}</li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
         </div>
 
         {showQRPreview && product.complianceValidation.approved && (
-          <div className="ml-4">
+          <div className='ml-4'>
             <QRCodePreview qrData={product.qrCode} size={80} />
           </div>
         )}
@@ -243,15 +250,15 @@ function ProductResultCard({
 /**
  * QR code preview component (placeholder)
  */
-function QRCodePreview({ qrData, size = 100 }: { qrData: string; size?: number }) {
+function QRCodePreview({ size = 100 }: { qrData: string; size?: number }) {
   return (
     <div
-      className="flex items-center justify-center border-2 border-dashed border-gray-300 bg-white"
+      className='flex items-center justify-center border-2 border-dashed border-gray-300 bg-white'
       style={{ width: size, height: size }}
     >
-      <div className="text-center">
-        <div className="text-xs text-gray-500">QR Code</div>
-        <div className="text-xs text-gray-400">Preview</div>
+      <div className='text-center'>
+        <div className='text-xs text-gray-500'>QR Code</div>
+        <div className='text-xs text-gray-400'>Preview</div>
       </div>
     </div>
   );
@@ -285,6 +292,7 @@ export function BatchSuccessConfirmation({
 
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [autoHide, autoHideDelay, onNavigate]);
 
   if (!isVisible) {
@@ -292,10 +300,10 @@ export function BatchSuccessConfirmation({
   }
 
   const successfulProducts = batchResult.products.filter(
-    (p) => p.complianceValidation.approved
+    p => p.complianceValidation.approved
   );
   const failedProducts = batchResult.products.filter(
-    (p) => !p.complianceValidation.approved
+    p => !p.complianceValidation.approved
   );
 
   const handleNavigation = (action: NavigationAction, data?: any) => {
@@ -303,96 +311,101 @@ export function BatchSuccessConfirmation({
   };
 
   const handleDownloadAllQR = async (format: QRDownloadFormat = 'png') => {
-    const productIds = successfulProducts.map((p) => p.id);
+    const productIds = successfulProducts.map(p => p.id);
     await onDownloadQR?.(productIds, format);
   };
 
   const handleCopyAllIds = () => {
-    const productIds = successfulProducts.map((p) => p.id);
+    const productIds = successfulProducts.map(p => p.id);
     onCopyProductIds?.(productIds);
   };
 
-  const successRate = (successfulProducts.length / batchResult.products.length) * 100;
+  const successRate =
+    (successfulProducts.length / batchResult.products.length) * 100;
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Success Header */}
-      <Card className="border-green-200 bg-green-50 p-6">
-        <div className="text-center">
-          <div className="mb-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <span className="text-2xl">🎉</span>
+      <Card className='border-green-200 bg-green-50 p-6'>
+        <div className='text-center'>
+          <div className='mb-4'>
+            <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100'>
+              <span className='text-2xl'>🎉</span>
             </div>
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-green-900">
+          <h2 className='mb-2 text-2xl font-bold text-green-900'>
             Batch Created Successfully!
           </h2>
-          <p className="text-green-800">
+          <p className='text-green-800'>
             {customMessage ||
               `Your product batch has been created with ${successfulProducts.length} of ${batchResult.products.length} products approved.`}
           </p>
         </div>
 
         {/* Quick Stats */}
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-700">
+        <div className='mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3'>
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-green-700'>
               {successfulProducts.length}
             </div>
-            <div className="text-sm text-green-600">Products Created</div>
+            <div className='text-sm text-green-600'>Products Created</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-700">
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-green-700'>
               {successRate.toFixed(0)}%
             </div>
-            <div className="text-sm text-green-600">Success Rate</div>
+            <div className='text-sm text-green-600'>Success Rate</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-700">
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-green-700'>
               {Math.floor((batchResult.processingTime || 0) / 1000)}s
             </div>
-            <div className="text-sm text-green-600">Processing Time</div>
+            <div className='text-sm text-green-600'>Processing Time</div>
           </div>
         </div>
       </Card>
 
       {/* Batch Information */}
-      <Card className="p-6">
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">Batch Details</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Card className='p-6'>
+        <h3 className='mb-4 text-lg font-semibold text-gray-900'>
+          Batch Details
+        </h3>
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
           <div>
-            <span className="text-sm text-gray-600">Batch ID:</span>
-            <code className="ml-2 rounded bg-gray-100 px-2 py-1 font-mono text-sm">
+            <span className='text-sm text-gray-600'>Batch ID:</span>
+            <code className='ml-2 rounded bg-gray-100 px-2 py-1 font-mono text-sm'>
               {batchResult.batchId}
             </code>
           </div>
           <div>
-            <span className="text-sm text-gray-600">Created:</span>
-            <span className="ml-2 text-sm font-medium">
+            <span className='text-sm text-gray-600'>Created:</span>
+            <span className='ml-2 text-sm font-medium'>
               {new Date().toLocaleString()}
             </span>
           </div>
         </div>
 
         {/* Bulk Actions */}
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className='mt-6 flex flex-wrap gap-3'>
           <Button
-            variant="outline"
+            variant='outline'
             onClick={handleCopyAllIds}
             disabled={successfulProducts.length === 0}
           >
             Copy All Product IDs
           </Button>
           <Button
-            variant="outline"
+            variant='outline'
             onClick={() => handleDownloadAllQR('png')}
             disabled={successfulProducts.length === 0}
           >
             Download QR Codes
           </Button>
           <Button
-            variant="outline"
-            onClick={() => handleNavigation('view_products', successfulProducts)}
+            variant='outline'
+            onClick={() =>
+              handleNavigation('view_products', successfulProducts)
+            }
           >
             View Products
           </Button>
@@ -401,11 +414,11 @@ export function BatchSuccessConfirmation({
 
       {/* Successful Products */}
       {successfulProducts.length > 0 && (
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-green-900">
+        <Card className='p-6'>
+          <h3 className='mb-4 text-lg font-semibold text-green-900'>
             Successfully Created Products ({successfulProducts.length})
           </h3>
-          <div className="space-y-3">
+          <div className='space-y-3'>
             {successfulProducts
               .slice(0, showQRPreviews ? maxQRPreviews : undefined)
               .map((product, index) => (
@@ -413,19 +426,24 @@ export function BatchSuccessConfirmation({
                   key={product.id}
                   product={product}
                   index={index}
-                  onCopyId={onCopyProductIds ? (id) => onCopyProductIds([id]) : undefined}
+                  onCopyId={
+                    onCopyProductIds ? id => onCopyProductIds([id]) : undefined
+                  }
                   showQRPreview={showQRPreviews && index < maxQRPreviews}
                 />
               ))}
           </div>
           {successfulProducts.length > maxQRPreviews && showQRPreviews && (
-            <p className="mt-3 text-center text-sm text-gray-600">
-              Showing {maxQRPreviews} of {successfulProducts.length} successful products.{' '}
+            <p className='mt-3 text-center text-sm text-gray-600'>
+              Showing {maxQRPreviews} of {successfulProducts.length} successful
+              products.{' '}
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleNavigation('view_products', successfulProducts)}
-                className="h-auto p-0 text-primary-600"
+                variant='ghost'
+                size='sm'
+                onClick={() =>
+                  handleNavigation('view_products', successfulProducts)
+                }
+                className='h-auto p-0 text-primary-600'
               >
                 View all products
               </Button>
@@ -436,11 +454,11 @@ export function BatchSuccessConfirmation({
 
       {/* Failed Products */}
       {failedProducts.length > 0 && (
-        <Card className="border-red-200 bg-red-50 p-6">
-          <h3 className="mb-4 text-lg font-semibold text-red-900">
+        <Card className='border-red-200 bg-red-50 p-6'>
+          <h3 className='mb-4 text-lg font-semibold text-red-900'>
             Failed Products ({failedProducts.length})
           </h3>
-          <div className="space-y-3">
+          <div className='space-y-3'>
             {failedProducts.map((product, index) => (
               <ProductResultCard
                 key={product.id}
@@ -450,11 +468,11 @@ export function BatchSuccessConfirmation({
               />
             ))}
           </div>
-          <div className="mt-4">
+          <div className='mt-4'>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={() => handleNavigation('create_another')}
-              className="text-red-700 border-red-200 hover:bg-red-100"
+              className='border-red-200 text-red-700 hover:bg-red-100'
             >
               Create New Batch
             </Button>
@@ -464,66 +482,71 @@ export function BatchSuccessConfirmation({
 
       {/* Performance Metrics */}
       {showMetrics && metrics && (
-        <Card className="p-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Processing Metrics</h3>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="text-center">
-              <div className="text-xl font-bold text-blue-700">
+        <Card className='p-6'>
+          <h3 className='mb-4 text-lg font-semibold text-gray-900'>
+            Processing Metrics
+          </h3>
+          <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+            <div className='text-center'>
+              <div className='text-xl font-bold text-blue-700'>
                 {(metrics.totalTime / 1000).toFixed(1)}s
               </div>
-              <div className="text-sm text-gray-600">Total Time</div>
+              <div className='text-sm text-gray-600'>Total Time</div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-blue-700">
+            <div className='text-center'>
+              <div className='text-xl font-bold text-blue-700'>
                 {(metrics.averageTimePerProduct / 1000).toFixed(1)}s
               </div>
-              <div className="text-sm text-gray-600">Avg per Product</div>
+              <div className='text-sm text-gray-600'>Avg per Product</div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-blue-700">
+            <div className='text-center'>
+              <div className='text-xl font-bold text-blue-700'>
                 {metrics.results.successful}
               </div>
-              <div className="text-sm text-gray-600">Successful</div>
+              <div className='text-sm text-gray-600'>Successful</div>
             </div>
-            <div className="text-center">
-              <div className="text-xl font-bold text-blue-700">
+            <div className='text-center'>
+              <div className='text-xl font-bold text-blue-700'>
                 {metrics.results.failed}
               </div>
-              <div className="text-sm text-gray-600">Failed</div>
+              <div className='text-sm text-gray-600'>Failed</div>
             </div>
           </div>
         </Card>
       )}
 
       {/* Next Actions */}
-      <Card className="p-6">
-        <h3 className="mb-4 text-lg font-semibold text-gray-900">What&apos;s Next?</h3>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <Card className='p-6'>
+        <h3 className='mb-4 text-lg font-semibold text-gray-900'>
+          What&apos;s Next?
+        </h3>
+        <div className='grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3'>
           <Button
             onClick={() => handleNavigation('view_dashboard')}
-            className="w-full"
+            className='w-full'
           >
             View Dashboard
           </Button>
           <Button
-            variant="outline"
+            variant='outline'
             onClick={() => handleNavigation('create_another')}
-            className="w-full"
+            className='w-full'
           >
             Create Another Batch
           </Button>
           <Button
-            variant="outline"
+            variant='outline'
             onClick={() => handleDownloadAllQR('pdf')}
             disabled={successfulProducts.length === 0}
-            className="w-full"
+            className='w-full'
           >
             Download QR Report
           </Button>
         </div>
 
-        <div className="mt-4 text-center text-sm text-gray-600">
-          Product IDs and QR codes are now available for scanning and verification.
+        <div className='mt-4 text-center text-sm text-gray-600'>
+          Product IDs and QR codes are now available for scanning and
+          verification.
         </div>
       </Card>
     </div>

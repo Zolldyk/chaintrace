@@ -172,17 +172,19 @@ export const HCSMessageSchema = z.object({
 /**
  * Processing details validation schema for Custom Compliance Engine
  */
-export const ProcessingDetailsSchema = z.object({
-  harvestDate: z.string().or(z.date()).optional(),
-  processingMethod: z.string().min(1).optional(),
-  qualityGrade: z.enum(['A', 'B', 'C', 'Premium']).optional(),
-  organicCertified: z.boolean().optional(),
-  certificationBody: z.string().optional(),
-  storageConditions: z.string().optional(),
-  packagingDate: z.string().or(z.date()).optional(),
-  expiryDate: z.string().or(z.date()).optional(),
-  batchNotes: z.string().max(500).optional(),
-}).strict();
+export const ProcessingDetailsSchema = z
+  .object({
+    harvestDate: z.string().or(z.date()).optional(),
+    processingMethod: z.string().min(1).optional(),
+    qualityGrade: z.enum(['A', 'B', 'C', 'Premium']).optional(),
+    organicCertified: z.boolean().optional(),
+    certificationBody: z.string().optional(),
+    storageConditions: z.string().optional(),
+    packagingDate: z.string().or(z.date()).optional(),
+    expiryDate: z.string().or(z.date()).optional(),
+    batchNotes: z.string().max(500).optional(),
+  })
+  .strict();
 
 /**
  * Create product request validation schema
@@ -229,15 +231,15 @@ export const CreateProductBatchSchema = z.object({
     .min(1, 'At least one product is required')
     .max(100, 'Batch cannot contain more than 100 products')
     .refine(
-      (products) => {
+      products => {
         // Validate total batch weight doesn't exceed daily limits
         const totalWeight = products.reduce((sum, product) => {
           const weight =
             product.quantity.unit === 'kg'
               ? product.quantity.amount
               : product.quantity.unit === 'tons'
-              ? product.quantity.amount * 1000
-              : 0; // Other units don't count toward weight limit
+                ? product.quantity.amount * 1000
+                : 0; // Other units don't count toward weight limit
           return sum + weight;
         }, 0);
         return totalWeight <= 1000; // 1000kg daily limit from compliance rules
@@ -376,7 +378,7 @@ export class FormValidationUtils {
     productIndex: number
   ): { isValid: boolean; error?: string } {
     try {
-      const fieldSchema = ProductFormFieldValidationSchema.parse({
+      ProductFormFieldValidationSchema.parse({
         field,
         value,
         productIndex,
@@ -459,7 +461,7 @@ export class FormValidationUtils {
         const errors: string[] = [];
         const productErrors: Array<Record<string, string>> = [];
 
-        error.errors.forEach((err) => {
+        error.errors.forEach(err => {
           const path = err.path.join('.');
           if (path.startsWith('products.')) {
             // Product-specific error

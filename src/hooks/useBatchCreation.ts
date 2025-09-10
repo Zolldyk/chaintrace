@@ -56,10 +56,7 @@ import type {
   FormBackupData,
   BatchProcessingMetrics,
 } from '@/types/batch';
-import {
-  FormValidationUtils,
-  CreateProductBatchSchema,
-} from '@/lib/validation/product';
+import { FormValidationUtils } from '@/lib/validation/product';
 import { debounce } from '@/lib/utils';
 
 /**
@@ -187,7 +184,9 @@ const createEmptyValidation = (): ProductFormValidation => ({
 /**
  * Main hook implementation
  */
-export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatchCreationReturn {
+export function useBatchCreation(
+  options: UseBatchCreationOptions = {}
+): UseBatchCreationReturn {
   const {
     maxBatchSize = 100,
     cooperativeId = '',
@@ -213,7 +212,9 @@ export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatc
       createdBy: initialData?.batchInfo?.createdBy || createdBy,
       processingNotes: initialData?.batchInfo?.processingNotes || '',
     },
-    productValidations: initialData?.productValidations || [createEmptyValidation()],
+    productValidations: initialData?.productValidations || [
+      createEmptyValidation(),
+    ],
     batchValidation: initialData?.batchValidation || {
       isValid: false,
       errors: [],
@@ -254,114 +255,127 @@ export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatc
    */
   const debouncedComplianceValidation = React.useMemo(
     () =>
-      debounce(async (productIndex: number, productData: CreateProductRequest) => {
-        if (!enableCompliance) return;
-
-        setFormState(prev => {
-          const updatedValidations = [...prev.productValidations];
-          updatedValidations[productIndex] = {
-            ...updatedValidations[productIndex],
-            complianceStatus: 'validating',
-            complianceMessages: ['Validating with Compliance Engine...'],
-          };
-          return { ...prev, productValidations: updatedValidations };
-        });
-
-        try {
-          const validationRequest: ComplianceValidationRequest = {
-            action: 'producer_initial_creation',
-            data: productData,
-            productId: `temp-${Date.now()}-${productIndex}`,
-          };
-
-          const response = await fetch('/api/compliance/validate-action', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(validationRequest),
-          });
-
-          const result: ComplianceValidationResponse = await response.json();
+      debounce(
+        async (productIndex: number, productData: CreateProductRequest) => {
+          if (!enableCompliance) return;
 
           setFormState(prev => {
             const updatedValidations = [...prev.productValidations];
             updatedValidations[productIndex] = {
               ...updatedValidations[productIndex],
-              complianceStatus: result.approved ? 'valid' : 'invalid',
-              complianceMessages: result.violations || [],
+              complianceStatus: 'validating',
+              complianceMessages: ['Validating with Compliance Engine...'],
             };
             return { ...prev, productValidations: updatedValidations };
           });
-        } catch (error) {
-          setFormState(prev => {
-            const updatedValidations = [...prev.productValidations];
-            updatedValidations[productIndex] = {
-              ...updatedValidations[productIndex],
-              complianceStatus: 'error',
-              complianceMessages: ['Failed to validate with Compliance Engine'],
+
+          try {
+            const validationRequest: ComplianceValidationRequest = {
+              action: 'producer_initial_creation',
+              data: productData,
+              productId: `temp-${Date.now()}-${productIndex}`,
             };
-            return { ...prev, productValidations: updatedValidations };
-          });
-        }
-      }, complianceDebounceMs),
+
+            const response = await fetch('/api/compliance/validate-action', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(validationRequest),
+            });
+
+            const result: ComplianceValidationResponse = await response.json();
+
+            setFormState(prev => {
+              const updatedValidations = [...prev.productValidations];
+              updatedValidations[productIndex] = {
+                ...updatedValidations[productIndex],
+                complianceStatus: result.approved ? 'valid' : 'invalid',
+                complianceMessages: result.violations || [],
+              };
+              return { ...prev, productValidations: updatedValidations };
+            });
+          } catch (error) {
+            setFormState(prev => {
+              const updatedValidations = [...prev.productValidations];
+              updatedValidations[productIndex] = {
+                ...updatedValidations[productIndex],
+                complianceStatus: 'error',
+                complianceMessages: [
+                  'Failed to validate with Compliance Engine',
+                ],
+              };
+              return { ...prev, productValidations: updatedValidations };
+            });
+          }
+        },
+        complianceDebounceMs
+      ),
     [enableCompliance, complianceDebounceMs]
   );
 
   /**
    * Update product field value
    */
-  const updateProduct = React.useCallback((index: number, field: string, value: any) => {
-    setFormState(prev => {
-      const updatedProducts = [...prev.products];
-      const product = { ...updatedProducts[index] };
+  const updateProduct = React.useCallback(
+    (index: number, field: string, value: any) => {
+      setFormState(prev => {
+        const updatedProducts = [...prev.products];
+        const product = { ...updatedProducts[index] };
 
-      // Handle nested field updates
-      const fieldParts = field.split('.');
-      let obj = product as any;
-      for (let i = 0; i < fieldParts.length - 1; i++) {
-        if (!obj[fieldParts[i]]) {
-          obj[fieldParts[i]] = {};
+        // Handle nested field updates
+        const fieldParts = field.split('.');
+        let obj = product as any;
+        for (let i = 0; i < fieldParts.length - 1; i++) {
+          if (!obj[fieldParts[i]]) {
+            obj[fieldParts[i]] = {};
+          }
+          obj = obj[fieldParts[i]];
         }
-        obj = obj[fieldParts[i]];
-      }
-      obj[fieldParts[fieldParts.length - 1]] = value;
+        obj[fieldParts[fieldParts.length - 1]] = value;
 
-      updatedProducts[index] = product;
+        updatedProducts[index] = product;
 
-      // Validate field
-      const validation = FormValidationUtils.validateProductField(field, value, index);
-      const updatedValidations = [...prev.productValidations];
-      updatedValidations[index] = {
-        ...updatedValidations[index],
-        errors: {
-          ...updatedValidations[index].errors,
-          [field]: validation.error || '',
-        },
-      };
+        // Validate field
+        const validation = FormValidationUtils.validateProductField(
+          field,
+          value,
+          index
+        );
+        const updatedValidations = [...prev.productValidations];
+        updatedValidations[index] = {
+          ...updatedValidations[index],
+          errors: {
+            ...updatedValidations[index].errors,
+            [field]: validation.error || '',
+          },
+        };
 
-      // Remove empty error messages
-      Object.keys(updatedValidations[index].errors).forEach(key => {
-        if (!updatedValidations[index].errors[key]) {
-          delete updatedValidations[index].errors[key];
+        // Remove empty error messages
+        Object.keys(updatedValidations[index].errors).forEach(key => {
+          if (!updatedValidations[index].errors[key]) {
+            delete updatedValidations[index].errors[key];
+          }
+        });
+
+        // Update validity
+        updatedValidations[index].isValid =
+          Object.keys(updatedValidations[index].errors).length === 0;
+
+        // Trigger compliance validation if product is valid
+        if (updatedValidations[index].isValid && product.name) {
+          debouncedComplianceValidation(index, product);
         }
+
+        return {
+          ...prev,
+          products: updatedProducts,
+          productValidations: updatedValidations,
+        };
       });
 
-      // Update validity
-      updatedValidations[index].isValid = Object.keys(updatedValidations[index].errors).length === 0;
-
-      // Trigger compliance validation if product is valid
-      if (updatedValidations[index].isValid && product.name) {
-        debouncedComplianceValidation(index, product);
-      }
-
-      return {
-        ...prev,
-        products: updatedProducts,
-        productValidations: updatedValidations,
-      };
-    });
-
-    setHasChanges(true);
-  }, [debouncedComplianceValidation]);
+      setHasChanges(true);
+    },
+    [debouncedComplianceValidation]
+  );
 
   /**
    * Update batch information
@@ -396,24 +410,29 @@ export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatc
   /**
    * Remove product
    */
-  const removeProduct = React.useCallback((index: number) => {
-    if (formState.products.length <= 1) {
-      return;
-    }
+  const removeProduct = React.useCallback(
+    (index: number) => {
+      if (formState.products.length <= 1) {
+        return;
+      }
 
-    setFormState(prev => ({
-      ...prev,
-      products: prev.products.filter((_, i) => i !== index),
-      productValidations: prev.productValidations.filter((_, i) => i !== index),
-    }));
+      setFormState(prev => ({
+        ...prev,
+        products: prev.products.filter((_, i) => i !== index),
+        productValidations: prev.productValidations.filter(
+          (_, i) => i !== index
+        ),
+      }));
 
-    // Update selected products
-    setSelectedProducts(prev => 
-      prev.filter(i => i !== index).map(i => i > index ? i - 1 : i)
-    );
-    
-    setHasChanges(true);
-  }, [formState.products.length]);
+      // Update selected products
+      setSelectedProducts(prev =>
+        prev.filter(i => i !== index).map(i => (i > index ? i - 1 : i))
+      );
+
+      setHasChanges(true);
+    },
+    [formState.products.length]
+  );
 
   /**
    * Validate entire batch
@@ -441,103 +460,107 @@ export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatc
   /**
    * Submit batch for creation
    */
-  const submitBatch = React.useCallback(async (): Promise<BatchCreationResponse> => {
-    const startTime = new Date();
+  const submitBatch =
+    React.useCallback(async (): Promise<BatchCreationResponse> => {
+      const startTime = new Date();
 
-    try {
-      setFormState(prev => ({
-        ...prev,
-        submission: {
-          ...prev.submission,
-          isSubmitting: true,
-          error: null,
-          progress: 0,
-        },
-      }));
-
-      // Final validation
-      const validation = validateBatch();
-      if (!validation.isValid) {
-        throw new Error('Batch validation failed');
-      }
-
-      // Create batch payload
-      const batchPayload: CreateProductBatch = {
-        products: formState.products,
-        batchInfo: formState.batchInfo,
-      };
-
-      // Submit to API
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(batchPayload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Batch creation failed');
-      }
-
-      const result: BatchCreationResponse = await response.json();
-
-      // Calculate metrics
-      const endTime = new Date();
-      const totalTime = endTime.getTime() - startTime.getTime();
-      const newMetrics: BatchProcessingMetrics = {
-        startTime,
-        endTime,
-        totalTime,
-        productCount: formState.products.length,
-        averageTimePerProduct: totalTime / formState.products.length,
-        results: {
-          successful: result.success ? result.products.length : 0,
-          failed: result.success ? 0 : result.products.length,
-          errors: result.success ? [] : [result.error?.message || 'Unknown error'],
-        },
-      };
-      setMetrics(newMetrics);
-
-      if (result.success) {
-        // Clear form on success
+      try {
         setFormState(prev => ({
           ...prev,
-          products: [createEmptyProduct()],
-          productValidations: [createEmptyValidation()],
-          batchInfo: {
-            ...prev.batchInfo,
-            processingNotes: '',
-          },
           submission: {
-            isSubmitting: false,
+            ...prev.submission,
+            isSubmitting: true,
             error: null,
-            progress: 100,
+            progress: 0,
           },
         }));
 
-        // Clear backup and changes flag
-        if (enableBackup) {
-          localStorage.removeItem('chaintrace_form_backup');
+        // Final validation
+        const validation = validateBatch();
+        if (!validation.isValid) {
+          throw new Error('Batch validation failed');
         }
-        setHasChanges(false);
-        setSelectedProducts([]);
+
+        // Create batch payload
+        const batchPayload: CreateProductBatch = {
+          products: formState.products,
+          batchInfo: formState.batchInfo,
+        };
+
+        // Submit to API
+        const response = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(batchPayload),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'Batch creation failed');
+        }
+
+        const result: BatchCreationResponse = await response.json();
+
+        // Calculate metrics
+        const endTime = new Date();
+        const totalTime = endTime.getTime() - startTime.getTime();
+        const newMetrics: BatchProcessingMetrics = {
+          startTime,
+          endTime,
+          totalTime,
+          productCount: formState.products.length,
+          averageTimePerProduct: totalTime / formState.products.length,
+          results: {
+            successful: result.success ? result.products.length : 0,
+            failed: result.success ? 0 : result.products.length,
+            errors: result.success
+              ? []
+              : [result.error?.message || 'Unknown error'],
+          },
+        };
+        setMetrics(newMetrics);
+
+        if (result.success) {
+          // Clear form on success
+          setFormState(prev => ({
+            ...prev,
+            products: [createEmptyProduct()],
+            productValidations: [createEmptyValidation()],
+            batchInfo: {
+              ...prev.batchInfo,
+              processingNotes: '',
+            },
+            submission: {
+              isSubmitting: false,
+              error: null,
+              progress: 100,
+            },
+          }));
+
+          // Clear backup and changes flag
+          if (enableBackup) {
+            localStorage.removeItem('chaintrace_form_backup');
+          }
+          setHasChanges(false);
+          setSelectedProducts([]);
+        }
+
+        return result;
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Submission failed';
+        setFormState(prev => ({
+          ...prev,
+          submission: {
+            isSubmitting: false,
+            error: errorMessage,
+            progress: 0,
+          },
+        }));
+
+        throw error;
       }
-
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Submission failed';
-      setFormState(prev => ({
-        ...prev,
-        submission: {
-          isSubmitting: false,
-          error: errorMessage,
-          progress: 0,
-        },
-      }));
-
-      throw error;
-    }
-  }, [formState, validateBatch, enableBackup]);
+    }, [formState, validateBatch, enableBackup]);
 
   /**
    * Clear form data
@@ -577,7 +600,7 @@ export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatc
       if (!backupData) return false;
 
       const backup: FormBackupData = JSON.parse(backupData);
-      
+
       // Validate backup data structure
       if (!backup.formState || !backup.timestamp) {
         return false;
@@ -606,8 +629,11 @@ export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatc
         sessionId: crypto.randomUUID(),
       };
 
-      localStorage.setItem('chaintrace_form_backup', JSON.stringify(backupData));
-      
+      localStorage.setItem(
+        'chaintrace_form_backup',
+        JSON.stringify(backupData)
+      );
+
       setFormState(prev => ({
         ...prev,
         lastBackup: new Date(),
@@ -620,54 +646,65 @@ export function useBatchCreation(options: UseBatchCreationOptions = {}): UseBatc
   /**
    * Re-validate compliance for specific product
    */
-  const revalidateCompliance = React.useCallback(async (index: number) => {
-    const product = formState.products[index];
-    if (product && product.name) {
-      await debouncedComplianceValidation(index, product);
-    }
-  }, [formState.products, debouncedComplianceValidation]);
+  const revalidateCompliance = React.useCallback(
+    async (index: number) => {
+      const product = formState.products[index];
+      if (product && product.name) {
+        await debouncedComplianceValidation(index, product);
+      }
+    },
+    [formState.products, debouncedComplianceValidation]
+  );
 
   // Bulk operations
-  const bulkOperations = React.useMemo(() => ({
-    selectAll: () => {
-      setSelectedProducts(formState.products.map((_, index) => index));
-    },
-    deselectAll: () => {
-      setSelectedProducts([]);
-    },
-    removeSelected: () => {
-      if (selectedProducts.length === 0) return;
-      
-      const remainingProducts = formState.products.filter((_, index) => 
-        !selectedProducts.includes(index)
-      );
-      const remainingValidations = formState.productValidations.filter((_, index) =>
-        !selectedProducts.includes(index)
-      );
+  const bulkOperations = React.useMemo(
+    () => ({
+      selectAll: () => {
+        setSelectedProducts(formState.products.map((_, index) => index));
+      },
+      deselectAll: () => {
+        setSelectedProducts([]);
+      },
+      removeSelected: () => {
+        if (selectedProducts.length === 0) return;
 
-      // Ensure at least one product remains
-      if (remainingProducts.length === 0) {
-        remainingProducts.push(createEmptyProduct());
-        remainingValidations.push(createEmptyValidation());
-      }
+        const remainingProducts = formState.products.filter(
+          (_, index) => !selectedProducts.includes(index)
+        );
+        const remainingValidations = formState.productValidations.filter(
+          (_, index) => !selectedProducts.includes(index)
+        );
 
-      setFormState(prev => ({
-        ...prev,
-        products: remainingProducts,
-        productValidations: remainingValidations,
-      }));
-      
-      setSelectedProducts([]);
-      setHasChanges(true);
-    },
-    validateSelected: async () => {
-      if (selectedProducts.length === 0) return;
+        // Ensure at least one product remains
+        if (remainingProducts.length === 0) {
+          remainingProducts.push(createEmptyProduct());
+          remainingValidations.push(createEmptyValidation());
+        }
 
-      for (const index of selectedProducts) {
-        await revalidateCompliance(index);
-      }
-    },
-  }), [formState.products, formState.productValidations, selectedProducts, revalidateCompliance]);
+        setFormState(prev => ({
+          ...prev,
+          products: remainingProducts,
+          productValidations: remainingValidations,
+        }));
+
+        setSelectedProducts([]);
+        setHasChanges(true);
+      },
+      validateSelected: async () => {
+        if (selectedProducts.length === 0) return;
+
+        for (const index of selectedProducts) {
+          await revalidateCompliance(index);
+        }
+      },
+    }),
+    [
+      formState.products,
+      formState.productValidations,
+      selectedProducts,
+      revalidateCompliance,
+    ]
+  );
 
   // Computed values
   const isSubmitting = formState.submission.isSubmitting;

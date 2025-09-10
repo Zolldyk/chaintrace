@@ -27,7 +27,6 @@
  */
 
 import * as React from 'react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import type {
@@ -72,10 +71,10 @@ interface BatchStatistics {
 /**
  * Bulk action types
  */
-export type BulkActionType = 
-  | 'selectAll' 
-  | 'deselectAll' 
-  | 'removeSelected' 
+export type BulkActionType =
+  | 'selectAll'
+  | 'deselectAll'
+  | 'removeSelected'
   | 'validateSelected'
   | 'clearAll';
 
@@ -170,7 +169,7 @@ const calculateBatchStatistics = (
     },
   };
 
-  products.forEach((product) => {
+  products.forEach(product => {
     // Weight calculation
     stats.totalWeight += convertToKilograms(
       product.quantity.amount,
@@ -189,7 +188,7 @@ const calculateBatchStatistics = (
     }
 
     // Category breakdown
-    stats.categoryBreakdown[product.category] = 
+    stats.categoryBreakdown[product.category] =
       (stats.categoryBreakdown[product.category] || 0) + 1;
 
     // Unit breakdown
@@ -197,7 +196,7 @@ const calculateBatchStatistics = (
   });
 
   // Estimate processing time (base 5 seconds per product + weight factor)
-  stats.estimatedProcessingTime = 
+  stats.estimatedProcessingTime =
     products.length * 5 + Math.floor(stats.totalWeight / 10);
 
   return stats;
@@ -218,8 +217,9 @@ export function BatchSummary({
   showAdvanced = false,
 }: BatchSummaryProps) {
   // Calculate batch statistics
-  const stats = React.useMemo(() => 
-    calculateBatchStatistics(products), [products]
+  const stats = React.useMemo(
+    () => calculateBatchStatistics(products),
+    [products]
   );
 
   // Calculate validation statistics
@@ -229,7 +229,7 @@ export function BatchSummary({
     let complianceValidCount = 0;
     let complianceInvalidCount = 0;
 
-    validations.forEach((validation) => {
+    validations.forEach(validation => {
       if (validation.isValid) {
         validCount++;
       } else {
@@ -276,34 +276,34 @@ export function BatchSummary({
   };
 
   return (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {/* Main Statistics Card */}
-      <Card className="p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Batch Summary</h3>
-          <div className="flex gap-2">
+      <Card className='p-6'>
+        <div className='mb-4 flex items-center justify-between'>
+          <h3 className='text-lg font-semibold text-gray-900'>Batch Summary</h3>
+          <div className='flex gap-2'>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => handleBulkAction('selectAll')}
               disabled={disabled || selectedProducts.length === products.length}
             >
               Select All
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => handleBulkAction('deselectAll')}
               disabled={disabled || selectedProducts.length === 0}
             >
               Deselect All
             </Button>
             <Button
-              variant="outline"
-              size="sm"
+              variant='outline'
+              size='sm'
               onClick={() => handleBulkAction('clearAll')}
               disabled={disabled || products.length === 0}
-              className="text-red-600 hover:text-red-700"
+              className='text-red-600 hover:text-red-700'
             >
               Clear All
             </Button>
@@ -311,79 +311,84 @@ export function BatchSummary({
         </div>
 
         {/* Statistics Grid */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary-600">
+        <div className='grid grid-cols-2 gap-4 md:grid-cols-4'>
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-primary-600'>
               {stats.totalProducts}
             </div>
-            <div className="text-sm text-gray-500">Products</div>
+            <div className='text-sm text-gray-500'>Products</div>
           </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-green-600'>
               {validationStats.valid}
             </div>
-            <div className="text-sm text-gray-500">Valid</div>
+            <div className='text-sm text-gray-500'>Valid</div>
           </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-red-600">
+
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-red-600'>
               {validationStats.invalid}
             </div>
-            <div className="text-sm text-gray-500">Invalid</div>
+            <div className='text-sm text-gray-500'>Invalid</div>
           </div>
-          
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
+
+          <div className='text-center'>
+            <div className='text-2xl font-bold text-blue-600'>
               {selectedProducts.length}
             </div>
-            <div className="text-sm text-gray-500">Selected</div>
+            <div className='text-sm text-gray-500'>Selected</div>
           </div>
         </div>
 
         {/* Totals */}
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="rounded-lg bg-gray-50 p-3">
-            <div className="text-lg font-semibold text-gray-900">
+        <div className='mt-6 grid grid-cols-1 gap-4 md:grid-cols-3'>
+          <div className='rounded-lg bg-gray-50 p-3'>
+            <div className='text-lg font-semibold text-gray-900'>
               {stats.totalWeight.toFixed(1)} kg
             </div>
-            <div className="text-sm text-gray-500">Total Weight</div>
+            <div className='text-sm text-gray-500'>Total Weight</div>
           </div>
-          
-          <div className="rounded-lg bg-gray-50 p-3">
-            <div className="text-lg font-semibold text-gray-900">
+
+          <div className='rounded-lg bg-gray-50 p-3'>
+            <div className='text-lg font-semibold text-gray-900'>
               {stats.totalVolume.toFixed(1)} L
             </div>
-            <div className="text-sm text-gray-500">Total Volume</div>
+            <div className='text-sm text-gray-500'>Total Volume</div>
           </div>
-          
-          <div className="rounded-lg bg-gray-50 p-3">
-            <div className="text-lg font-semibold text-gray-900">
-              {Math.floor(stats.estimatedProcessingTime / 60)}m {stats.estimatedProcessingTime % 60}s
+
+          <div className='rounded-lg bg-gray-50 p-3'>
+            <div className='text-lg font-semibold text-gray-900'>
+              {Math.floor(stats.estimatedProcessingTime / 60)}m{' '}
+              {stats.estimatedProcessingTime % 60}s
             </div>
-            <div className="text-sm text-gray-500">Est. Processing Time</div>
+            <div className='text-sm text-gray-500'>Est. Processing Time</div>
           </div>
         </div>
       </Card>
 
       {/* Warnings and Limits */}
       {(approachingLimit || exceedsWeightLimit || exceedsTimeLimit) && (
-        <Card className="border-yellow-200 bg-yellow-50 p-4">
-          <h4 className="font-medium text-yellow-800 mb-2">Batch Warnings</h4>
-          <div className="space-y-1 text-sm text-yellow-700">
+        <Card className='border-yellow-200 bg-yellow-50 p-4'>
+          <h4 className='mb-2 font-medium text-yellow-800'>Batch Warnings</h4>
+          <div className='space-y-1 text-sm text-yellow-700'>
             {approachingLimit && (
               <div>
-                ⚠️ Batch size approaching limit ({products.length}/{maxBatchSize})
+                ⚠️ Batch size approaching limit ({products.length}/
+                {maxBatchSize})
               </div>
             )}
             {exceedsWeightLimit && (
               <div>
-                ⚠️ Total weight approaching daily limit ({stats.totalWeight.toFixed(1)}/1000 kg)
+                ⚠️ Total weight approaching daily limit (
+                {stats.totalWeight.toFixed(1)}/1000 kg)
               </div>
             )}
             {exceedsTimeLimit && (
               <div>
-                ⚠️ Processing time may exceed 2 minutes ({Math.floor(stats.estimatedProcessingTime / 60)}m {stats.estimatedProcessingTime % 60}s)
+                ⚠️ Processing time may exceed 2 minutes (
+                {Math.floor(stats.estimatedProcessingTime / 60)}m{' '}
+                {stats.estimatedProcessingTime % 60}s)
               </div>
             )}
           </div>
@@ -391,28 +396,30 @@ export function BatchSummary({
       )}
 
       {/* Compliance Status */}
-      <Card className="p-4">
-        <h4 className="font-medium text-gray-900 mb-3">Compliance Validation</h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Validated</span>
-            <span className="font-medium text-green-600">
+      <Card className='p-4'>
+        <h4 className='mb-3 font-medium text-gray-900'>
+          Compliance Validation
+        </h4>
+        <div className='grid grid-cols-2 gap-4'>
+          <div className='flex items-center justify-between'>
+            <span className='text-sm text-gray-600'>Validated</span>
+            <span className='font-medium text-green-600'>
               {validationStats.complianceValid}
             </span>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Failed</span>
-            <span className="font-medium text-red-600">
+          <div className='flex items-center justify-between'>
+            <span className='text-sm text-gray-600'>Failed</span>
+            <span className='font-medium text-red-600'>
               {validationStats.complianceInvalid}
             </span>
           </div>
         </div>
-        
+
         {validationStats.complianceInvalid > 0 && (
           <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 w-full"
+            variant='outline'
+            size='sm'
+            className='mt-3 w-full'
             onClick={() => handleBulkAction('validateSelected')}
             disabled={disabled}
           >
@@ -423,32 +430,40 @@ export function BatchSummary({
 
       {/* Advanced Statistics */}
       {showAdvanced && (
-        <Card className="p-4">
-          <h4 className="font-medium text-gray-900 mb-3">Advanced Statistics</h4>
-          
+        <Card className='p-4'>
+          <h4 className='mb-3 font-medium text-gray-900'>
+            Advanced Statistics
+          </h4>
+
           {/* Category Breakdown */}
-          <div className="mb-4">
-            <h5 className="text-sm font-medium text-gray-700 mb-2">By Category</h5>
-            <div className="space-y-1">
-              {Object.entries(stats.categoryBreakdown).map(([category, count]) => (
-                <div key={category} className="flex justify-between text-sm">
-                  <span className="capitalize text-gray-600">{category.replace('_', ' ')}</span>
-                  <span className="font-medium">{count}</span>
-                </div>
-              ))}
+          <div className='mb-4'>
+            <h5 className='mb-2 text-sm font-medium text-gray-700'>
+              By Category
+            </h5>
+            <div className='space-y-1'>
+              {Object.entries(stats.categoryBreakdown).map(
+                ([category, count]) => (
+                  <div key={category} className='flex justify-between text-sm'>
+                    <span className='capitalize text-gray-600'>
+                      {category.replace('_', ' ')}
+                    </span>
+                    <span className='font-medium'>{count}</span>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
           {/* Unit Breakdown */}
           <div>
-            <h5 className="text-sm font-medium text-gray-700 mb-2">By Unit</h5>
-            <div className="space-y-1">
+            <h5 className='mb-2 text-sm font-medium text-gray-700'>By Unit</h5>
+            <div className='space-y-1'>
               {Object.entries(stats.unitBreakdown)
                 .filter(([, amount]) => amount > 0)
                 .map(([unit, amount]) => (
-                  <div key={unit} className="flex justify-between text-sm">
-                    <span className="text-gray-600">{unit}</span>
-                    <span className="font-medium">{amount.toFixed(1)}</span>
+                  <div key={unit} className='flex justify-between text-sm'>
+                    <span className='text-gray-600'>{unit}</span>
+                    <span className='font-medium'>{amount.toFixed(1)}</span>
                   </div>
                 ))}
             </div>
@@ -458,30 +473,37 @@ export function BatchSummary({
 
       {/* Processing Metrics (if available) */}
       {processingMetrics && (
-        <Card className="p-4">
-          <h4 className="font-medium text-gray-900 mb-3">Processing Performance</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+        <Card className='p-4'>
+          <h4 className='mb-3 font-medium text-gray-900'>
+            Processing Performance
+          </h4>
+          <div className='grid grid-cols-2 gap-4 text-sm'>
             <div>
-              <span className="text-gray-600">Total Time:</span>
-              <span className="ml-2 font-medium">
+              <span className='text-gray-600'>Total Time:</span>
+              <span className='ml-2 font-medium'>
                 {(processingMetrics.totalTime / 1000).toFixed(1)}s
               </span>
             </div>
             <div>
-              <span className="text-gray-600">Avg per Product:</span>
-              <span className="ml-2 font-medium">
+              <span className='text-gray-600'>Avg per Product:</span>
+              <span className='ml-2 font-medium'>
                 {(processingMetrics.averageTimePerProduct / 1000).toFixed(1)}s
               </span>
             </div>
             <div>
-              <span className="text-gray-600">Success Rate:</span>
-              <span className="ml-2 font-medium">
-                {((processingMetrics.results.successful / processingMetrics.productCount) * 100).toFixed(1)}%
+              <span className='text-gray-600'>Success Rate:</span>
+              <span className='ml-2 font-medium'>
+                {(
+                  (processingMetrics.results.successful /
+                    processingMetrics.productCount) *
+                  100
+                ).toFixed(1)}
+                %
               </span>
             </div>
             <div>
-              <span className="text-gray-600">Products:</span>
-              <span className="ml-2 font-medium">
+              <span className='text-gray-600'>Products:</span>
+              <span className='ml-2 font-medium'>
                 {processingMetrics.productCount}
               </span>
             </div>

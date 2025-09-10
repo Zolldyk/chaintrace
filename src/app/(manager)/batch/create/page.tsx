@@ -22,15 +22,15 @@
 import * as React from 'react';
 import { ProductBatchForm } from '@/components/dashboard/ProductBatchForm';
 import { BatchSummary } from '@/components/dashboard/BatchSummary';
-import { BatchSuccessConfirmation, type NavigationAction, type QRDownloadFormat } from '@/components/dashboard/BatchSuccessConfirmation';
+import {
+  BatchSuccessConfirmation,
+  type NavigationAction,
+  type QRDownloadFormat,
+} from '@/components/dashboard/BatchSuccessConfirmation';
 import { useBatchCreation } from '@/hooks/useBatchCreation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import type {
-  CreateProductBatch,
-  BatchCreationResponse,
-  FormBackupData,
-} from '@/types/batch';
+import type { BatchCreationResponse, FormBackupData } from '@/types/batch';
 
 /**
  * Page state management
@@ -43,26 +43,21 @@ type PageState = 'form' | 'success' | 'error';
 export default function BatchCreatePage() {
   // Page state
   const [pageState, setPageState] = React.useState<PageState>('form');
-  const [batchResult, setBatchResult] = React.useState<BatchCreationResponse | null>(null);
+  const [batchResult, setBatchResult] =
+    React.useState<BatchCreationResponse | null>(null);
   const [showAdvancedStats, setShowAdvancedStats] = React.useState(false);
 
   // Initialize batch creation hook
   const {
     formState,
-    updateProduct,
-    updateBatchInfo,
-    addProduct,
-    removeProduct,
     submitBatch,
     clearForm,
     loadFromBackup,
     saveBackup,
     validateBatch,
-    revalidateCompliance,
     bulkOperations,
     isSubmitting,
     hasChanges,
-    isValid,
     error,
     metrics,
     selectedProducts,
@@ -85,7 +80,7 @@ export default function BatchCreatePage() {
   }, [loadFromBackup]);
 
   // Handle form submission
-  const handleFormSubmit = async (batchData: CreateProductBatch) => {
+  const handleFormSubmit = async () => {
     try {
       const result = await submitBatch();
       setBatchResult(result);
@@ -126,16 +121,21 @@ export default function BatchCreatePage() {
   };
 
   // Handle QR code downloads
-  const handleQRDownload = async (productIds: string[], format: QRDownloadFormat) => {
+  const handleQRDownload = async (
+    productIds: string[],
+    format: QRDownloadFormat
+  ) => {
     try {
       // In a real implementation, this would generate and download QR codes
       console.log(`Downloading ${productIds.length} QR codes as ${format}`);
-      
+
       // Simulate download delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Could implement actual file generation and download here
-      alert(`Downloaded ${productIds.length} QR codes as ${format.toUpperCase()}`);
+      alert(
+        `Downloaded ${productIds.length} QR codes as ${format.toUpperCase()}`
+      );
     } catch (error) {
       console.error('QR download failed:', error);
       alert('Failed to download QR codes. Please try again.');
@@ -155,7 +155,7 @@ export default function BatchCreatePage() {
   };
 
   // Handle bulk operations
-  const handleBulkAction = (action: any, indices?: number[]) => {
+  const handleBulkAction = (action: any) => {
     switch (action) {
       case 'selectAll':
         bulkOperations.selectAll();
@@ -178,7 +178,7 @@ export default function BatchCreatePage() {
   // Render success state
   if (pageState === 'success' && batchResult) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className='mx-auto max-w-4xl px-4 py-8'>
         <BatchSuccessConfirmation
           batchResult={batchResult}
           metrics={metrics}
@@ -196,28 +196,25 @@ export default function BatchCreatePage() {
   // Render error state
   if (pageState === 'error') {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <Card className="border-red-200 bg-red-50 p-6 text-center">
-          <div className="mb-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-              <span className="text-2xl">❌</span>
+      <div className='mx-auto max-w-2xl px-4 py-8'>
+        <Card className='border-red-200 bg-red-50 p-6 text-center'>
+          <div className='mb-4'>
+            <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100'>
+              <span className='text-2xl'>❌</span>
             </div>
           </div>
-          <h2 className="mb-2 text-xl font-bold text-red-900">
+          <h2 className='mb-2 text-xl font-bold text-red-900'>
             Batch Creation Failed
           </h2>
-          <p className="mb-6 text-red-800">
+          <p className='mb-6 text-red-800'>
             {error || 'An unexpected error occurred while creating the batch.'}
           </p>
-          <div className="space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setPageState('form')}
-            >
+          <div className='space-x-3'>
+            <Button variant='outline' onClick={() => setPageState('form')}>
               Try Again
             </Button>
             <Button
-              variant="ghost"
+              variant='ghost'
               onClick={() => console.log('Contact support')}
             >
               Contact Support
@@ -230,22 +227,25 @@ export default function BatchCreatePage() {
 
   // Render main form state
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Create Product Batch</h1>
-        <p className="mt-2 text-gray-600">
-          Log your cooperative&apos;s products with comprehensive verification and compliance checking.
+    <div className='mx-auto max-w-6xl px-4 py-8'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold text-gray-900'>
+          Create Product Batch
+        </h1>
+        <p className='mt-2 text-gray-600'>
+          Log your cooperative&apos;s products with comprehensive verification
+          and compliance checking.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+      <div className='grid grid-cols-1 gap-8 lg:grid-cols-4'>
         {/* Main Form - 3 columns */}
-        <div className="lg:col-span-3">
+        <div className='lg:col-span-3'>
           <ProductBatchForm
             onSubmit={handleFormSubmit}
             loading={isSubmitting}
             maxBatchSize={100}
-            onFormStateChange={(state) => {
+            onFormStateChange={state => {
               // Handle form state changes for external integrations
               console.log('Form state changed:', state);
             }}
@@ -254,7 +254,7 @@ export default function BatchCreatePage() {
         </div>
 
         {/* Sidebar - 1 column */}
-        <div className="space-y-6">
+        <div className='space-y-6'>
           {/* Batch Summary */}
           <BatchSummary
             products={formState.products}
@@ -269,22 +269,24 @@ export default function BatchCreatePage() {
           />
 
           {/* Advanced Options Toggle */}
-          <Card className="p-4">
-            <div className="space-y-3">
-              <label className="flex items-center space-x-2">
+          <Card className='p-4'>
+            <div className='space-y-3'>
+              <label className='flex items-center space-x-2'>
                 <input
-                  type="checkbox"
+                  type='checkbox'
                   checked={showAdvancedStats}
-                  onChange={(e) => setShowAdvancedStats(e.target.checked)}
-                  className="rounded border-gray-300 text-primary-600"
+                  onChange={e => setShowAdvancedStats(e.target.checked)}
+                  className='rounded border-gray-300 text-primary-600'
                 />
-                <span className="text-sm text-gray-700">Show advanced statistics</span>
+                <span className='text-sm text-gray-700'>
+                  Show advanced statistics
+                </span>
               </label>
-              
-              <div className="text-xs text-gray-500">
+
+              <div className='text-xs text-gray-500'>
                 {hasChanges && (
-                  <div className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-yellow-400"></span>
+                  <div className='flex items-center gap-1'>
+                    <span className='h-2 w-2 rounded-full bg-yellow-400'></span>
                     Unsaved changes
                   </div>
                 )}
@@ -298,32 +300,32 @@ export default function BatchCreatePage() {
           </Card>
 
           {/* Quick Actions */}
-          <Card className="p-4">
-            <h3 className="mb-3 font-medium text-gray-900">Quick Actions</h3>
-            <div className="space-y-2">
+          <Card className='p-4'>
+            <h3 className='mb-3 font-medium text-gray-900'>Quick Actions</h3>
+            <div className='space-y-2'>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={() => validateBatch()}
-                className="w-full justify-start"
+                className='w-full justify-start'
                 disabled={isSubmitting}
               >
                 Validate Batch
               </Button>
               <Button
-                variant="outline"
-                size="sm"
+                variant='outline'
+                size='sm'
                 onClick={saveBackup}
-                className="w-full justify-start"
+                className='w-full justify-start'
                 disabled={isSubmitting}
               >
                 Save Backup
               </Button>
               <Button
-                variant="ghost"
-                size="sm"
+                variant='ghost'
+                size='sm'
                 onClick={clearForm}
-                className="w-full justify-start text-red-600"
+                className='w-full justify-start text-red-600'
                 disabled={isSubmitting}
               >
                 Clear Form
@@ -332,16 +334,16 @@ export default function BatchCreatePage() {
           </Card>
 
           {/* Help & Support */}
-          <Card className="p-4">
-            <h3 className="mb-3 font-medium text-gray-900">Need Help?</h3>
-            <div className="space-y-2 text-sm text-gray-600">
+          <Card className='p-4'>
+            <h3 className='mb-3 font-medium text-gray-900'>Need Help?</h3>
+            <div className='space-y-2 text-sm text-gray-600'>
               <p>• Maximum 100 products per batch</p>
               <p>• Daily production limit: 1000kg</p>
               <p>• Processing time: &lt;2 minutes</p>
               <Button
-                variant="ghost"
-                size="sm"
-                className="mt-2 h-auto p-0 text-primary-600"
+                variant='ghost'
+                size='sm'
+                className='mt-2 h-auto p-0 text-primary-600'
                 onClick={() => console.log('Show help documentation')}
               >
                 View Documentation →

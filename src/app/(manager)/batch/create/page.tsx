@@ -254,7 +254,7 @@ export default function BatchCreatePage() {
         </div>
 
         {/* Sidebar - 1 column */}
-        <div className='space-y-6'>
+        <div className='space-y-8'>
           {/* Batch Summary */}
           <BatchSummary
             products={formState.products}
@@ -269,7 +269,7 @@ export default function BatchCreatePage() {
           />
 
           {/* Advanced Options Toggle */}
-          <Card className='p-4'>
+          <Card className='p-6'>
             <div className='space-y-3'>
               <label className='flex items-center space-x-2'>
                 <input
@@ -303,7 +303,7 @@ export default function BatchCreatePage() {
           </Card>
 
           {/* Quick Actions */}
-          <Card className='p-4'>
+          <Card className='p-6'>
             <h3 className='mb-3 font-medium text-gray-900'>Quick Actions</h3>
             <div className='space-y-2'>
               <Button
@@ -337,7 +337,7 @@ export default function BatchCreatePage() {
           </Card>
 
           {/* Help & Support */}
-          <Card className='p-4'>
+          <Card className='p-6'>
             <h3 className='mb-3 font-medium text-gray-900'>Need Help?</h3>
             <div className='space-y-2 text-sm text-gray-600'>
               <p>• Maximum 100 products per batch</p>

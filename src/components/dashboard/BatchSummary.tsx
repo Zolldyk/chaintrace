@@ -276,7 +276,7 @@ export function BatchSummary({
   };
 
   return (
-    <div className='space-y-4'>
+    <div className='space-y-6'>
       {/* Main Statistics Card */}
       <Card className='p-6'>
         <div className='mb-4 flex items-center justify-between'>
@@ -342,7 +342,7 @@ export function BatchSummary({
         </div>
 
         {/* Totals */}
-        <div className='mt-6 grid grid-cols-1 gap-4 md:grid-cols-3'>
+        <div className='mt-8 grid grid-cols-1 gap-4 md:grid-cols-3'>
           <div className='rounded-lg bg-gray-50 p-3'>
             <div className='text-lg font-semibold text-gray-900'>
               {stats.totalWeight.toFixed(1)} kg
@@ -396,7 +396,7 @@ export function BatchSummary({
       )}
 
       {/* Compliance Status */}
-      <Card className='p-4'>
+      <Card className='p-6'>
         <h4 className='mb-3 font-medium text-gray-900'>
           Compliance Validation
         </h4>
@@ -430,7 +430,7 @@ export function BatchSummary({
 
       {/* Advanced Statistics */}
       {showAdvanced && (
-        <Card className='p-4'>
+        <Card className='p-6'>
           <h4 className='mb-3 font-medium text-gray-900'>
             Advanced Statistics
           </h4>
@@ -473,7 +473,7 @@ export function BatchSummary({
 
       {/* Processing Metrics (if available) */}
       {processingMetrics && (
-        <Card className='p-4'>
+        <Card className='p-6'>
           <h4 className='mb-3 font-medium text-gray-900'>
             Processing Performance
           </h4>

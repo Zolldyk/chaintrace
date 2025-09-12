@@ -40,7 +40,7 @@ export class QRSecurityError extends Error {
 export interface QRSecurityValidation {
   isValid: boolean;
   errors: Array<{
-    code: QRSecurityError;
+    code: QRSecurityErrorCode;
     message: string;
     severity: 'low' | 'medium' | 'high' | 'critical';
   }>;

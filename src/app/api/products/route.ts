@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
     const batchId = `BATCH-${new Date().getFullYear()}-${generateId(6).toUpperCase()}`;
 
     // Process products in parallel for performance
-    const processingPromises = body.products.map(async (productData, index) => {
+    const processingPromises = body.products.map(async productData => {
       checkTimeLimit();
 
       // Generate product ID
@@ -303,7 +303,7 @@ export async function POST(request: NextRequest) {
                 // Failed to log HCS event
               }
             })
-            .catch((error: unknown) => {
+            .catch(() => {
               // HCS event logging error
             });
         }

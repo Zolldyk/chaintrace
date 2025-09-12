@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
               // Failed to log compliance event
             }
           })
-          .catch(error => {
+          .catch(() => {
             // HCS compliance logging error
           });
       } catch (error) {
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
               ...validationResult.metadata,
             },
           })
-          .catch(error => {
+          .catch(() => {
             // HCS compliance rejection logging error
           });
       } catch (error) {

@@ -37,7 +37,7 @@ interface HealthStatusDashboardProps {
  *   refreshInterval={15000}
  *   showDetails={true}
  *   autoRefresh={true}
- *   onHealthChange={(health) => { /* Handle health status change */ }}
+ *   onHealthChange={(health) => console.log('Status:', health)}
  * />
  * ```
  *

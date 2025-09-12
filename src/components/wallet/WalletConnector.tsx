@@ -7,7 +7,7 @@
  * @example
  * ```tsx
  * <WalletConnector
- *   onConnect={(result) => { /* Handle connection result */ }}
+ *   onConnect={(result) => console.log(result)}
  *   networkType="testnet"
  * />
  * ```

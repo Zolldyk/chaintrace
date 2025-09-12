@@ -14,11 +14,8 @@ import React, { useState, useCallback, useRef, useId } from 'react';
 import { clsx } from 'clsx';
 import { QRCodeDisplay } from '../ui/QRCodeDisplay';
 import {
-  createAccessibleProgress,
   announceToScreenReader,
   QR_SCREEN_READER_TEXTS,
-  handleQRKeyboardInteraction,
-  FocusManager,
   TOUCH_TARGET_SIZES,
   prefersReducedMotion,
   isHighContrastMode,
@@ -26,7 +23,6 @@ import {
 import {
   generateProductQRCode,
   generateProductQRCodeBatch,
-  getDefaultQROptions,
   generateQRFilename,
 } from '../../lib/qr-generation';
 import type {
@@ -252,12 +248,9 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
 
   // Preview state
   const [previewResult, setPreviewResult] = useState<QRCodeResult | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
 
   // Refs and IDs for accessibility
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const formId = useId();
-  const focusManager = useRef(new FocusManager());
   const reducedMotion = prefersReducedMotion();
 
   // Validation
@@ -346,7 +339,6 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
         }));
 
         setPreviewResult(result);
-        setShowPreview(true);
         onGenerated?.(result);
         announceToScreenReader('QR code generated successfully', 'polite');
       } else {

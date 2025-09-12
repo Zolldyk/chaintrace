@@ -8,11 +8,7 @@
  * @since 2.4.0
  */
 
-import type {
-  QRCodeResult,
-  QRCodeStorage,
-  QRCodeErrorType,
-} from '../../types/qr';
+import type { QRCodeResult, QRCodeStorage } from '../../types/qr';
 import { QRCodeError } from '../../types/qr';
 import { generateQRFilename } from '../../lib/qr-generation';
 

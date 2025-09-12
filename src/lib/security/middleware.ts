@@ -19,7 +19,6 @@ import {
   sanitizeProductId,
   sanitizeUrlParams,
   isInputSafe,
-  type SanitizationResult,
 } from './input-sanitizer';
 import type { QRCodeResult } from '../../types/qr';
 

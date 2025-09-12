@@ -18,7 +18,6 @@ import {
   type QRCodeVerification,
   type QRCodeUrlConfig,
   QRCodeError,
-  type QRCodeErrorType,
   type QRCodeFormat,
 } from '../types/qr';
 
@@ -413,7 +412,7 @@ export async function generateProductQRCodeBatch(
 
   const results: QRCodeBatchResult['results'] = [];
   const errors: QRCodeBatchResult['errors'] = [];
-  const { filenamePrefix = 'qr', includeMetadata = false } = request;
+  const { filenamePrefix = 'qr' } = request;
 
   // Process all products sequentially for simpler indexing
   for (let i = 0; i < request.productIds.length; i++) {

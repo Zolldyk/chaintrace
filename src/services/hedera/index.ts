@@ -28,7 +28,7 @@ export { MirrorNodeService } from './MirrorNodeService';
 export {
   HCSEventLogger,
   HCSRetryManager,
-  hcsEventLogger,
+  getHCSEventLogger,
   type EventLoggingRequest,
 } from './HCSEventLogger';
 export {

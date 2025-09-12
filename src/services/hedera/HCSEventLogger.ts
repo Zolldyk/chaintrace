@@ -107,9 +107,7 @@ export class HCSRetryManager {
    *
    * @since 2.3.0
    */
-  async executeWithRetry<T>(
-    operation: () => Promise<T>
-  ): Promise<{
+  async executeWithRetry<T>(operation: () => Promise<T>): Promise<{
     result: T;
     metadata: { retryAttempts: number; totalDuration: number };
   }> {
@@ -652,17 +650,39 @@ export class HCSEventLogger {
  *
  * @since 2.3.0
  */
-export const hcsEventLogger = new HCSEventLogger({
-  topicId: process.env.HCS_TOPIC_ID || '',
-  operatorAccountId: process.env.HEDERA_OPERATOR_ACCOUNT_ID || '',
-  operatorPrivateKey: process.env.HEDERA_OPERATOR_PRIVATE_KEY || '',
-  networkType:
-    (process.env.HEDERA_NETWORK as 'testnet' | 'mainnet') || 'testnet',
-  messageTimeoutMs: 30000,
-  retryConfig: {
-    maxRetries: 3,
-    baseDelay: 1000,
-    maxDelay: 10000,
-    backoffMultiplier: 2,
-  },
-});
+/**
+ * Lazy singleton for HCS Event Logger to prevent initialization during build time
+ */
+let _hcsEventLogger: HCSEventLogger | null = null;
+
+export function getHCSEventLogger(): HCSEventLogger {
+  if (!_hcsEventLogger) {
+    // Check for required environment variables
+    if (
+      !process.env.HEDERA_OPERATOR_ACCOUNT_ID ||
+      !process.env.HEDERA_OPERATOR_PRIVATE_KEY
+    ) {
+      throw new HederaError('HCS Event Logger requires Hedera credentials', {
+        retryable: false,
+        hederaStatus: 'INVALID_CONFIGURATION',
+      });
+    }
+
+    _hcsEventLogger = new HCSEventLogger({
+      topicId: process.env.HCS_TOPIC_ID || '',
+      operatorAccountId: process.env.HEDERA_OPERATOR_ACCOUNT_ID || '',
+      operatorPrivateKey: process.env.HEDERA_OPERATOR_PRIVATE_KEY || '',
+      networkType:
+        (process.env.HEDERA_NETWORK as 'testnet' | 'mainnet') || 'testnet',
+      messageTimeoutMs: 30000,
+      retryConfig: {
+        maxRetries: 3,
+        baseDelay: 1000,
+        maxDelay: 10000,
+        backoffMultiplier: 2,
+      },
+    });
+  }
+
+  return _hcsEventLogger;
+}

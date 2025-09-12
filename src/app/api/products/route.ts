@@ -79,7 +79,7 @@ import {
   ActionValidationRequest,
 } from '@/services/hedera/CustomComplianceRuleEngine';
 import { ComplianceCacheAdapter } from '@/services/hedera/ComplianceCacheAdapter';
-import { hcsEventLogger } from '@/services/hedera/HCSEventLogger';
+import { getHCSEventLogger } from '@/services/hedera/HCSEventLogger';
 import { HCSClient } from '@/services/hedera/HCSClient';
 import { cacheService } from '@/lib/cache/CacheService';
 
@@ -173,6 +173,23 @@ export async function POST(request: NextRequest) {
   const monitor = new BatchProcessingMonitor();
 
   try {
+    // Check if Hedera credentials are available (prevents build-time errors)
+    if (
+      !process.env.HEDERA_OPERATOR_ACCOUNT_ID ||
+      !process.env.HEDERA_OPERATOR_PRIVATE_KEY
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'HEDERA_CONFIG_ERROR',
+            message: 'Hedera credentials not configured',
+          },
+        },
+        { status: 503 }
+      );
+    }
+
     // Parse and validate request body
     const body: CreateProductBatch = await request.json();
     monitor.checkpoint('request_parsed');
@@ -213,6 +230,7 @@ export async function POST(request: NextRequest) {
     const cacheAdapter = new ComplianceCacheAdapter(cacheService);
 
     // Initialize HCS Event Logger (Story 2.3)
+    const hcsEventLogger = getHCSEventLogger();
     if (!hcsEventLogger.isReady()) {
       await hcsEventLogger.initialize();
     }

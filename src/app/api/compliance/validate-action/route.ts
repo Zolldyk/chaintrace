@@ -5,7 +5,7 @@ import {
 } from '@/services/hedera/CustomComplianceRuleEngine';
 import { ComplianceCacheAdapter } from '@/services/hedera/ComplianceCacheAdapter';
 import { HCSClient } from '@/services/hedera/HCSClient';
-import { hcsEventLogger } from '@/services/hedera/HCSEventLogger';
+import { getHCSEventLogger } from '@/services/hedera/HCSEventLogger';
 import { cacheService } from '@/lib/cache/CacheService';
 import type { SupplyChainRole } from '@/types/hedera';
 
@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
     if (validationResult.isValid) {
       try {
         // Initialize HCS Event Logger if needed
+        const hcsEventLogger = getHCSEventLogger();
         if (!hcsEventLogger.isReady()) {
           await hcsEventLogger.initialize();
         }
@@ -143,6 +144,7 @@ export async function POST(request: NextRequest) {
     } else {
       // Log rejected compliance events too
       try {
+        const hcsEventLogger = getHCSEventLogger();
         if (!hcsEventLogger.isReady()) {
           await hcsEventLogger.initialize();
         }

@@ -82,6 +82,8 @@ import { ComplianceCacheAdapter } from '@/services/hedera/ComplianceCacheAdapter
 import { getHCSEventLogger } from '@/services/hedera/HCSEventLogger';
 import { HCSClient } from '@/services/hedera/HCSClient';
 import { cacheService } from '@/lib/cache/CacheService';
+import { generateProductQRCode } from '@/lib/qr-generation';
+import type { QRCodeOptions } from '@/types/qr';
 
 /**
  * Performance monitoring class
@@ -121,16 +123,25 @@ class BatchProcessingMonitor {
 }
 
 /**
- * Generate QR code data for product
+ * Generate QR code data for product using the comprehensive QR generation system
  */
-function generateQRCode(productId: string): string {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://chaintrace.app';
-  return JSON.stringify({
-    productId,
-    url: `${baseUrl}/verify/${productId}`,
-    version: '1.0',
-    timestamp: new Date().toISOString(),
-  });
+async function generateQRCode(productId: string): Promise<string> {
+  try {
+    const qrOptions: QRCodeOptions = {
+      format: 'png',
+      size: 256,
+      errorCorrectionLevel: 'M',
+      margin: 2,
+    };
+
+    const result = await generateProductQRCode(productId, qrOptions);
+    return result.data; // Returns the actual QR code data (data URL for PNG)
+  } catch (error) {
+    // Fallback to simple URL if QR generation fails
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || 'https://chaintrace.app';
+    return `${baseUrl}/verify/${productId}`;
+  }
 }
 
 /**
@@ -287,7 +298,7 @@ export async function POST(request: NextRequest) {
           await ruleEngine.validateAction(complianceRequest);
 
         // Generate QR code
-        const qrCode = generateQRCode(productId);
+        const qrCode = await generateQRCode(productId);
 
         // Create product creation result
         const productResult: ProductCreationResult = {
@@ -334,7 +345,7 @@ export async function POST(request: NextRequest) {
         return {
           id: productId,
           name: productData.name,
-          qrCode: generateQRCode(productId),
+          qrCode: await generateQRCode(productId),
           status: 'rejected' as const,
           complianceValidation: {
             approved: false,

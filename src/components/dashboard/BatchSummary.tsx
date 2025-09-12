@@ -151,8 +151,13 @@ const convertToLiters = (amount: number, unit: QuantityUnit): number => {
 const calculateBatchStatistics = (
   products: CreateProductRequest[]
 ): BatchStatistics => {
+  // Filter out empty products (products without names)
+  const nonEmptyProducts = products.filter(
+    product => product.name && product.name.trim()
+  );
+
   const stats: BatchStatistics = {
-    totalProducts: products.length,
+    totalProducts: nonEmptyProducts.length,
     validProducts: 0,
     invalidProducts: 0,
     totalWeight: 0,
@@ -169,7 +174,7 @@ const calculateBatchStatistics = (
     },
   };
 
-  products.forEach(product => {
+  nonEmptyProducts.forEach(product => {
     // Weight calculation
     stats.totalWeight += convertToKilograms(
       product.quantity.amount,
@@ -197,7 +202,7 @@ const calculateBatchStatistics = (
 
   // Estimate processing time (base 5 seconds per product + weight factor)
   stats.estimatedProcessingTime =
-    products.length * 5 + Math.floor(stats.totalWeight / 10);
+    nonEmptyProducts.length * 5 + Math.floor(stats.totalWeight / 10);
 
   return stats;
 };
@@ -252,7 +257,10 @@ export function BatchSummary({
   }, [validations]);
 
   // Check if batch is approaching limits
-  const approachingLimit = products.length > maxBatchSize * 0.8;
+  const nonEmptyProductCount = products.filter(
+    p => p.name && p.name.trim()
+  ).length;
+  const approachingLimit = nonEmptyProductCount > maxBatchSize * 0.8;
   const exceedsWeightLimit = stats.totalWeight > 800; // Warning at 80% of 1000kg limit
   const exceedsTimeLimit = stats.estimatedProcessingTime > 100; // Warning at 100 seconds
 
@@ -286,7 +294,9 @@ export function BatchSummary({
               variant='outline'
               size='md'
               onClick={() => handleBulkAction('selectAll')}
-              disabled={disabled || selectedProducts.length === products.length}
+              disabled={
+                disabled || selectedProducts.length === nonEmptyProductCount
+              }
             >
               Select All
             </Button>
@@ -302,7 +312,7 @@ export function BatchSummary({
               variant='outline'
               size='md'
               onClick={() => handleBulkAction('clearAll')}
-              disabled={disabled || products.length === 0}
+              disabled={disabled || nonEmptyProductCount === 0}
               className='text-red-600 hover:border-red-300 hover:text-red-700'
             >
               Clear All
@@ -374,7 +384,7 @@ export function BatchSummary({
           <div className='space-y-1 text-sm text-yellow-700'>
             {approachingLimit && (
               <div>
-                ⚠️ Batch size approaching limit ({products.length}/
+                ⚠️ Batch size approaching limit ({nonEmptyProductCount}/
                 {maxBatchSize})
               </div>
             )}

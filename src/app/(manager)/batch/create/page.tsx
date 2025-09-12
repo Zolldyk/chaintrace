@@ -22,6 +22,7 @@
 import * as React from 'react';
 import { ProductBatchForm } from '@/components/dashboard/ProductBatchForm';
 import { BatchSummary } from '@/components/dashboard/BatchSummary';
+import { QRCodeGenerator } from '@/components/dashboard/QRCodeGenerator';
 import {
   BatchSuccessConfirmation,
   type NavigationAction,
@@ -31,6 +32,11 @@ import { useBatchCreation } from '@/hooks/useBatchCreation';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import type { BatchCreationResponse, FormBackupData } from '@/types/batch';
+import {
+  generateProductQRCode,
+  generateProductQRCodeBatch,
+} from '@/lib/qr-generation';
+import type { QRCodeOptions } from '@/types/qr';
 
 /**
  * Page state management
@@ -126,22 +132,70 @@ export default function BatchCreatePage() {
     format: QRDownloadFormat
   ) => {
     try {
-      // In a real implementation, this would generate and download QR codes
       if (process.env.NODE_ENV === 'development') {
         /* eslint-disable-next-line no-console */
-        console.log(`Downloading ${productIds.length} QR codes as ${format}`);
+        console.log(`Generating ${productIds.length} QR codes as ${format}`);
       }
 
-      // Simulate download delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const qrOptions: QRCodeOptions = {
+        format: format as 'png' | 'svg' | 'jpeg' | 'webp',
+        size: 256,
+        errorCorrectionLevel: 'M',
+        margin: 2,
+      };
 
-      // Could implement actual file generation and download here
-      alert(
-        `Downloaded ${productIds.length} QR codes as ${format.toUpperCase()}`
-      );
+      if (productIds.length === 1) {
+        // Single QR code generation
+        const result = await generateProductQRCode(productIds[0], qrOptions);
+
+        // Create download link
+        const filename = `qr-${productIds[0]}.${format}`;
+        const blob =
+          result.format === 'svg'
+            ? new Blob([result.data], { type: result.mimeType })
+            : await fetch(result.data).then(res => res.blob());
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        // Batch QR code generation
+        const batchResult = await generateProductQRCodeBatch({
+          productIds,
+          options: qrOptions,
+          filenamePrefix: `batch-${Date.now()}`,
+          includeMetadata: true,
+        });
+
+        // Create ZIP-like download for multiple files
+        for (const result of batchResult.results) {
+          const blob =
+            result.qrCode.format === 'svg'
+              ? new Blob([result.qrCode.data], { type: result.qrCode.mimeType })
+              : await fetch(result.qrCode.data).then(res => res.blob());
+
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = result.filename;
+          a.click();
+          URL.revokeObjectURL(url);
+
+          // Add small delay between downloads to prevent browser blocking
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        /* eslint-disable-next-line no-console */
+        console.log(`Successfully generated ${productIds.length} QR codes`);
+      }
     } catch (error) {
-      // Error handled silently
-      alert('Failed to download QR codes. Please try again.');
+      console.error('QR code generation failed:', error);
+      alert('Failed to generate QR codes. Please try again.');
     }
   };
 
@@ -340,6 +394,40 @@ export default function BatchCreatePage() {
               </Button>
             </div>
           </Card>
+
+          {/* QR Code Generation */}
+          {formState.products.length > 0 && (
+            <Card className='p-6'>
+              <h3 className='mb-3 font-medium text-gray-900'>
+                QR Code Generation
+              </h3>
+              <div className='space-y-3'>
+                <QRCodeGenerator
+                  productIds={formState.products.map(
+                    p =>
+                      p.name ||
+                      `PROD-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+                  )}
+                  defaultOptions={{
+                    format: 'png',
+                    size: 256,
+                    errorCorrectionLevel: 'M',
+                  }}
+                  showAdvancedOptions={false}
+                  maxBatchSize={formState.products.length}
+                  onGenerated={results => {
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('QR codes generated:', results);
+                    }
+                  }}
+                  onError={error => {
+                    console.error('QR generation error:', error);
+                  }}
+                  className='min-h-0'
+                />
+              </div>
+            </Card>
+          )}
 
           {/* Help & Support */}
           <Card className='p-6'>

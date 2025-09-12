@@ -391,10 +391,9 @@ export class QRCodeStorageService {
       const primaryDeleted = await this.deleteFromProvider(storageKey);
 
       // Delete from local backup
-      let backupDeleted = true;
       if (this.localBackupConfig.enabled) {
         try {
-          backupDeleted = await this.deleteFromLocalBackup(productId);
+          await this.deleteFromLocalBackup(productId);
         } catch (error) {
           // Error handled silently
         }
@@ -533,7 +532,7 @@ export class QRCodeStorageService {
   private async storeWithVercelBlob(
     qrCode: QRCodeResult,
     storageKey: string,
-    filename: string
+    _filename: string
   ): Promise<QRCodeStorage> {
     try {
       // In a real implementation, this would use Vercel Blob Storage SDK
@@ -566,7 +565,7 @@ export class QRCodeStorageService {
   private async storeWithLocalStorage(
     qrCode: QRCodeResult,
     storageKey: string,
-    filename: string
+    _filename: string
   ): Promise<QRCodeStorage> {
     try {
       // Simulate local storage (in real implementation would use filesystem)
@@ -591,7 +590,7 @@ export class QRCodeStorageService {
   }
 
   private async createLocalBackup(
-    qrCode: QRCodeResult,
+    _qrCode: QRCodeResult,
     productId: string,
     filename: string
   ): Promise<void> {
@@ -615,30 +614,30 @@ export class QRCodeStorageService {
   }
 
   private async retrieveFromProvider(
-    storageKey: string
+    _storageKey: string
   ): Promise<QRCodeStorage | null> {
     // Simulate provider retrieval
     return null;
   }
 
   private async retrieveFromLocalBackup(
-    productId: string
+    _productId: string
   ): Promise<QRCodeStorage | null> {
     // Simulate local backup retrieval
     return null;
   }
 
-  private async deleteFromProvider(storageKey: string): Promise<boolean> {
+  private async deleteFromProvider(_storageKey: string): Promise<boolean> {
     // Simulate provider deletion
     return true;
   }
 
-  private async deleteFromLocalBackup(productId: string): Promise<boolean> {
+  private async deleteFromLocalBackup(_productId: string): Promise<boolean> {
     // Simulate local backup deletion
     return true;
   }
 
-  private async listFromProvider(options?: {
+  private async listFromProvider(_options?: {
     limit?: number;
     offset?: number;
     productIdPrefix?: string;

@@ -92,13 +92,13 @@ export default function BatchCreatePage() {
   };
 
   // Handle backup events
-  const handleBackup = (data: FormBackupData) => {
+  const handleBackup = (_data: FormBackupData) => {
     // Could implement backup status notification here
     // Form data backed up
   };
 
   // Handle success page navigation
-  const handleSuccessNavigation = (action: NavigationAction, data?: any) => {
+  const handleSuccessNavigation = (action: NavigationAction, _data?: any) => {
     switch (action) {
       case 'view_dashboard':
         // Navigate to dashboard (would use router in real app)
@@ -250,7 +250,7 @@ export default function BatchCreatePage() {
             onSubmit={handleFormSubmit}
             loading={isSubmitting}
             maxBatchSize={100}
-            onFormStateChange={state => {
+            onFormStateChange={_state => {
               // Handle form state changes for external integrations
               // Form state changed
             }}

@@ -304,7 +304,7 @@ export const ProductLookup = React.forwardRef<
     /**
      * Validates product ID format - now supports CT-YYYY-XXX-ABCDEF format
      */
-    const validateProductId = (id: string): boolean => {
+    const validateProductId = useCallback((id: string): boolean => {
       if (!id.trim()) return false;
 
       // ChainTrace format: CT-YYYY-XXX-ABCDEF
@@ -314,7 +314,7 @@ export const ProductLookup = React.forwardRef<
       // Legacy format support - basic validation
       const legacyPattern = /^[A-Z0-9][A-Z0-9\-_]{2,}$/i;
       return legacyPattern.test(id.trim());
-    };
+    }, []);
 
     /**
      * Handles form submission

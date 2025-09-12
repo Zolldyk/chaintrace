@@ -17,7 +17,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   getWalletService,
   type WalletConnectionResult,
@@ -69,22 +69,22 @@ export function WalletConnector({
     timeout,
   });
 
-  useEffect(() => {
-    // Check available wallets on component mount
-    checkAvailableWallets();
-  }, []);
-
   /**
    * Check which wallets are available
    */
-  const checkAvailableWallets = async () => {
+  const checkAvailableWallets = useCallback(async () => {
     try {
       const available = await walletService.getAvailableWallets();
       setAvailableWallets(available);
     } catch (error) {
       // Error handled silently
     }
-  };
+  }, [walletService]);
+
+  useEffect(() => {
+    // Check available wallets on component mount
+    checkAvailableWallets();
+  }, [checkAvailableWallets]);
 
   /**
    * Handle wallet connection

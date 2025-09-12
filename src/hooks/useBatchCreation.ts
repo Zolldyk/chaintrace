@@ -235,6 +235,7 @@ export function useBatchCreation(
     if (!initialData && enableBackup) {
       loadFromBackup();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableBackup, initialData]);
 
   // Auto-backup timer
@@ -248,6 +249,7 @@ export function useBatchCreation(
     }, backupInterval);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enableBackup, backupInterval, hasChanges]);
 
   /**

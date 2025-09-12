@@ -216,27 +216,96 @@ export interface ComplianceCredentialMetadata {
 }
 
 /**
- * Standard HCS message structure for ChainTrace events
+ * Enhanced HCS Event Message structure for ChainTrace audit trail
+ * Aligned with Story 2.3 requirements for immutable event logging
  *
- * @interface HCSMessage
- * @since 1.4.0
+ * @interface HCSEventMessage
+ * @since 2.3.0
  *
  * @example
  * ```typescript
- * const hcsMessage: HCSMessage = {
- *   version: '1.0',
- *   messageType: 'product_event',
+ * const hcsEventMessage: HCSEventMessage = {
+ *   version: '2.3.0',
  *   productId: 'CT-2024-001-ABC123',
- *   event: productEventData,
- *   signature: 'signed_message_hash',
- *   timestamp: '2024-09-05T10:30:00Z',
- *   metadata: {
- *     networkType: 'testnet',
- *     topicId: '0.0.12345',
- *     sequenceNumber: 42
- *   }
+ *   eventType: 'created',
+ *   timestamp: '2024-09-10T10:30:00.000Z',
+ *   actor: {
+ *     walletAddress: '0.0.67890',
+ *     role: 'producer',
+ *     organizationId: 'COOP-001'
+ *   },
+ *   location: {
+ *     coordinates: { latitude: 6.5244, longitude: 3.3792 },
+ *     address: '123 Farm Road, Lagos',
+ *     region: 'Southwest Nigeria'
+ *   },
+ *   eventData: {
+ *     batchId: 'BATCH-001',
+ *     quantity: { amount: 100, unit: 'kg' },
+ *     category: 'agricultural'
+ *   },
+ *   previousEventId: 'EVENT-001',
+ *   signature: 'wallet_signed_message_hash'
  * };
  * ```
+ */
+export interface HCSEventMessage {
+  /** Message format version for compatibility tracking */
+  version: string;
+
+  /** Product identifier being tracked */
+  productId: string;
+
+  /** Type of supply chain event */
+  eventType: import('./product').EventType;
+
+  /** ISO 8601 timestamp with timezone */
+  timestamp: string;
+
+  /** Actor performing the action */
+  actor: {
+    /** Hedera wallet address */
+    walletAddress: string;
+
+    /** Supply chain role */
+    role: SupplyChainRole;
+
+    /** Optional organization/cooperative ID */
+    organizationId?: string;
+  };
+
+  /** Geographic location data */
+  location: {
+    /** GPS coordinates */
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+
+    /** Full address string */
+    address: string;
+
+    /** Geographic region */
+    region: string;
+  };
+
+  /** Event-specific data payload */
+  eventData: Record<string, any>;
+
+  /** Previous event ID for chain verification */
+  previousEventId?: string;
+
+  /** Cryptographic signature for integrity */
+  signature: string;
+}
+
+/**
+ * Standard HCS message structure for ChainTrace events (Legacy)
+ * Maintained for backward compatibility
+ *
+ * @interface HCSMessage
+ * @since 1.4.0
+ * @deprecated Use HCSEventMessage for new implementations
  */
 export interface HCSMessage {
   /** Message format version */
@@ -394,6 +463,17 @@ export enum ApiErrorCode {
   CREDENTIAL_ISSUANCE_FAILED = 'CREDENTIAL_ISSUANCE_FAILED',
   WORKFLOW_STATE_ERROR = 'WORKFLOW_STATE_ERROR',
 
+  // HCS-specific errors (Story 2.3)
+  HCS_MESSAGE_TOO_LARGE = 'HCS_MESSAGE_TOO_LARGE',
+  HCS_RATE_LIMIT_EXCEEDED = 'HCS_RATE_LIMIT_EXCEEDED',
+  HCS_SERIALIZATION_ERROR = 'HCS_SERIALIZATION_ERROR',
+  HCS_SIGNATURE_INVALID = 'HCS_SIGNATURE_INVALID',
+  HCS_TOPIC_NOT_FOUND = 'HCS_TOPIC_NOT_FOUND',
+  HCS_NETWORK_ERROR = 'HCS_NETWORK_ERROR',
+  HCS_RETRY_EXHAUSTED = 'HCS_RETRY_EXHAUSTED',
+  HCS_MESSAGE_INTEGRITY_VIOLATION = 'HCS_MESSAGE_INTEGRITY_VIOLATION',
+  HCS_MIRROR_NODE_SYNC_TIMEOUT = 'HCS_MIRROR_NODE_SYNC_TIMEOUT',
+
   // Data errors
   PRODUCT_NOT_FOUND = 'PRODUCT_NOT_FOUND',
   DUPLICATE_PRODUCT_ID = 'DUPLICATE_PRODUCT_ID',
@@ -412,6 +492,142 @@ export enum ApiErrorCode {
   // Generic errors
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}
+
+/**
+ * HCS Service-specific configuration for event logging
+ *
+ * @interface HCSServiceConfig
+ * @since 2.3.0
+ *
+ * @example
+ * ```typescript
+ * const config: HCSServiceConfig = {
+ *   topicId: '0.0.12345',
+ *   operatorAccountId: '0.0.98765',
+ *   operatorPrivateKey: process.env.HEDERA_PRIVATE_KEY!,
+ *   networkType: 'testnet',
+ *   messageTimeoutMs: 30000,
+ *   retryConfig: {
+ *     maxRetries: 3,
+ *     baseDelay: 1000,
+ *     maxDelay: 10000,
+ *     backoffMultiplier: 2
+ *   }
+ * };
+ * ```
+ */
+export interface HCSServiceConfig {
+  /** HCS topic ID for event logging */
+  topicId: string;
+
+  /** Operator account ID for message submission */
+  operatorAccountId: string;
+
+  /** Operator private key for transaction signing */
+  operatorPrivateKey: string;
+
+  /** Hedera network environment */
+  networkType: 'testnet' | 'mainnet';
+
+  /** Message submission timeout in milliseconds */
+  messageTimeoutMs?: number;
+
+  /** Retry configuration for failed submissions */
+  retryConfig?: RetryConfig;
+
+  /** Maximum message size in bytes (HCS limit: 1024) */
+  maxMessageSize?: number;
+}
+
+/**
+ * Retry configuration for HCS operations
+ *
+ * @interface RetryConfig
+ * @since 2.3.0
+ */
+export interface RetryConfig {
+  /** Maximum number of retry attempts */
+  maxRetries: number;
+
+  /** Base delay between retries in milliseconds */
+  baseDelay: number;
+
+  /** Maximum delay between retries in milliseconds */
+  maxDelay: number;
+
+  /** Exponential backoff multiplier */
+  backoffMultiplier: number;
+}
+
+/**
+ * HCS operation result with metadata
+ *
+ * @interface HCSOperationResult
+ * @since 2.3.0
+ */
+export interface HCSOperationResult {
+  /** Whether the operation succeeded */
+  success: boolean;
+
+  /** HCS message sequence number if successful */
+  sequenceNumber?: string;
+
+  /** Hedera transaction ID */
+  transactionId?: string;
+
+  /** Operation timestamp */
+  timestamp: Date;
+
+  /** Error details if operation failed */
+  error?: {
+    /** Error code */
+    code: string;
+
+    /** Error message */
+    message: string;
+
+    /** Whether operation is retryable */
+    retryable: boolean;
+  };
+
+  /** Operation metadata */
+  metadata?: {
+    /** Number of retry attempts made */
+    retryAttempts?: number;
+
+    /** Total operation duration in milliseconds */
+    durationMs?: number;
+
+    /** Message size in bytes */
+    messageSizeBytes?: number;
+  };
+}
+
+/**
+ * Mirror Node event retrieval configuration
+ *
+ * @interface MirrorNodeQueryConfig
+ * @since 2.3.0
+ */
+export interface MirrorNodeQueryConfig {
+  /** HCS topic ID to query */
+  topicId: string;
+
+  /** Query timeout in milliseconds */
+  timeoutMs?: number;
+
+  /** Maximum number of messages to retrieve */
+  limit?: number;
+
+  /** Start timestamp for query range */
+  startTime?: string;
+
+  /** End timestamp for query range */
+  endTime?: string;
+
+  /** Sequence number to start from */
+  sequenceNumber?: string;
 }
 
 /**

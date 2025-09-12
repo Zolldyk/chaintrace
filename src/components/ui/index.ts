@@ -11,6 +11,9 @@ export type { CardProps } from './Card';
 export type { InputProps } from './Input';
 export type { ModalProps } from './Modal';
 
+// QR Code Components (Story 2.4)
+export { QRCodeDisplay, type QRCodeDisplayProps } from './QRCodeDisplay';
+
 // Components will be exported here as they are implemented
 // export { Button } from './Button';
 // export { Card } from './Card';

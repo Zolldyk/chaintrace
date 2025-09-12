@@ -23,6 +23,27 @@ export type { HederaConfig } from '@/config/hedera';
 export { HCSService } from './HCSService';
 export { HTSService } from './HTSService';
 export { MirrorNodeService } from './MirrorNodeService';
+
+// Story 2.3: Enhanced HCS Event Logging
+export {
+  HCSEventLogger,
+  HCSRetryManager,
+  hcsEventLogger,
+  type EventLoggingRequest,
+} from './HCSEventLogger';
+export {
+  HCSFailureHandler,
+  hcsFailureHandler,
+  type FailedHCSOperation,
+  type FailureStatistics,
+} from './HCSFailureHandler';
+export {
+  HCSMirrorNodeService,
+  hcsMirrorNodeService,
+  type EventRetrievalResult,
+  type IntegrityValidationResult,
+  type MirrorNodeMessage,
+} from './HCSMirrorNodeService';
 export {
   ComplianceService,
   type ComplianceServiceConfig,

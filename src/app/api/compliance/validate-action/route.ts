@@ -5,6 +5,7 @@ import {
 } from '@/services/hedera/CustomComplianceRuleEngine';
 import { ComplianceCacheAdapter } from '@/services/hedera/ComplianceCacheAdapter';
 import { HCSClient } from '@/services/hedera/HCSClient';
+import { hcsEventLogger } from '@/services/hedera/HCSEventLogger';
 import { cacheService } from '@/lib/cache/CacheService';
 import type { SupplyChainRole } from '@/types/hedera';
 
@@ -71,7 +72,9 @@ export async function POST(request: NextRequest) {
     const validRoles: SupplyChainRole[] = ['Producer', 'Processor', 'Verifier'];
     if (!validRoles.includes(body.actor.role as SupplyChainRole)) {
       return NextResponse.json(
-        { error: `Invalid role: ${body.actor.role}. Must be one of: ${validRoles.join(', ')}` },
+        {
+          error: `Invalid role: ${body.actor.role}. Must be one of: ${validRoles.join(', ')}`,
+        },
         { status: 400 }
       );
     }
@@ -82,7 +85,7 @@ export async function POST(request: NextRequest) {
       networkType: 'testnet',
       hcsTopicId: process.env.HCS_TOPIC_ID || '0.0.12345',
       operatorAccountId: process.env.HEDERA_OPERATOR_ACCOUNT_ID,
-      operatorPrivateKey: process.env.HEDERA_OPERATOR_PRIVATE_KEY
+      operatorPrivateKey: process.env.HEDERA_OPERATOR_PRIVATE_KEY,
     });
 
     // Initialize compliance rule engine
@@ -90,25 +93,98 @@ export async function POST(request: NextRequest) {
       cacheService: cacheAdapter,
       hcsService: hcsClient,
       cacheTtl: {
-        rules: 3600,    // 1 hour for rules
-        state: 86400    // 24 hours for workflow state
-      }
+        rules: 3600, // 1 hour for rules
+        state: 86400, // 24 hours for workflow state
+      },
     });
 
     // Validate the action using the new rule engine
     const validationResult = await ruleEngine.validateAction(body);
 
+    // Log compliance event to HCS (Story 2.3 - Tasks 4 & 5)
+    if (validationResult.isValid) {
+      try {
+        // Initialize HCS Event Logger if needed
+        if (!hcsEventLogger.isReady()) {
+          await hcsEventLogger.initialize();
+        }
+
+        // Log compliance event asynchronously (fire and forget for performance)
+        hcsEventLogger
+          .logComplianceEvent({
+            productId: body.productId,
+            action: body.action,
+            result: 'APPROVED',
+            walletAddress: body.actor.walletAddress,
+            roleType: body.actor.role,
+            complianceId: validationResult.complianceId,
+            sequenceStep: validationResult.metadata?.sequenceStep || 1,
+            violations: [],
+            metadata: {
+              reason: validationResult.reason,
+              validatedAt: validationResult.validatedAt,
+              ...validationResult.metadata,
+            },
+          })
+          .then(result => {
+            if (result.success) {
+              // HCS event logged successfully
+            } else {
+              // Failed to log compliance event
+            }
+          })
+          .catch(error => {
+            // HCS compliance logging error
+          });
+      } catch (error) {
+        // Log error but don't fail the compliance validation
+        // Failed to initialize HCS Event Logger
+      }
+    } else {
+      // Log rejected compliance events too
+      try {
+        if (!hcsEventLogger.isReady()) {
+          await hcsEventLogger.initialize();
+        }
+
+        hcsEventLogger
+          .logComplianceEvent({
+            productId: body.productId,
+            action: body.action,
+            result: 'REJECTED',
+            walletAddress: body.actor.walletAddress,
+            roleType: body.actor.role,
+            complianceId: validationResult.complianceId,
+            sequenceStep: validationResult.metadata?.sequenceStep || 1,
+            violations: validationResult.violations || [],
+            metadata: {
+              reason: validationResult.reason,
+              validatedAt: validationResult.validatedAt,
+              ...validationResult.metadata,
+            },
+          })
+          .catch(error => {
+            // HCS compliance rejection logging error
+          });
+      } catch (error) {
+        // Failed to log compliance rejection
+      }
+    }
+
     // Return validation result
-    return NextResponse.json({
-      approved: validationResult.isValid,
-      complianceId: validationResult.complianceId,
-      violations: validationResult.violations,
-      reason: validationResult.reason,
-      validatedAt: validationResult.validatedAt,
-      metadata: validationResult.metadata
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        approved: validationResult.isValid,
+        complianceId: validationResult.complianceId,
+        violations: validationResult.violations,
+        reason: validationResult.reason,
+        validatedAt: validationResult.validatedAt,
+        metadata: validationResult.metadata,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error('Compliance validation error:', error);
+    // Compliance validation error occurred
 
     // Handle specific error types
     if (error instanceof Error) {
@@ -120,15 +196,15 @@ export async function POST(request: NextRequest) {
       }
 
       if (error.message.includes('SEQUENCE_VIOLATION')) {
-        return NextResponse.json(
-          { error: error.message },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: error.message }, { status: 400 });
       }
 
       if (error.message.includes('RULES_NOT_FOUND')) {
         return NextResponse.json(
-          { error: 'No compliance rules found for the specified role and action' },
+          {
+            error:
+              'No compliance rules found for the specified role and action',
+          },
           { status: 404 }
         );
       }

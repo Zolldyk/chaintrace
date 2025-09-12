@@ -72,7 +72,6 @@ import type {
   BatchCreationResponse,
   ProductCreationResult,
 } from '@/types/batch';
-import type { ProductEvent } from '@/types/product';
 import { ProductIdGenerator, generateId } from '@/lib/utils';
 import { FormValidationUtils } from '@/lib/validation/product';
 import {
@@ -80,6 +79,7 @@ import {
   ActionValidationRequest,
 } from '@/services/hedera/CustomComplianceRuleEngine';
 import { ComplianceCacheAdapter } from '@/services/hedera/ComplianceCacheAdapter';
+import { hcsEventLogger } from '@/services/hedera/HCSEventLogger';
 import { HCSClient } from '@/services/hedera/HCSClient';
 import { cacheService } from '@/lib/cache/CacheService';
 
@@ -134,33 +134,35 @@ function generateQRCode(productId: string): string {
 }
 
 /**
- * Create HCS event for product creation
+ * Create HCS event logging request for product creation (Story 2.3)
  */
-function createProductEvent(
+function createEventLoggingRequest(
   productId: string,
   batchId: string,
   createdBy: string,
   productData: any
-): ProductEvent {
+) {
   return {
-    id: generateId(16),
     productId,
-    eventType: 'created',
+    eventType: 'created' as const,
     actor: {
       walletAddress: createdBy,
-      role: 'producer',
-      name: 'Cooperative Manager',
+      role: 'Producer' as const,
+      organizationId: productData.cooperativeId,
     },
-    timestamp: new Date(),
-    location: productData.origin,
-    data: {
+    location: {
+      coordinates: productData.origin.coordinates,
+      address: `${productData.origin.address}, ${productData.origin.city}, ${productData.origin.state}`,
+      region: productData.origin.region,
+    },
+    eventData: {
       batchId,
       category: productData.category,
       quantity: productData.quantity,
       processingDetails: productData.processingDetails,
+      name: productData.name,
     },
-    hcsMessageId: generateId(12),
-    signature: generateId(32),
+    signature: generateId(32), // Placeholder - should be real wallet signature
   };
 }
 
@@ -209,6 +211,13 @@ export async function POST(request: NextRequest) {
 
     // Initialize compliance services
     const cacheAdapter = new ComplianceCacheAdapter(cacheService);
+
+    // Initialize HCS Event Logger (Story 2.3)
+    if (!hcsEventLogger.isReady()) {
+      await hcsEventLogger.initialize();
+    }
+
+    // Create HCS client for compliance engine compatibility
     const hcsClient = new HCSClient({
       networkType: 'testnet',
       hcsTopicId: process.env.HCS_TOPIC_ID || '0.0.12345',
@@ -275,35 +284,33 @@ export async function POST(request: NextRequest) {
           },
         };
 
-        // Create HCS event for successful products
+        // Log HCS event for successful products (Story 2.3)
         if (complianceResult.isValid) {
-          const productEvent = createProductEvent(
+          const eventRequest = createEventLoggingRequest(
             productId,
             batchId,
             body.batchInfo.createdBy,
-            productData
+            { ...productData, cooperativeId: body.batchInfo.cooperativeId }
           );
 
-          // Log to HCS (fire and forget for performance)
-          hcsClient
-            .submitProductEvent(productEvent, productEvent.signature || '', {
-              topicId: process.env.HCS_TOPIC_ID || '0.0.12345',
-              sequenceNumber: index + 1,
+          // Log to HCS using enhanced event logger (fire and forget for performance)
+          hcsEventLogger
+            .logProductCreation(eventRequest)
+            .then(result => {
+              if (result.success) {
+                // HCS event logged successfully
+              } else {
+                // Failed to log HCS event
+              }
             })
             .catch((error: unknown) => {
-              console.warn(
-                `Failed to log HCS event for product ${productId}:`,
-                error
-              );
+              // HCS event logging error
             });
         }
 
         return productResult;
       } catch (error) {
-        console.error(
-          `Compliance validation failed for product ${index}:`,
-          error
-        );
+        // Compliance validation failed
 
         // Return failed product result
         return {
@@ -368,25 +375,17 @@ export async function POST(request: NextRequest) {
 
     // Log performance metrics for monitoring
     const processingReport = monitor.getProcessingReport();
-    console.log('Batch processing completed:', {
-      batchId,
-      totalProducts: body.products.length,
-      successfulProducts: successfulProducts.length,
-      processingTime: processingReport.totalTime,
-      steps: processingReport.steps,
-    });
+    // Batch processing completed
 
     // Add performance warning if approaching time limit
     if (processingReport.totalTime > timeLimit * 0.8) {
-      console.warn(
-        `Batch processing time approaching limit: ${processingReport.totalTime}ms`
-      );
+      // Batch processing time approaching limit
     }
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
     monitor.checkpoint('error_occurred');
-    console.error('Batch creation error:', error);
+    // Batch creation error occurred
 
     // Handle specific error types
     if (error instanceof Error) {

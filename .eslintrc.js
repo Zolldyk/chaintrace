@@ -35,5 +35,11 @@ module.exports = {
         'no-console': 'off',
       },
     },
+    {
+      files: ['src/app/api/**/*.ts', 'src/lib/logger.ts'],
+      rules: {
+        'no-console': 'off', // Allow console logging in API routes and logger
+      },
+    },
   ],
 };

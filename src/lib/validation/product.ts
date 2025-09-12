@@ -144,7 +144,43 @@ export const TokenRewardSchema = z.object({
 });
 
 /**
- * HCS Message validation schema
+ * Enhanced HCS Event Message validation schema (Story 2.3)
+ * Validates the new HCSEventMessage format for immutable audit trails
+ */
+export const HCSEventMessageSchema = z.object({
+  version: z.string().min(1, 'Version is required'),
+  productId: ProductIdSchema,
+  eventType: z.enum([
+    'created',
+    'processed',
+    'quality_check',
+    'transported',
+    'verified',
+    'rejected',
+  ]),
+  timestamp: z
+    .string()
+    .datetime({ message: 'Timestamp must be valid ISO 8601 format' }),
+  actor: z.object({
+    walletAddress: HederaAccountIdSchema,
+    role: z.enum(['Producer', 'Processor', 'Verifier']),
+    organizationId: z.string().min(1).optional(),
+  }),
+  location: z.object({
+    coordinates: z.object({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+    }),
+    address: z.string().min(1, 'Address is required'),
+    region: z.string().min(1, 'Region is required'),
+  }),
+  eventData: z.record(z.any()),
+  previousEventId: z.string().min(1).optional(),
+  signature: z.string().min(1, 'Signature is required'),
+});
+
+/**
+ * HCS Message validation schema (Legacy - maintained for backward compatibility)
  */
 export const HCSMessageSchema = z.object({
   version: z.literal('1.0'),

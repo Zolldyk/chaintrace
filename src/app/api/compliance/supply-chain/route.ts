@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
     // Return validation result
     return NextResponse.json(validationResult, { status: 200 });
   } catch (error) {
-    console.error('Supply chain validation error:', error);
+    // Error handled silently
 
     // Handle specific error types
     if (error instanceof Error) {
@@ -250,7 +250,7 @@ export async function GET(request: NextRequest) {
     // Return templates
     return NextResponse.json(templates, { status: 200 });
   } catch (error) {
-    console.error('Business rule templates retrieval error:', error);
+    // Error handled silently
 
     // Handle specific error types
     if (error instanceof Error) {

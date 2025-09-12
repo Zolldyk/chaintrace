@@ -7,8 +7,9 @@
  * import { env } from '@/lib/env';
  *
  * // Type-safe access to environment variables
- * console.log(env.NEXT_PUBLIC_HEDERA_NETWORK); // 'testnet' | 'mainnet'
- * console.log(env.SUPABASE_URL); // string
+ * // Access environment variables with type safety
+ * const network = env.NEXT_PUBLIC_HEDERA_NETWORK; // 'testnet' | 'mainnet'
+ * const supabaseUrl = env.SUPABASE_URL; // string
  * ```
  *
  * @since 1.0.0
@@ -137,9 +138,9 @@ export type Env = z.infer<typeof envSchema>;
  * ```typescript
  * try {
  *   const config = validateEnv();
- *   console.log('Environment validation passed');
+ *   // Environment validation passed
  * } catch (error) {
- *   console.error('Environment validation failed:', error.message);
+ *   // Handle environment validation failure
  *   process.exit(1);
  * }
  * ```
@@ -231,12 +232,18 @@ if (typeof window === 'undefined') {
   // Only validate on server-side to avoid exposing secrets to client
   try {
     validateEnv();
-    console.log('✅ Environment variables validated successfully');
+    if (process.env.NODE_ENV === 'development') {
+      /* eslint-disable-next-line no-console */
+      console.log('✅ Environment variables validated successfully');
+    }
   } catch (error) {
-    console.error(
-      '❌ Environment validation failed:',
-      (error as Error).message
-    );
+    if (process.env.NODE_ENV === 'development') {
+      /* eslint-disable-next-line no-console */
+      console.error(
+        '❌ Environment validation failed:',
+        (error as Error).message
+      );
+    }
     if (env.NODE_ENV === 'production') {
       process.exit(1);
     }

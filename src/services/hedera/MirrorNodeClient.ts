@@ -339,7 +339,7 @@ export class MirrorNodeClient extends HederaServiceClient {
           });
         }
       } catch (error) {
-        console.warn('Failed to parse HCS message:', error);
+        // HCS message parsing error handled silently
       }
     }
 

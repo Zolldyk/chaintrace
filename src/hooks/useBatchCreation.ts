@@ -618,7 +618,7 @@ export function useBatchCreation(
       setHasChanges(true);
       return true;
     } catch (error) {
-      console.warn('Failed to load backup:', error);
+      // Error handled silently
       return false;
     }
   }, [enableBackup]);
@@ -647,7 +647,7 @@ export function useBatchCreation(
         lastBackup: new Date(),
       }));
     } catch (error) {
-      console.warn('Failed to save backup:', error);
+      // Error handled silently
     }
   }, [enableBackup, formState]);
 

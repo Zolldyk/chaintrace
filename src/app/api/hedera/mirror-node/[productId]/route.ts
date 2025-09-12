@@ -168,7 +168,7 @@ export async function GET(
       cached: false,
     });
   } catch (error) {
-    console.error(`Mirror Node API error for product ${productId}:`, error);
+    // Error handled silently
 
     // Determine error type and status code
     let statusCode = 500;

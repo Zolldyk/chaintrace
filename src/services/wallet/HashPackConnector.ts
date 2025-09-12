@@ -13,7 +13,7 @@
  *
  * const result = await hashPackConnector.connect();
  * if (result.success) {
- *   console.log('Connected to HashPack');
+ *   // Connected to HashPack
  * }
  * ```
  *
@@ -102,7 +102,7 @@ export class HashPackConnector implements WalletConnector {
     // TODO: Update to current HashConnect API version
     // Transaction events need API version compatibility check
     // this.hashConnect.transactionEvent.on((data: any) => {
-    //   console.log('HashConnect transaction:', data);
+    //   // HashConnect transaction data available
     // });
   }
 
@@ -116,7 +116,7 @@ export class HashPackConnector implements WalletConnector {
    * ```typescript
    * const result = await hashPackConnector.connect();
    * if (result.success) {
-   *   console.log(`Connected: ${result.accountId}`);
+   *   // Handle connection result
    * }
    * ```
    *
@@ -202,7 +202,7 @@ export class HashPackConnector implements WalletConnector {
    * ```typescript
    * const available = await hashPackConnector.isAvailable();
    * if (available) {
-   *   console.log('HashPack is available');
+   *   // HashPack is available
    * }
    * ```
    *
@@ -238,7 +238,7 @@ export class HashPackConnector implements WalletConnector {
    * @example
    * ```typescript
    * const signature = await hashPackConnector.signMessage('Hello ChainTrace');
-   * console.log('Signature:', signature);
+   * // Handle signature result
    * ```
    *
    * @since 1.0.0
@@ -285,7 +285,7 @@ export class HashPackConnector implements WalletConnector {
    * @example
    * ```typescript
    * const account = await hashPackConnector.getAccountInfo();
-   * console.log(`Account: ${account.accountId}`);
+   * // Display account information
    * ```
    *
    * @since 1.0.0
@@ -313,7 +313,7 @@ export class HashPackConnector implements WalletConnector {
    * @example
    * ```typescript
    * const txId = await hashPackConnector.executeTransaction(transactionBytes);
-   * console.log('Transaction executed:', txId);
+   * // Handle transaction result
    * ```
    *
    * @since 1.0.0
@@ -361,7 +361,7 @@ export class HashPackConnector implements WalletConnector {
    * @example
    * ```typescript
    * const pairingString = await hashPackConnector.getPairingString();
-   * console.log('Pairing string:', pairingString);
+   * // Display pairing string
    * ```
    *
    * @since 1.0.0

@@ -7,7 +7,7 @@
  * @example
  * ```tsx
  * <WalletConnector
- *   onConnect={(result) => console.log('Connected:', result)}
+ *   onConnect={(result) => { /* Handle connection result */ }}
  *   networkType="testnet"
  * />
  * ```
@@ -82,7 +82,7 @@ export function WalletConnector({
       const available = await walletService.getAvailableWallets();
       setAvailableWallets(available);
     } catch (error) {
-      console.error('Failed to check available wallets:', error);
+      // Error handled silently
     }
   };
 

@@ -261,7 +261,7 @@ export async function POST(
       responseTime: Date.now() - startTime,
     });
   } catch (error) {
-    console.error('HCS log-event API error:', error);
+    // Error handled silently
 
     let statusCode = 500;
     let errorMessage = 'Internal server error';

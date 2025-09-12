@@ -62,7 +62,7 @@ export class ComplianceService {
    *   actor: { walletAddress: '0.0.67890', role: 'verifier' },
    *   data: { verificationMethod: 'qr_scan', location: 'warehouse_a' }
    * });
-   * console.log(validation.isCompliant); // true | false
+   * // validation.isCompliant: true | false
    * ```
    *
    * @since 1.0.0
@@ -108,7 +108,7 @@ export class ComplianceService {
    *   issuer: { walletAddress: '0.0.12345', role: 'certifier' },
    *   evidence: { documentHash: 'abc123...', signature: 'def456...' }
    * });
-   * console.log(credential.credentialId); // 'CRED-2024-001'
+   * // credential.credentialId: 'CRED-2024-001'
    * ```
    *
    * @since 1.0.0
@@ -153,7 +153,7 @@ export class ComplianceService {
    *   ],
    *   businessRules: ['organic_certification', 'traceability_complete']
    * });
-   * console.log(verification.complianceScore); // 0.95
+   * // verification.complianceScore: 0.95
    * ```
    *
    * @since 1.0.0
@@ -190,8 +190,8 @@ export class ComplianceService {
    * @example
    * ```typescript
    * const templates = await complianceService.getBusinessRuleTemplates('supply_chain');
-   * console.log(templates.length); // Number of available templates
-   * console.log(templates[0].id); // 'organic_certification_v1'
+   * // templates.length: Number of available templates
+   * // templates[0].id: 'organic_certification_v1'
    * ```
    *
    * @since 1.0.0
@@ -227,8 +227,8 @@ export class ComplianceService {
    * @example
    * ```typescript
    * const health = await complianceService.healthCheck();
-   * console.log(health.status); // 'healthy' | 'degraded' | 'unhealthy'
-   * console.log(health.responseTime); // Response time in milliseconds
+   * // health.status: 'healthy' | 'degraded' | 'unhealthy'
+   * // health.responseTime: Response time in milliseconds
    * ```
    *
    * @since 1.0.0

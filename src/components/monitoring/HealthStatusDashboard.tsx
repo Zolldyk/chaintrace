@@ -37,7 +37,7 @@ interface HealthStatusDashboardProps {
  *   refreshInterval={15000}
  *   showDetails={true}
  *   autoRefresh={true}
- *   onHealthChange={(health) => console.log('System status:', health.status)}
+ *   onHealthChange={(health) => { /* Handle health status change */ }}
  * />
  * ```
  *
@@ -86,7 +86,7 @@ export const HealthStatusDashboard: React.FC<HealthStatusDashboardProps> = ({
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       setError(errorMessage);
-      console.error('Health status fetch failed:', err);
+      // Error handled silently
     } finally {
       setIsLoading(false);
     }

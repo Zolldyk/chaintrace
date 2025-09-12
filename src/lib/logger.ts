@@ -100,12 +100,14 @@ class Logger {
       const reset = '\x1b[0m';
       const color = levelColors[level];
 
+      /* eslint-disable-next-line no-console */
       console.log(
         `${color}[${level.toUpperCase()}]${reset} ${message}`,
         context ? JSON.stringify(context, null, 2) : ''
       );
     } else {
       // Structured JSON for production
+      /* eslint-disable-next-line no-console */
       console.log(JSON.stringify(logEntry));
     }
   }

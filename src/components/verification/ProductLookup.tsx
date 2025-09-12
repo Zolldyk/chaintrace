@@ -104,7 +104,6 @@ const QRScanner: React.FC<{
           setScanning(true);
         }
       } catch (error) {
-        console.error('Camera access error:', error);
         setHasPermission(false);
         onError('Camera access denied or not available');
       }
@@ -381,9 +380,8 @@ export const ProductLookup = React.forwardRef<
     /**
      * Handles QR scanning errors
      */
-    const handleQrError = useCallback((error: string) => {
-      console.error('QR Scan Error:', error);
-      // Could show error to user here if needed
+    const handleQrError = useCallback((_error: string) => {
+      // Error handled silently - could show error to user here if needed
     }, []);
 
     /**

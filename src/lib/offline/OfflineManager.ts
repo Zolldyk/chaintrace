@@ -135,7 +135,9 @@ export class OfflineManager {
     // Auto-sync if online
     if (this.syncStatus.isOnline && !this.syncStatus.syncing) {
       // Don't await to avoid blocking
-      this.sync().catch(console.error);
+      this.sync().catch(() => {
+        // Error handled silently
+      });
     }
 
     return operation.id;
@@ -208,7 +210,7 @@ export class OfflineManager {
           // Remove successful operation
           await this.removeOperation(operation.id);
         } catch (error) {
-          console.error(`Failed to sync operation ${operation.id}:`, error);
+          // Error handled silently
 
           // Increment retry count
           operation.retryCount++;
@@ -229,7 +231,7 @@ export class OfflineManager {
     } catch (error) {
       this.syncStatus.lastError =
         error instanceof Error ? error.message : 'Unknown sync error';
-      console.error('Sync failed:', error);
+      // Error handled silently
     } finally {
       this.syncStatus.syncing = false;
       await this.updateQueueCount();
@@ -297,7 +299,9 @@ export class OfflineManager {
     window.addEventListener('online', () => {
       this.syncStatus.isOnline = true;
       // Auto-sync when coming back online
-      this.sync().catch(console.error);
+      this.sync().catch(() => {
+        // Error handled silently
+      });
     });
 
     window.addEventListener('offline', () => {

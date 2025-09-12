@@ -78,9 +78,13 @@ export class ErrorBoundary extends Component<
    * @param errorInfo - Additional information about the error
    */
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error details
-    console.error('ErrorBoundary caught an error:', error);
-    console.error('Error Info:', errorInfo);
+    // Log error details in development only
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('ErrorBoundary caught an error:', error);
+      // eslint-disable-next-line no-console
+      console.error('Error Info:', errorInfo);
+    }
 
     // Update state with error info
     this.setState({

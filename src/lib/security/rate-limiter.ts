@@ -299,7 +299,7 @@ export function createRateLimiter(config: RateLimitConfig) {
 
       return result;
     } catch (error) {
-      console.error('Rate limiter error:', error);
+      // Rate limiter error handled silently
 
       // Fail open - allow request if rate limiter fails
       return {

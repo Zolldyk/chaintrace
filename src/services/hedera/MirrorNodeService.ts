@@ -14,7 +14,7 @@
  * });
  *
  * const product = await mirrorNodeService.getProductData('PROD-2024-001');
- * console.log('Product status:', product.verified);
+ * // Check product verification status
  * ```
  *
  * @since 1.0.0
@@ -345,7 +345,7 @@ export class MirrorNodeService {
    * @example
    * ```typescript
    * const account = await mirrorNodeService.getAccountInfo('0.0.12345');
-   * console.log(`Balance: ${account.balance.balance}`);
+   * // Display account balance
    * ```
    *
    * @since 1.0.0
@@ -363,7 +363,7 @@ export class MirrorNodeService {
    * @example
    * ```typescript
    * const tx = await mirrorNodeService.getTransaction('0.0.12345-1234567890-123456789');
-   * console.log(`Result: ${tx.result}`);
+   * // Check transaction result
    * ```
    *
    * @since 1.0.0
@@ -384,7 +384,7 @@ export class MirrorNodeService {
    * @example
    * ```typescript
    * const response = await mirrorNodeService.getAccountTransactions('0.0.12345', 10);
-   * console.log(`Found ${response.data.transactions.length} transactions`);
+   * // Process transaction data
    * ```
    *
    * @since 1.0.0
@@ -407,7 +407,7 @@ export class MirrorNodeService {
    * @example
    * ```typescript
    * const topic = await mirrorNodeService.getTopicInfo('0.0.67890');
-   * console.log(`Sequence: ${topic.sequence_number}`);
+   * // Check topic sequence
    * ```
    *
    * @since 1.0.0
@@ -427,7 +427,7 @@ export class MirrorNodeService {
    * ```typescript
    * const response = await mirrorNodeService.getTopicMessages('0.0.67890', 50);
    * response.data.messages.forEach(msg => {
-   *   console.log(`Message: ${Buffer.from(msg.message, 'base64').toString()}`);
+   *   // Process HCS message content
    * });
    * ```
    *
@@ -453,7 +453,7 @@ export class MirrorNodeService {
    * ```typescript
    * const product = await mirrorNodeService.getProductVerification('PROD-2024-001');
    * if (product.verified) {
-   *   console.log('Product is verified!');
+   *   // Product verification successful
    * }
    * ```
    *
@@ -540,7 +540,7 @@ export class MirrorNodeService {
    * @example
    * ```typescript
    * const health = await mirrorNodeService.healthCheck();
-   * console.log(`Mirror Node is ${health.healthy ? 'healthy' : 'unhealthy'}`);
+   * // Check Mirror Node health status
    * ```
    *
    * @since 1.0.0

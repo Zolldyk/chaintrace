@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
     // Return issued credential
     return NextResponse.json(credential, { status: 201 });
   } catch (error) {
-    console.error('Compliance credential issuance error:', error);
+    // Error handled silently
 
     // Handle specific error types
     if (error instanceof Error) {

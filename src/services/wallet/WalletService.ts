@@ -13,7 +13,7 @@
  * // Connect to MetaMask Snap
  * const snapResult = await walletService.connectSnap();
  * if (snapResult.success) {
- *   console.log('Connected to Hedera Snap:', snapResult.accountId);
+ *   // Handle successful connection
  * }
  * ```
  *
@@ -181,9 +181,9 @@ export class WalletService {
    * ```typescript
    * const result = await walletService.connectSnap();
    * if (result.success) {
-   *   console.log(`Connected to account: ${result.accountId}`);
+   *   // Handle successful connection
    * } else {
-   *   console.error('Connection failed:', result.error);
+   *   // Handle connection error
    * }
    * ```
    *
@@ -243,7 +243,7 @@ export class WalletService {
    * ```typescript
    * const result = await walletService.connectHashPack();
    * if (result.success) {
-   *   console.log(`Connected to HashPack: ${result.accountId}`);
+   *   // Handle HashPack connection
    * }
    * ```
    *
@@ -301,7 +301,7 @@ export class WalletService {
    * @example
    * ```typescript
    * const result = await walletService.autoConnect();
-   * console.log(`Auto-connected to: ${result.walletType}`);
+   * // Handle auto-connection result
    * ```
    *
    * @since 1.0.0
@@ -341,7 +341,7 @@ export class WalletService {
    * @example
    * ```typescript
    * await walletService.disconnect();
-   * console.log('Wallet disconnected');
+   * // Handle wallet disconnection
    * ```
    *
    * @since 1.0.0
@@ -363,7 +363,7 @@ export class WalletService {
    * @example
    * ```typescript
    * const challenge = await walletService.generateChallenge('0.0.12345');
-   * console.log('Sign this message:', challenge.message);
+   * // Display signing challenge
    * ```
    *
    * @since 1.0.0
@@ -392,7 +392,7 @@ export class WalletService {
    * @example
    * ```typescript
    * const signature = await walletService.signMessage('Hello ChainTrace');
-   * console.log('Signature:', signature);
+   * // Handle signature result
    * ```
    *
    * @since 1.0.0
@@ -421,7 +421,7 @@ export class WalletService {
    * ```typescript
    * const result = await walletService.verifySignature(signature, message, '0.0.12345');
    * if (result.valid) {
-   *   console.log('Signature verified for account:', result.accountId);
+   *   // Handle successful verification
    * }
    * ```
    *
@@ -460,7 +460,7 @@ export class WalletService {
    * @example
    * ```typescript
    * const status = walletService.getStatus();
-   * console.log('Wallet status:', status);
+   * // Check wallet status
    * ```
    *
    * @since 1.0.0
@@ -477,7 +477,7 @@ export class WalletService {
    * @example
    * ```typescript
    * if (walletService.isConnected()) {
-   *   console.log('Wallet is connected');
+   *   // Wallet is connected
    * }
    * ```
    *
@@ -496,7 +496,7 @@ export class WalletService {
    * @example
    * ```typescript
    * const account = await walletService.getAccountInfo();
-   * console.log(`Account: ${account.accountId}, Balance: ${account.balance}`);
+   * // Display account information
    * ```
    *
    * @since 1.0.0
@@ -517,7 +517,7 @@ export class WalletService {
    * @example
    * ```typescript
    * const available = await walletService.getAvailableWallets();
-   * console.log('Available wallets:', available);
+   * // List available wallets
    * ```
    *
    * @since 1.0.0

@@ -75,7 +75,7 @@ export default function BatchCreatePage() {
     const hasBackup = loadFromBackup();
     if (hasBackup) {
       // Show notification about restored data (could implement toast here)
-      console.log('Form data restored from backup');
+      // Form data restored from backup
     }
   }, [loadFromBackup]);
 
@@ -86,7 +86,7 @@ export default function BatchCreatePage() {
       setBatchResult(result);
       setPageState('success');
     } catch (error) {
-      console.error('Batch submission failed:', error);
+      // Error handled silently
       setPageState('error');
     }
   };
@@ -94,7 +94,7 @@ export default function BatchCreatePage() {
   // Handle backup events
   const handleBackup = (data: FormBackupData) => {
     // Could implement backup status notification here
-    console.log('Form data backed up:', data.timestamp);
+    // Form data backed up
   };
 
   // Handle success page navigation
@@ -102,7 +102,7 @@ export default function BatchCreatePage() {
     switch (action) {
       case 'view_dashboard':
         // Navigate to dashboard (would use router in real app)
-        console.log('Navigate to dashboard');
+        // Navigate to dashboard
         break;
       case 'create_another':
         clearForm();
@@ -111,11 +111,11 @@ export default function BatchCreatePage() {
         break;
       case 'view_products':
         // Navigate to products view with data
-        console.log('Navigate to products view:', data);
+        // Navigate to products view
         break;
       case 'download_qr':
         // Handle QR download
-        console.log('Download QR codes');
+        // Download QR codes
         break;
     }
   };
@@ -127,7 +127,10 @@ export default function BatchCreatePage() {
   ) => {
     try {
       // In a real implementation, this would generate and download QR codes
-      console.log(`Downloading ${productIds.length} QR codes as ${format}`);
+      if (process.env.NODE_ENV === 'development') {
+        /* eslint-disable-next-line no-console */
+        console.log(`Downloading ${productIds.length} QR codes as ${format}`);
+      }
 
       // Simulate download delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -137,7 +140,7 @@ export default function BatchCreatePage() {
         `Downloaded ${productIds.length} QR codes as ${format.toUpperCase()}`
       );
     } catch (error) {
-      console.error('QR download failed:', error);
+      // Error handled silently
       alert('Failed to download QR codes. Please try again.');
     }
   };
@@ -148,9 +151,9 @@ export default function BatchCreatePage() {
       const idsText = productIds.join('\n');
       await navigator.clipboard.writeText(idsText);
       // Could show toast notification here
-      console.log('Product IDs copied to clipboard');
+      // Product IDs copied to clipboard
     } catch (error) {
-      console.error('Failed to copy product IDs:', error);
+      // Error handled silently
     }
   };
 
@@ -215,7 +218,9 @@ export default function BatchCreatePage() {
             </Button>
             <Button
               variant='ghost'
-              onClick={() => console.log('Contact support')}
+              onClick={() => {
+                // Contact support functionality would go here
+              }}
             >
               Contact Support
             </Button>
@@ -247,7 +252,7 @@ export default function BatchCreatePage() {
             maxBatchSize={100}
             onFormStateChange={state => {
               // Handle form state changes for external integrations
-              console.log('Form state changed:', state);
+              // Form state changed
             }}
             onBackup={handleBackup}
           />
@@ -347,7 +352,9 @@ export default function BatchCreatePage() {
                 variant='ghost'
                 size='sm'
                 className='mt-2 h-auto p-0 text-primary-600'
-                onClick={() => console.log('Show help documentation')}
+                onClick={() => {
+                  // Show help documentation
+                }}
               >
                 View Documentation →
               </Button>

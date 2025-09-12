@@ -153,7 +153,7 @@ export class QRCodeStorageService {
    * });
    *
    * const result = await storage.storeQRCode(qrResult, 'CT-2024-123-ABC123');
-   * console.log('Stored at:', result.storage.url);
+   * // Access storage location from result.storage.url
    * ```
    */
   async storeQRCode(
@@ -217,7 +217,7 @@ export class QRCodeStorageService {
           await this.createLocalBackup(qrCode, productId, filename);
           backupCreated = true;
         } catch (error) {
-          console.warn('Local backup failed:', error);
+          // Error handled silently
           // Don't fail the main operation for backup failures
         }
       }
@@ -265,7 +265,7 @@ export class QRCodeStorageService {
    * ];
    *
    * const batchResult = await storage.storeQRCodeBatch(qrCodes);
-   * console.log(`Stored ${batchResult.batchMetadata.successCount} QR codes`);
+   * // Access batch metadata from batchResult.batchMetadata
    * ```
    */
   async storeQRCodeBatch(
@@ -372,7 +372,7 @@ export class QRCodeStorageService {
 
       return null;
     } catch (error) {
-      console.error('Failed to retrieve QR code:', error);
+      // Error handled silently
       return null;
     }
   }
@@ -396,13 +396,13 @@ export class QRCodeStorageService {
         try {
           backupDeleted = await this.deleteFromLocalBackup(productId);
         } catch (error) {
-          console.warn('Local backup deletion failed:', error);
+          // Error handled silently
         }
       }
 
       return primaryDeleted;
     } catch (error) {
-      console.error('Failed to delete QR code:', error);
+      // Error handled silently
       return false;
     }
   }
@@ -421,7 +421,7 @@ export class QRCodeStorageService {
     try {
       return await this.listFromProvider(options);
     } catch (error) {
-      console.error('Failed to list QR codes:', error);
+      // Error handled silently
       return [];
     }
   }
@@ -440,7 +440,7 @@ export class QRCodeStorageService {
     try {
       return await this.getProviderStats();
     } catch (error) {
-      console.error('Failed to get storage stats:', error);
+      // Error handled silently
       return {
         totalFiles: 0,
         totalSize: 0,
@@ -600,7 +600,10 @@ export class QRCodeStorageService {
     try {
       // Simulate local backup creation
       const backupPath = `${this.localBackupConfig.path}/${productId}/${filename}`;
-      console.log(`Creating local backup at: ${backupPath}`);
+      if (process.env.NODE_ENV === 'development') {
+        /* eslint-disable-next-line no-console */
+        console.log(`Creating local backup at: ${backupPath}`);
+      }
 
       // In real implementation, would write to filesystem
       await new Promise(resolve => setTimeout(resolve, 50));

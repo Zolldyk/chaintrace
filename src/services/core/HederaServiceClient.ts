@@ -199,10 +199,13 @@ export abstract class HederaServiceClient {
         lastError = error instanceof Error ? error : new Error(String(error));
 
         // Log attempt failure
-        console.warn(
-          `${context.operationName} attempt ${attempt}/${retryConfig.maxAttempts} failed:`,
-          lastError.message
-        );
+        if (process.env.NODE_ENV === 'development') {
+          /* eslint-disable-next-line no-console */
+          console.warn(
+            `${context.operationName} attempt ${attempt}/${retryConfig.maxAttempts} failed:`,
+            lastError.message
+          );
+        }
 
         // Don't retry on certain errors
         if (this.shouldNotRetry(lastError)) {

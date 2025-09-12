@@ -325,7 +325,10 @@ export async function generateProductQRCode(
     };
 
     const processingTime = Date.now() - startTime;
-    console.log(`Generated QR code for ${productId} in ${processingTime}ms`);
+    if (process.env.NODE_ENV === 'development') {
+      /* eslint-disable-next-line no-console */
+      console.log(`Generated QR code for ${productId} in ${processingTime}ms`);
+    }
 
     return result;
   } catch (error) {
@@ -382,7 +385,7 @@ export async function generateProductQRCode(
  * };
  *
  * const results = await generateProductQRCodeBatch(batchRequest);
- * console.log(`Generated ${results.batchMetadata.successCount} QR codes`);
+ * // Log batch generation results if needed
  * ```
  *
  * @since 2.4.0
@@ -477,9 +480,9 @@ export async function generateProductQRCodeBatch(
  * const verification = validateQRCode('https://chaintrace.app/verify/CT-2024-123-ABC123?source=qr');
  *
  * if (verification.isValid) {
- *   console.log('Product ID:', verification.productId);
+ *   // Access product ID from verification result
  * } else {
- *   console.error('QR code errors:', verification.errors);
+ *   // Handle QR code errors appropriately
  * }
  * ```
  *
@@ -570,7 +573,7 @@ export function validateQRCode(
  * @example
  * ```typescript
  * const productId = extractProductIdFromQR('https://chaintrace.app/verify/CT-2024-123-ABC123');
- * console.log(productId); // 'CT-2024-123-ABC123'
+ * // productId: 'CT-2024-123-ABC123'
  * ```
  *
  * @since 2.4.0

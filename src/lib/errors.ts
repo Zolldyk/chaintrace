@@ -448,8 +448,9 @@ export async function withRetry<T>(
       const isRetryable = error instanceof ChainTraceError && error.retryable;
       const isLastAttempt = attempt === config.maxRetries;
 
-      if (config.enableLogging) {
+      if (config.enableLogging && process.env.NODE_ENV === 'development') {
         const level = isLastAttempt ? 'error' : 'warn';
+        /* eslint-disable-next-line no-console */
         console[level](`Operation attempt ${attempt + 1} failed:`, {
           error: lastError.message,
           code: error instanceof ChainTraceError ? error.code : 'UNKNOWN',
@@ -471,7 +472,10 @@ export async function withRetry<T>(
       );
 
       if (config.enableLogging && config.logLevel === 'debug') {
-        console.debug(`Retrying in ${delay}ms...`);
+        if (process.env.NODE_ENV === 'development') {
+          /* eslint-disable-next-line no-console */
+          console.debug(`Retrying in ${delay}ms...`);
+        }
       }
 
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -533,14 +537,17 @@ export function handleError(
   }
 
   // Log error with context
-  console.error('Error handled:', {
-    message: chainTraceError.message,
-    code: chainTraceError.code,
-    statusCode: chainTraceError.statusCode,
-    retryable: chainTraceError.retryable,
-    context: { ...context, errorContext: chainTraceError.context },
-    stack: chainTraceError.stack,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    /* eslint-disable-next-line no-console */
+    console.error('Error handled:', {
+      message: chainTraceError.message,
+      code: chainTraceError.code,
+      statusCode: chainTraceError.statusCode,
+      retryable: chainTraceError.retryable,
+      context: { ...context, errorContext: chainTraceError.context },
+      stack: chainTraceError.stack,
+    });
+  }
 
   // Return sanitized error response
   return {
@@ -672,9 +679,10 @@ function sanitizeErrorMessage(message: string): string {
  * ```typescript
  * const error = new NetworkError('Failed to connect to Mirror Node');
  * const message = createUserFriendlyMessage(error);
- * console.log(message.title); // "Connection Problem"
- * console.log(message.description); // "Unable to connect to the blockchain network"
- * console.log(message.resolution); // "Please check your internet connection and try again"
+ * // Access user-friendly error messages
+ * const title = message.title; // "Connection Problem"
+ * const description = message.description; // "Unable to connect to the blockchain network"
+ * const resolution = message.resolution; // "Please check your internet connection and try again"
  * ```
  */
 export function createUserFriendlyMessage(error: ChainTraceError): {

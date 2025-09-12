@@ -169,7 +169,7 @@ export function ProductBatchForm({
           setFormState(prev => ({ ...prev, lastBackup: new Date() }));
           onBackup?.(backupData);
         } catch (error) {
-          console.warn('Failed to backup form data:', error);
+          // Silent fail for backup - not critical for user experience
         }
       }
     }, 30000); // 30 seconds

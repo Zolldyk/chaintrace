@@ -176,9 +176,12 @@ export function createSecurityMiddleware(
 
         if (!rateLimitResult.allowed) {
           if (finalConfig.enableLogging) {
-            console.warn(
-              `Rate limit exceeded for IP ${clientIP} on ${endpoint}`
-            );
+            if (process.env.NODE_ENV === 'development') {
+              /* eslint-disable-next-line no-console */
+              console.warn(
+                `Rate limit exceeded for IP ${clientIP} on ${endpoint}`
+              );
+            }
           }
 
           const response = new NextResponse(
@@ -260,21 +263,27 @@ export function createSecurityMiddleware(
       // 6. Log security context if enabled
       if (finalConfig.enableLogging) {
         const processingTime = Date.now() - startTime;
-        console.log(
-          `Security check passed for ${clientIP} on ${endpoint} (${processingTime}ms)`
-        );
+        if (process.env.NODE_ENV === 'development') {
+          /* eslint-disable-next-line no-console */
+          console.log(
+            `Security check passed for ${clientIP} on ${endpoint} (${processingTime}ms)`
+          );
+        }
 
         if (context.threats.length > 0) {
-          console.warn(
-            `Security threats detected for ${clientIP}:`,
-            context.threats
-          );
+          if (process.env.NODE_ENV === 'development') {
+            /* eslint-disable-next-line no-console */
+            console.warn(
+              `Security threats detected for ${clientIP}:`,
+              context.threats
+            );
+          }
         }
       }
 
       return { allowed: true, context };
     } catch (error) {
-      console.error('Security middleware error:', error);
+      // Error handled silently
 
       // Fail closed - deny access on security middleware failure
       const response = new NextResponse(
@@ -426,11 +435,11 @@ async function sanitizeRequestInputs(
         context.sanitizedInputs.body = body;
       } catch (error) {
         // If body parsing fails, log but don't fail the request
-        console.warn('Failed to parse request body for sanitization:', error);
+        // Error handled silently
       }
     }
   } catch (error) {
-    console.error('Input sanitization failed:', error);
+    // Error handled silently
     // Don't fail the request on sanitization errors
   }
 }

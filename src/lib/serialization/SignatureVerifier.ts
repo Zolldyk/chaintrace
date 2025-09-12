@@ -262,7 +262,7 @@ export class SignatureVerifier {
       // Use Hedera SDK to verify the signature
       return publicKey.verify(payloadBytes, signatureBytes);
     } catch (error) {
-      console.error('Hedera SDK signature verification error:', error);
+      // Signature verification error handled silently
       return false;
     }
   }

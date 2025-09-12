@@ -89,7 +89,9 @@ export class FocusManager {
    * Save current focus for restoration later
    */
   saveFocus(): void {
-    this.previousActiveElement = document.activeElement;
+    if (typeof document !== 'undefined') {
+      this.previousActiveElement = document.activeElement;
+    }
   }
 
   /**
@@ -148,6 +150,8 @@ export class FocusManager {
    * Trap focus within container
    */
   trapFocus(container: HTMLElement, event: KeyboardEvent): void {
+    if (typeof document === 'undefined') return;
+
     const focusable = this.getFocusableElements(container);
 
     if (focusable.length === 0) return;
@@ -178,6 +182,8 @@ export function announceToScreenReader(
   message: string,
   priority: 'polite' | 'assertive' = 'polite'
 ): void {
+  if (typeof document === 'undefined') return;
+
   const announcement = document.createElement('div');
   announcement.setAttribute('aria-live', priority);
   announcement.setAttribute('aria-atomic', 'true');
@@ -281,7 +287,7 @@ export function generateQRDescribedBy(
  */
 export function isHighContrastMode(): boolean {
   // Check for Windows high contrast mode
-  if (window.matchMedia) {
+  if (typeof window !== 'undefined' && window.matchMedia) {
     return (
       window.matchMedia('(-ms-high-contrast: active)').matches ||
       window.matchMedia('(forced-colors: active)').matches ||
@@ -295,7 +301,7 @@ export function isHighContrastMode(): boolean {
  * Reduced motion preference detection
  */
 export function prefersReducedMotion(): boolean {
-  if (window.matchMedia) {
+  if (typeof window !== 'undefined' && window.matchMedia) {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
   return false;
@@ -305,7 +311,7 @@ export function prefersReducedMotion(): boolean {
  * Color scheme preference detection
  */
 export function getPreferredColorScheme(): 'light' | 'dark' | 'auto' {
-  if (window.matchMedia) {
+  if (typeof window !== 'undefined' && window.matchMedia) {
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }

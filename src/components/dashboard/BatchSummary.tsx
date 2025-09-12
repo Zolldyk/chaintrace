@@ -273,7 +273,10 @@ export function BatchSummary({
         onSelectionChange?.([]);
         break;
       case 'clearAll':
-        if (window.confirm('Are you sure you want to clear all products?')) {
+        if (
+          typeof window !== 'undefined' &&
+          window.confirm('Are you sure you want to clear all products?')
+        ) {
           onBulkAction?.(action);
         }
         break;

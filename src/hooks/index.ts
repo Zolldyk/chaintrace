@@ -13,3 +13,9 @@ export {
   useWalletErrorHandling,
   useFormErrorHandling,
 } from './useErrorHandling';
+
+export {
+  useWallet,
+  type UseWalletResult,
+  type UseWalletConfig,
+} from './useWallet';

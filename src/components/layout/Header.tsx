@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
+import { WalletButton } from '@/components/wallet/WalletButton';
 
 export interface HeaderProps {
   className?: string;
@@ -64,10 +65,7 @@ export function Header({ className }: HeaderProps) {
 
           {/* Actions */}
           <div className='flex items-center space-x-4'>
-            {/* Placeholder for wallet connection - will be implemented in wallet story */}
-            <div className='border-secondary-300 rounded-md border px-4 py-2 text-sm text-secondary-600 transition-colors hover:bg-secondary-50'>
-              Connect Wallet
-            </div>
+            <WalletButton />
           </div>
         </div>
       </div>

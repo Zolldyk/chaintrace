@@ -3,19 +3,39 @@ const nextConfig = {
   // experimental: appDir is no longer needed in Next.js 14
 
   // Webpack configuration for Hedera SDK compatibility
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
         net: false,
         tls: false,
-        crypto: false,
+        crypto: require.resolve('crypto-browserify'),
+        stream: require.resolve('stream-browserify'),
+        buffer: require.resolve('buffer'),
+        util: require.resolve('util'),
       };
+
+      // Provide global polyfills
+      config.plugins.push(
+        new webpack.ProvidePlugin({
+          Buffer: ['buffer', 'Buffer'],
+          process: 'process/browser',
+        })
+      );
     }
 
-    // Handle ESM modules
-    config.externals = [...config.externals, 'canvas'];
+    // Handle ESM modules and externalize crypto for all builds
+    if (isServer) {
+      // For server builds, externalize crypto to avoid bundling issues during static generation
+      if (config.externals) {
+        config.externals.push('crypto');
+      } else {
+        config.externals = ['crypto'];
+      }
+    }
+
+    config.externals = [...(config.externals || []), 'canvas'];
 
     return config;
   },

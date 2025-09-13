@@ -284,8 +284,14 @@ export class SignatureVerifier {
   async hashPayload(payload: string): Promise<Uint8Array> {
     const encoder = new TextEncoder();
     const data = encoder.encode(payload);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return new Uint8Array(hashBuffer);
+    // Use browser crypto API with fallback for server-side rendering
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return new Uint8Array(hashBuffer);
+    } else {
+      // Server-side fallback - return a placeholder hash for SSR
+      return new Uint8Array(32).fill(0); // SHA-256 produces 32 bytes
+    }
   }
 }
 

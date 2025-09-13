@@ -7,7 +7,16 @@
  * @since 2.4.0
  */
 
-import { randomBytes, createHash } from 'crypto';
+// Conditional crypto import for server-side only
+const getCrypto = () => {
+  if (typeof window === 'undefined') {
+    // Server-side: import crypto
+    return require('crypto');
+  } else {
+    // Client-side: throw error or return null
+    throw new Error('Crypto operations not available on client-side');
+  }
+};
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { ProductIdSchema } from './validation/product';
 
@@ -97,7 +106,8 @@ const generatedIds = new Map<string, Date>();
 function generateSecureSequence(): string {
   try {
     // Generate 2 bytes (16 bits) of secure random data
-    const bytes = randomBytes(2);
+    const crypto = getCrypto();
+    const bytes = crypto.randomBytes(2);
 
     // Convert to integer and map to 0-999 range
     const randomInt = bytes.readUInt16BE(0);
@@ -137,11 +147,12 @@ function generateSecureHexSuffix(salt?: string): string {
       : baseUuid;
 
     // Generate additional random bytes
-    const randomHexBytes = randomBytes(8);
+    const crypto = getCrypto();
+    const randomHexBytes = crypto.randomBytes(8);
 
     // Combine UUID and random bytes with hash
     const combined = saltedUuid + randomHexBytes.toString('hex');
-    const hash = createHash('sha256').update(combined).digest('hex');
+    const hash = crypto.createHash('sha256').update(combined).digest('hex');
 
     // Extract 6 characters and ensure uppercase
     return hash.substring(0, 6).toUpperCase();
@@ -288,7 +299,9 @@ export function generateSecureProductId(
 
     // Generate entropy metadata
     const uuid = uuidv4();
-    const entropyHash = createHash('sha256')
+    const crypto = getCrypto();
+    const entropyHash = crypto
+      .createHash('sha256')
       .update(id + timestamp.toISOString() + uuid)
       .digest('hex');
 
@@ -296,7 +309,7 @@ export function generateSecureProductId(
       id,
       timestamp,
       entropy: {
-        randomBytes: randomBytes(4).toString('hex'),
+        randomBytes: crypto.randomBytes(4).toString('hex'),
         uuid,
         hash: entropyHash.substring(0, 16),
       },

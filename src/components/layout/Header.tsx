@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { ROUTES } from '@/lib/constants';
-import { WalletButton } from '@/components/wallet/WalletButton';
+import { WalletButtonDynamic } from '@/components/wallet/WalletButtonDynamic';
 
 export interface HeaderProps {
   className?: string;
@@ -65,7 +65,7 @@ export function Header({ className }: HeaderProps) {
 
           {/* Actions */}
           <div className='flex items-center space-x-4'>
-            <WalletButton />
+            <WalletButtonDynamic />
           </div>
         </div>
       </div>

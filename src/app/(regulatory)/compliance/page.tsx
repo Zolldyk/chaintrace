@@ -16,6 +16,9 @@
 
 'use client';
 
+// Disable static generation due to crypto dependencies
+export const dynamic = 'force-dynamic';
+
 import * as React from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';

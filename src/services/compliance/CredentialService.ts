@@ -28,7 +28,14 @@ import {
   CredentialIssuanceRequestSchema,
 } from '../../lib/credential-validations';
 import { logger } from '@/lib/logger';
-import { createHash } from 'crypto';
+// Conditional crypto import for server-side only
+const getCrypto = () => {
+  if (typeof window === 'undefined') {
+    return require('crypto');
+  } else {
+    throw new Error('Crypto operations not available on client-side');
+  }
+};
 
 /**
  * Credential service configuration
@@ -527,7 +534,9 @@ export class CredentialService extends HederaServiceClient {
     };
 
     const dataString = JSON.stringify(credentialData);
-    return createHash('sha256')
+    const crypto = getCrypto();
+    return crypto
+      .createHash('sha256')
       .update(dataString + this.signingKey)
       .digest('hex');
   }

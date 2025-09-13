@@ -10,7 +10,7 @@
 
 import type { QRCodeResult, QRCodeStorage } from '../../types/qr';
 import { QRCodeError } from '../../types/qr';
-import { generateQRFilename } from '../../lib/qr-generation';
+import { generateQRFilenameServer } from '../../lib/qr-generation-server';
 
 /**
  * Storage provider configuration
@@ -199,7 +199,11 @@ export class QRCodeStorageService {
       // Generate storage key and filename
       const filename =
         options?.filename ||
-        generateQRFilename(productId, qrCode, 'chaintrace');
+        generateQRFilenameServer(
+          productId,
+          { format: qrCode.format, size: qrCode.dimensions?.width },
+          'chaintrace'
+        );
       const storageKey = this.generateStorageKey(productId, qrCode.format);
 
       // Store with primary provider
@@ -293,7 +297,7 @@ export class QRCodeStorageService {
       const batchPromises = batch.map(async ({ qrCode, productId }) => {
         try {
           const filename = options?.filenamePrefix
-            ? `${options.filenamePrefix}-${generateQRFilename(productId, qrCode, 'qr')}`
+            ? `${options.filenamePrefix}-${generateQRFilenameServer(productId, { format: qrCode.format, size: qrCode.dimensions?.width }, 'qr')}`
             : undefined;
 
           const result = await this.storeQRCode(qrCode, productId, {
@@ -491,8 +495,15 @@ export class QRCodeStorageService {
 
   private generateStorageKey(productId: string, format: string): string {
     const timestamp = Date.now();
-    const hash = Buffer.from(productId).toString('base64url');
-    return `qr-codes/${productId}/${hash}-${timestamp}.${format}`;
+    // Simple hash function to avoid crypto dependencies
+    let hash = 0;
+    for (let i = 0; i < productId.length; i++) {
+      const char = productId.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    const hashStr = Math.abs(hash).toString(16);
+    return `qr-codes/${productId}/${hashStr}-${timestamp}.${format}`;
   }
 
   private calculateDataSize(data: string): number {

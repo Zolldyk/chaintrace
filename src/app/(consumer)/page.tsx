@@ -8,6 +8,9 @@
 
 'use client';
 
+// Disable static generation due to crypto dependencies
+export const dynamic = 'force-dynamic';
+
 import * as React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';

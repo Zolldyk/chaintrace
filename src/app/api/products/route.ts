@@ -82,8 +82,7 @@ import { ComplianceCacheAdapter } from '@/services/hedera/ComplianceCacheAdapter
 import { getHCSEventLogger } from '@/services/hedera/HCSEventLogger';
 import { HCSClient } from '@/services/hedera/HCSClient';
 import { cacheService } from '@/lib/cache/CacheService';
-import { generateProductQRCode } from '@/lib/qr-generation';
-import type { QRCodeOptions } from '@/types/qr';
+import { generateProductQR } from '@/lib/qr-generation-client';
 
 /**
  * Performance monitoring class
@@ -123,18 +122,20 @@ class BatchProcessingMonitor {
 }
 
 /**
- * Generate QR code data for product using the comprehensive QR generation system
+ * Generate QR code data for product using the client-safe QR generation system
  */
 async function generateQRCode(productId: string): Promise<string> {
   try {
-    const qrOptions: QRCodeOptions = {
-      format: 'png',
-      size: 256,
-      errorCorrectionLevel: 'M',
-      margin: 2,
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL || 'https://chaintrace.app';
+
+    const qrOptions = {
+      format: 'png' as const,
+      width: 256,
+      errorCorrectionLevel: 'M' as const,
     };
 
-    const result = await generateProductQRCode(productId, qrOptions);
+    const result = await generateProductQR(baseUrl, productId, qrOptions);
     return result.data; // Returns the actual QR code data (data URL for PNG)
   } catch (error) {
     // Fallback to simple URL if QR generation fails

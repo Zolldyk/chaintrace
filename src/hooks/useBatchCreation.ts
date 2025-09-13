@@ -636,7 +636,10 @@ export function useBatchCreation(
         formState,
         timestamp: new Date(),
         version: '1.0.0',
-        sessionId: crypto.randomUUID(),
+        sessionId:
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).substring(2)}`,
       };
 
       localStorage.setItem(

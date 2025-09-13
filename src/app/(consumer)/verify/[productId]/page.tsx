@@ -14,8 +14,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ProductLookup,
-  VerificationStatus,
   ProductTimeline,
+  ProductDetails,
 } from '@/components/verification';
 import { LoadingState, ErrorState } from '@/components/common';
 import { Button } from '@/components/ui/Button';
@@ -25,6 +25,7 @@ import {
   ProductVerificationApiError,
   getProductVerificationService,
 } from '@/services/verification';
+import type { ComplianceCredential } from '@/types/compliance';
 
 interface ProductVerificationPageProps {
   params: {
@@ -193,14 +194,18 @@ export default function ProductVerificationPage({
           </Button>
         </div>
 
-        {/* Verification Status */}
+        {/* Product Details with Credentials */}
         {product && (
-          <VerificationStatus
-            status={product.status}
-            lastVerified={product.lastVerified}
-            expiresAt={product.expiresAt}
+          <ProductDetails
+            product={product}
+            showCredentials={true}
             showDetails={true}
-            size='lg'
+            onCredentialClick={(credential: ComplianceCredential) => {
+              window.open(`/verify/credential/${credential.id}`, '_blank');
+            }}
+            onVerifyCredential={(credential: ComplianceCredential) => {
+              window.open(`/verify/credential/${credential.id}`, '_blank');
+            }}
           />
         )}
 

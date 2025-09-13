@@ -6,3 +6,4 @@
 
 export * from './product';
 export * from './hedera';
+export * from './compliance';

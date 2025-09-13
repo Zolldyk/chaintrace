@@ -44,6 +44,7 @@ export const ROUTES = {
   // Consumer routes
   HOME: '/',
   VERIFY: '/verify',
+  VERIFY_CREDENTIAL: '/verify/credential',
   PRODUCT_VERIFICATION: (productId: string) => `/verify/${productId}`,
 
   // Manager routes

@@ -9,7 +9,7 @@
  */
 
 import Link from 'next/link';
-import { APP_METADATA } from '@/lib/constants';
+import { APP_METADATA, ROUTES } from '@/lib/constants';
 
 export interface FooterProps {
   className?: string;
@@ -45,7 +45,7 @@ export function Footer({ className }: FooterProps) {
             <ul className='space-y-2 text-sm'>
               <li>
                 <Link
-                  href='/verify'
+                  href={ROUTES.VERIFY}
                   className='text-secondary-500 hover:text-primary-600'
                 >
                   Verify Products
@@ -53,7 +53,15 @@ export function Footer({ className }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href='/dashboard'
+                  href={ROUTES.VERIFY_CREDENTIAL}
+                  className='text-secondary-500 hover:text-primary-600'
+                >
+                  Verify Credential
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={ROUTES.MANAGER_DASHBOARD}
                   className='text-secondary-500 hover:text-primary-600'
                 >
                   Dashboard
@@ -61,7 +69,7 @@ export function Footer({ className }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href='/compliance'
+                  href={ROUTES.COMPLIANCE_DASHBOARD}
                   className='text-secondary-500 hover:text-primary-600'
                 >
                   Compliance

@@ -439,7 +439,7 @@ function QRScannerModal({
             QR Scanner would be implemented here
           </div>
           <div className='mt-2 text-sm text-gray-500'>
-            For demo purposes, paste QR code data below
+            Paste QR code data below
           </div>
         </div>
 

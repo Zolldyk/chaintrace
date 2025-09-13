@@ -297,9 +297,9 @@ export default function BatchCreatePage() {
         </p>
       </div>
 
-      <div className='grid grid-cols-1 gap-8 lg:grid-cols-4'>
-        {/* Main Form - 3 columns */}
-        <div className='lg:col-span-3'>
+      <div className='grid grid-cols-1 gap-8 lg:grid-cols-3'>
+        {/* Main Form - 2 columns */}
+        <div className='lg:col-span-2'>
           <ProductBatchForm
             onSubmit={handleFormSubmit}
             loading={isSubmitting}
@@ -312,8 +312,8 @@ export default function BatchCreatePage() {
           />
         </div>
 
-        {/* Sidebar - 1 column */}
-        <div className='space-y-12'>
+        {/* Sidebar - 1 column with improved spacing */}
+        <div className='space-y-8'>
           {/* Batch Summary */}
           <BatchSummary
             products={formState.products}
@@ -398,34 +398,29 @@ export default function BatchCreatePage() {
           {/* QR Code Generation */}
           {formState.products.length > 0 && (
             <Card className='p-6'>
-              <h3 className='mb-3 font-medium text-gray-900'>
-                QR Code Generation
-              </h3>
-              <div className='space-y-3'>
-                <QRCodeGenerator
-                  productIds={formState.products.map(
-                    p =>
-                      p.name ||
-                      `PROD-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
-                  )}
-                  defaultOptions={{
-                    format: 'png',
-                    size: 256,
-                    errorCorrectionLevel: 'M',
-                  }}
-                  showAdvancedOptions={false}
-                  maxBatchSize={formState.products.length}
-                  onGenerated={results => {
-                    if (process.env.NODE_ENV === 'development') {
-                      console.log('QR codes generated:', results);
-                    }
-                  }}
-                  onError={error => {
-                    console.error('QR generation error:', error);
-                  }}
-                  className='min-h-0'
-                />
-              </div>
+              <QRCodeGenerator
+                productIds={formState.products.map(
+                  p =>
+                    p.name ||
+                    `PROD-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
+                )}
+                defaultOptions={{
+                  format: 'png',
+                  size: 256,
+                  errorCorrectionLevel: 'M',
+                }}
+                showAdvancedOptions={false}
+                maxBatchSize={formState.products.length}
+                onGenerated={results => {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('QR codes generated:', results);
+                  }
+                }}
+                onError={error => {
+                  console.error('QR generation error:', error);
+                }}
+                className='compact-layout min-h-0'
+              />
             </Card>
           )}
 

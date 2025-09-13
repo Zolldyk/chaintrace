@@ -290,33 +290,35 @@ export function BatchSummary({
     <div className='space-y-8'>
       {/* Main Statistics Card */}
       <Card className='p-6'>
-        <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+        <div className='mb-6 flex flex-col gap-4'>
           <h3 className='text-lg font-semibold text-gray-900'>Batch Summary</h3>
-          <div className='flex flex-wrap gap-3'>
+          <div className='flex flex-col gap-2 sm:flex-row sm:gap-3'>
             <Button
               variant='outline'
-              size='md'
+              size='sm'
               onClick={() => handleBulkAction('selectAll')}
               disabled={
                 disabled || selectedProducts.length === nonEmptyProductCount
               }
+              className='flex-1'
             >
               Select All
             </Button>
             <Button
               variant='outline'
-              size='md'
+              size='sm'
               onClick={() => handleBulkAction('deselectAll')}
               disabled={disabled || selectedProducts.length === 0}
+              className='flex-1'
             >
               Deselect All
             </Button>
             <Button
               variant='outline'
-              size='md'
+              size='sm'
               onClick={() => handleBulkAction('clearAll')}
               disabled={disabled || nonEmptyProductCount === 0}
-              className='text-red-600 hover:border-red-300 hover:text-red-700'
+              className='flex-1 text-red-600 hover:border-red-300 hover:text-red-700'
             >
               Clear All
             </Button>
@@ -324,7 +326,7 @@ export function BatchSummary({
         </div>
 
         {/* Statistics Grid */}
-        <div className='grid grid-cols-2 gap-6 md:grid-cols-4'>
+        <div className='grid grid-cols-2 gap-4 lg:grid-cols-4'>
           <div className='text-center'>
             <div className='text-2xl font-bold text-primary-600'>
               {stats.totalProducts}
@@ -355,7 +357,7 @@ export function BatchSummary({
         </div>
 
         {/* Totals */}
-        <div className='mt-10 grid grid-cols-1 gap-6 md:grid-cols-3'>
+        <div className='mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3'>
           <div className='rounded-lg bg-gray-50 p-4'>
             <div className='text-lg font-semibold text-gray-900'>
               {stats.totalWeight.toFixed(1)} kg
@@ -413,7 +415,7 @@ export function BatchSummary({
         <h4 className='mb-3 font-medium text-gray-900'>
           Compliance Validation
         </h4>
-        <div className='grid grid-cols-2 gap-6'>
+        <div className='grid grid-cols-2 gap-4'>
           <div className='flex items-center justify-between'>
             <span className='text-sm text-gray-600'>Validated</span>
             <span className='font-medium text-green-600'>

@@ -454,17 +454,34 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
   const validation = validateInput();
   const canGenerate = validation.isValid && !generationState.isGenerating;
 
+  const isCompactLayout = className?.includes('compact-layout');
+
   return (
-    <div className={clsx('space-y-6', className)}>
+    <div
+      className={clsx(isCompactLayout ? 'space-y-4' : 'space-y-6', className)}
+    >
       {/* Header */}
-      <div>
-        <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
-          QR Code Generator
-        </h2>
-        <p className='mt-1 text-gray-600 dark:text-gray-400'>
-          Generate QR codes for product verification with customizable options
-        </p>
-      </div>
+      {!isCompactLayout && (
+        <div>
+          <h2 className='text-2xl font-bold text-gray-900 dark:text-white'>
+            QR Code Generator
+          </h2>
+          <p className='mt-1 text-gray-600 dark:text-gray-400'>
+            Generate QR codes for product verification with customizable options
+          </p>
+        </div>
+      )}
+
+      {isCompactLayout && (
+        <div>
+          <h3 className='text-lg font-semibold text-gray-900 dark:text-white'>
+            QR Code Generator
+          </h3>
+          <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
+            Generate QR codes for product verification with customizable options
+          </p>
+        </div>
+      )}
 
       {/* Mode Selection */}
       <div
@@ -522,9 +539,18 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
         </button>
       </div>
 
-      <div className='grid grid-cols-1 gap-6 lg:grid-cols-3'>
+      <div
+        className={clsx(
+          'grid grid-cols-1 gap-6',
+          isCompactLayout ? 'space-y-4' : 'lg:grid-cols-3'
+        )}
+      >
         {/* Input Section */}
-        <div className='space-y-6 lg:col-span-2'>
+        <div
+          className={clsx(
+            isCompactLayout ? 'space-y-4' : 'space-y-6 lg:col-span-2'
+          )}
+        >
           {/* Product ID Input */}
           <div
             id={mode === 'single' ? 'single-mode-panel' : 'batch-mode-panel'}
@@ -612,7 +638,12 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
               Generation Options
             </h3>
 
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+            <div
+              className={clsx(
+                'grid grid-cols-1 gap-4',
+                !isCompactLayout && 'md:grid-cols-2'
+              )}
+            >
               {/* Format Selection */}
               <div>
                 <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -677,7 +708,12 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
                   Advanced Options
                 </h4>
 
-                <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+                <div
+                  className={clsx(
+                    'grid grid-cols-1 gap-4',
+                    !isCompactLayout && 'md:grid-cols-2'
+                  )}
+                >
                   <div>
                     <label className='mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300'>
                       Error Correction
@@ -797,8 +833,13 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
         </div>
 
         {/* Preview Section */}
-        <div className='space-y-6'>
-          <div className='rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800'>
+        <div className={clsx(isCompactLayout ? 'space-y-4' : 'space-y-6')}>
+          <div
+            className={clsx(
+              'rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
+              isCompactLayout ? 'p-4' : 'p-6'
+            )}
+          >
             <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
               Preview
             </h3>
@@ -813,7 +854,12 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
                 onDownload={handleDownload}
               />
             ) : (
-              <div className='flex h-64 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600'>
+              <div
+                className={clsx(
+                  'flex items-center justify-center rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600',
+                  isCompactLayout ? 'h-48' : 'h-64'
+                )}
+              >
                 <div className='text-center'>
                   <svg
                     className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-500'
@@ -841,7 +887,12 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
 
           {/* Results Summary */}
           {generationState.results.length > 0 && (
-            <div className='rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800'>
+            <div
+              className={clsx(
+                'rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
+                isCompactLayout ? 'p-4' : 'p-6'
+              )}
+            >
               <h3 className='mb-4 text-lg font-medium text-gray-900 dark:text-white'>
                 Generation Results
               </h3>

@@ -99,7 +99,7 @@ export function useWallet(config: UseWalletConfig = {}): UseWalletResult {
   const {
     networkType = 'testnet',
     preferredWallet,
-    timeout = 30000,
+    timeout = 45000,
     autoConnect = false,
   } = config;
 

@@ -62,7 +62,15 @@ export function WalletButton({ className = '' }: WalletButtonProps) {
    */
   const handleConnect = async (walletType?: 'snap' | 'hashpack') => {
     setIsDropdownOpen(false);
-    await connect(walletType);
+    try {
+      const result = await connect(walletType);
+      if (!result.success) {
+        // Connection failed, show error in UI
+        console.error('Wallet connection failed:', result.error);
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+    }
   };
 
   /**

@@ -73,7 +73,8 @@ export class HashPackConnector implements WalletConnector {
   };
 
   // HashConnect v3 requires a project ID
-  private projectId = 'chaintrace-supply-chain';
+  private projectId =
+    process.env.NEXT_PUBLIC_HASHCONNECT_PROJECT_ID || 'chaintrace-supply-chain';
 
   /**
    * Creates a new HashPackConnector instance
@@ -85,11 +86,15 @@ export class HashPackConnector implements WalletConnector {
     // Initialize HashConnect with v3 API
     const ledgerId =
       config.networkType === 'mainnet' ? LedgerId.MAINNET : LedgerId.TESTNET;
+    // Enable debug mode for both development and production to ensure consistent behavior
+    const debugMode =
+      process.env.NEXT_PUBLIC_HASHCONNECT_DEBUG === 'true' ||
+      process.env.NODE_ENV === 'development';
     this.hashConnect = new HashConnect(
       ledgerId,
       this.projectId,
       this.appMetadata,
-      process.env.NODE_ENV === 'development'
+      debugMode
     );
     this.initializeHashConnect();
   }
@@ -169,8 +174,8 @@ export class HashPackConnector implements WalletConnector {
         throw new Error('HashConnect is not available');
       }
 
-      // Initialize HashConnect with timeout
-      const initTimeout = 10000; // 10 seconds for initialization
+      // Initialize HashConnect with timeout - increased for production reliability
+      const initTimeout = process.env.NODE_ENV === 'production' ? 20000 : 10000; // 20s prod, 10s dev
       const initPromise = this.hashConnect.init();
       const initTimeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(
@@ -194,8 +199,10 @@ export class HashPackConnector implements WalletConnector {
         this.openHashPackPairing(pairingString);
       }
 
-      // Wait for connection with timeout
-      const timeout = this.config.timeout || 45000; // 45 seconds for user interaction
+      // Wait for connection with timeout - increased for production
+      const defaultTimeout =
+        process.env.NODE_ENV === 'production' ? 60000 : 45000; // 60s prod, 45s dev
+      const timeout = this.config.timeout || defaultTimeout;
       const connectionPromise = this.waitForConnection();
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => {

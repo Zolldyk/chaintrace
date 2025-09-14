@@ -98,42 +98,47 @@ export class HashPackConnector implements WalletConnector {
    * Initialize HashConnect event listeners
    */
   private initializeHashConnect(): void {
-    // Connection established
-    this.hashConnect.pairingEvent.once((sessionData: SessionData) => {
-      this.connectionData = {
-        accountIds: sessionData.accountIds || [],
-        network: sessionData.network || this.config.networkType,
-        sessionData,
-      };
-      this.status = 'connected';
-    });
+    try {
+      // Connection established
+      this.hashConnect.pairingEvent.once((sessionData: SessionData) => {
+        this.connectionData = {
+          accountIds: sessionData.accountIds || [],
+          network: sessionData.network || this.config.networkType,
+          sessionData,
+        };
+        this.status = 'connected';
+      });
 
-    // Connection lost
-    this.hashConnect.disconnectionEvent.on(() => {
-      this.connectionData = null;
-      this.status = 'disconnected';
-    });
+      // Connection lost
+      this.hashConnect.disconnectionEvent.on(() => {
+        this.connectionData = null;
+        this.status = 'disconnected';
+      });
 
-    // Connection status changes
-    this.hashConnect.connectionStatusChangeEvent.on(
-      (connectionState: HashConnectConnectionState) => {
-        switch (connectionState) {
-          case 'Connected':
-            // Will be handled by pairingEvent
-            break;
-          case 'Disconnected':
-            this.status = 'disconnected';
-            this.connectionData = null;
-            break;
-          case 'Connecting':
-            this.status = 'connecting';
-            break;
-          case 'Paired':
-            // Pairing successful, waiting for account selection
-            break;
+      // Connection status changes
+      this.hashConnect.connectionStatusChangeEvent.on(
+        (connectionState: HashConnectConnectionState) => {
+          switch (connectionState) {
+            case 'Connected':
+              // Will be handled by pairingEvent
+              break;
+            case 'Disconnected':
+              this.status = 'disconnected';
+              this.connectionData = null;
+              break;
+            case 'Connecting':
+              this.status = 'connecting';
+              break;
+            case 'Paired':
+              // Pairing successful, waiting for account selection
+              break;
+          }
         }
-      }
-    );
+      );
+    } catch (error) {
+      // If event handler setup fails, set error status
+      this.status = 'error';
+    }
   }
 
   /**
@@ -164,8 +169,17 @@ export class HashPackConnector implements WalletConnector {
         throw new Error('HashConnect is not available');
       }
 
-      // Initialize HashConnect
-      await this.hashConnect.init();
+      // Initialize HashConnect with timeout
+      const initTimeout = 10000; // 10 seconds for initialization
+      const initPromise = this.hashConnect.init();
+      const initTimeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('HashConnect initialization timeout')),
+          initTimeout
+        )
+      );
+
+      await Promise.race([initPromise, initTimeoutPromise]);
 
       // Get pairing string for connection
       const pairingString = this.hashConnect.pairingString;
@@ -184,15 +198,14 @@ export class HashPackConnector implements WalletConnector {
       const timeout = this.config.timeout || 45000; // 45 seconds for user interaction
       const connectionPromise = this.waitForConnection();
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(
-          () =>
-            reject(
-              new Error(
-                'Connection timeout - please ensure HashPack is installed and try again'
-              )
-            ),
-          timeout
-        )
+        setTimeout(() => {
+          this.status = 'error';
+          reject(
+            new Error(
+              'Connection timeout - please ensure HashPack is installed and try again'
+            )
+          );
+        }, timeout)
       );
 
       await Promise.race([connectionPromise, timeoutPromise]);

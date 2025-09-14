@@ -67,43 +67,6 @@ export default function ConsumerHomePage() {
           </p>
         </div>
 
-        {/* QR Scanner Placeholder Section */}
-        <div className='border-secondary-200 mb-8 animate-fade-in rounded-xl border bg-white p-6 shadow-card'>
-          <div className='text-center'>
-            <div className='mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-secondary-100'>
-              <svg
-                className='text-secondary-400 h-8 w-8'
-                fill='none'
-                stroke='currentColor'
-                viewBox='0 0 24 24'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 8h4m12 0h2M4 16h4m12 0h2'
-                />
-              </svg>
-            </div>
-            <h3 className='mb-2 text-lg font-medium text-secondary-700'>
-              QR Code Scanner
-            </h3>
-            <p className='mb-4 text-sm text-secondary-500'>
-              QR code scanning will be available in future updates
-            </p>
-            <div className='inline-flex items-center gap-2 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700'>
-              <svg className='h-3 w-3' fill='currentColor' viewBox='0 0 20 20'>
-                <path
-                  fillRule='evenodd'
-                  d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
-                  clipRule='evenodd'
-                />
-              </svg>
-              Coming Soon
-            </div>
-          </div>
-        </div>
-
         {/* Product Lookup Section */}
         <div className='border-secondary-200 animate-fade-in rounded-xl border bg-white p-6 shadow-card'>
           <div className='mb-6 text-center'>

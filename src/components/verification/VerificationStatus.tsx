@@ -29,24 +29,34 @@ export interface VerificationStatusProps {
   /** Expiry timestamp for verified products */
   expiresAt?: string;
 
-  /** Whether to show additional details */
+  /** Whether to show additional details (AC: 2) */
   showDetails?: boolean;
 
   /** Additional CSS classes */
   className?: string;
 
-  /** Size variant */
+  /** Size variant with enhanced mobile optimization */
   size?: 'sm' | 'md' | 'lg';
 
-  /** Whether to show icon */
+  /** Whether to show icon with accessibility enhancements */
   showIcon?: boolean;
 
   /** Custom message override */
   customMessage?: string;
+
+  /** Whether to show action suggestions based on status */
+  showActionSuggestions?: boolean;
+
+  /** Callback for action button clicks */
+  onActionClick?: (action: 'refresh' | 'report' | 'verify') => void;
+
+  /** Whether to show enhanced accessibility features */
+  enhancedAccessibility?: boolean;
 }
 
 /**
- * Status configuration mapping
+ * Enhanced status configuration with instantly recognizable colors and icons (AC: 2)
+ * Follows Nigerian market accessibility standards and international best practices
  */
 const statusConfig: Record<
   Status,
@@ -56,22 +66,38 @@ const statusConfig: Record<
     color: string;
     bgColor: string;
     textColor: string;
+    ringColor: string;
+    pulseColor: string;
     icon: React.ReactNode;
+    priority: 'high' | 'medium' | 'low';
+    accessibility: {
+      ariaLabel: string;
+      colorBlindText: string;
+    };
   }
 > = {
   verified: {
-    label: 'Verified',
+    label: '✅ Verified',
     description:
-      'This product has been successfully verified and is authentic.',
-    color: 'text-success-700',
-    bgColor: 'bg-success-50 border-success-200',
-    textColor: 'text-success-700',
+      'This product has been successfully verified and is authentic. Safe to purchase.',
+    color: 'text-green-700',
+    bgColor: 'bg-green-50 border-green-200',
+    textColor: 'text-green-800',
+    ringColor: 'ring-green-300',
+    pulseColor: 'animate-pulse-green',
+    priority: 'high',
+    accessibility: {
+      ariaLabel: 'Product successfully verified and authentic',
+      colorBlindText: 'VERIFIED - Safe to purchase',
+    },
     icon: (
       <svg
         className='h-5 w-5'
         fill='currentColor'
         viewBox='0 0 20 20'
         xmlns='http://www.w3.org/2000/svg'
+        role='img'
+        aria-label='Verified checkmark'
       >
         <path
           fillRule='evenodd'
@@ -82,18 +108,27 @@ const statusConfig: Record<
     ),
   },
   pending: {
-    label: 'Pending',
+    label: '⏳ Pending Verification',
     description:
-      'This product is currently being verified. Please check back later.',
-    color: 'text-warning-700',
-    bgColor: 'bg-warning-50 border-warning-200',
-    textColor: 'text-warning-700',
+      'This product is currently being verified. Results will be available shortly.',
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-50 border-amber-200',
+    textColor: 'text-amber-800',
+    ringColor: 'ring-amber-300',
+    pulseColor: 'animate-pulse-amber',
+    priority: 'medium',
+    accessibility: {
+      ariaLabel: 'Product verification in progress',
+      colorBlindText: 'PENDING - Verification in progress',
+    },
     icon: (
       <svg
-        className='h-5 w-5'
+        className='h-5 w-5 animate-spin'
         fill='currentColor'
         viewBox='0 0 20 20'
         xmlns='http://www.w3.org/2000/svg'
+        role='img'
+        aria-label='Pending verification spinner'
       >
         <path
           fillRule='evenodd'
@@ -104,18 +139,27 @@ const statusConfig: Record<
     ),
   },
   unverified: {
-    label: 'Unverified',
+    label: '❓ Not Verified',
     description:
-      'This product has not been verified yet or verification data is unavailable.',
-    color: 'text-secondary-700',
-    bgColor: 'bg-secondary-50 border-secondary-200',
-    textColor: 'text-secondary-700',
+      'This product has not been verified yet. Verification data may be unavailable.',
+    color: 'text-gray-700',
+    bgColor: 'bg-gray-50 border-gray-200',
+    textColor: 'text-gray-800',
+    ringColor: 'ring-gray-300',
+    pulseColor: 'animate-pulse-gray',
+    priority: 'medium',
+    accessibility: {
+      ariaLabel: 'Product not yet verified - status unknown',
+      colorBlindText: 'UNVERIFIED - Status unknown',
+    },
     icon: (
       <svg
         className='h-5 w-5'
         fill='currentColor'
         viewBox='0 0 20 20'
         xmlns='http://www.w3.org/2000/svg'
+        role='img'
+        aria-label='Unverified question mark'
       >
         <path
           fillRule='evenodd'
@@ -126,18 +170,27 @@ const statusConfig: Record<
     ),
   },
   rejected: {
-    label: 'Rejected',
+    label: '❌ Verification Failed',
     description:
-      'This product failed verification or has been flagged as potentially fraudulent.',
-    color: 'text-error-700',
-    bgColor: 'bg-error-50 border-error-200',
-    textColor: 'text-error-700',
+      'This product failed verification or has been flagged. Do not purchase.',
+    color: 'text-red-700',
+    bgColor: 'bg-red-50 border-red-200',
+    textColor: 'text-red-800',
+    ringColor: 'ring-red-300',
+    pulseColor: 'animate-pulse-red',
+    priority: 'high',
+    accessibility: {
+      ariaLabel: 'Product verification failed - not authentic',
+      colorBlindText: 'FAILED - Do not purchase',
+    },
     icon: (
       <svg
         className='h-5 w-5'
         fill='currentColor'
         viewBox='0 0 20 20'
         xmlns='http://www.w3.org/2000/svg'
+        role='img'
+        aria-label='Verification failed X mark'
       >
         <path
           fillRule='evenodd'
@@ -148,39 +201,58 @@ const statusConfig: Record<
     ),
   },
   expired: {
-    label: 'Expired',
+    label: '⚠️ Verification Expired',
     description:
-      "This product's verification has expired and needs to be re-verified.",
-    color: 'text-warning-700',
-    bgColor: 'bg-warning-50 border-warning-200',
-    textColor: 'text-warning-700',
+      "This product's verification has expired and needs to be re-verified. Use caution.",
+    color: 'text-orange-700',
+    bgColor: 'bg-orange-50 border-orange-200',
+    textColor: 'text-orange-800',
+    ringColor: 'ring-orange-300',
+    pulseColor: 'animate-pulse-orange',
+    priority: 'high',
+    accessibility: {
+      ariaLabel: 'Product verification has expired - needs re-verification',
+      colorBlindText: 'EXPIRED - Needs re-verification',
+    },
     icon: (
       <svg
         className='h-5 w-5'
         fill='currentColor'
         viewBox='0 0 20 20'
         xmlns='http://www.w3.org/2000/svg'
+        role='img'
+        aria-label='Expired warning triangle'
       >
         <path
           fillRule='evenodd'
-          d='M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z'
+          d='M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z'
           clipRule='evenodd'
         />
       </svg>
     ),
   },
   created: {
-    label: 'Created',
-    description: 'This product has been created and registered in the system.',
-    color: 'text-secondary-700',
-    bgColor: 'bg-secondary-50 border-secondary-200',
-    textColor: 'text-secondary-700',
+    label: '🆕 Recently Created',
+    description:
+      'This product has been created and registered. Verification pending.',
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50 border-blue-200',
+    textColor: 'text-blue-800',
+    ringColor: 'ring-blue-300',
+    pulseColor: 'animate-pulse-blue',
+    priority: 'low',
+    accessibility: {
+      ariaLabel: 'Product recently created and registered',
+      colorBlindText: 'CREATED - Recently registered',
+    },
     icon: (
       <svg
         className='h-5 w-5'
         fill='currentColor'
         viewBox='0 0 20 20'
         xmlns='http://www.w3.org/2000/svg'
+        role='img'
+        aria-label='Created plus symbol'
       >
         <path
           fillRule='evenodd'
@@ -191,19 +263,27 @@ const statusConfig: Record<
     ),
   },
   processing: {
-    label: 'Processing',
+    label: '🔄 Processing',
     description:
       'This product is being processed through the verification system.',
-    color: 'text-warning-700',
-    bgColor: 'bg-warning-50 border-warning-200',
-    textColor: 'text-warning-700',
+    color: 'text-indigo-700',
+    bgColor: 'bg-indigo-50 border-indigo-200',
+    textColor: 'text-indigo-800',
+    ringColor: 'ring-indigo-300',
+    pulseColor: 'animate-pulse-indigo',
+    priority: 'medium',
+    accessibility: {
+      ariaLabel: 'Product currently being processed',
+      colorBlindText: 'PROCESSING - System is working',
+    },
     icon: (
       <svg
-        className='h-5 w-5'
+        className='h-5 w-5 animate-spin'
         fill='currentColor'
         viewBox='0 0 20 20'
         xmlns='http://www.w3.org/2000/svg'
-        aria-hidden='true'
+        role='img'
+        aria-label='Processing spinner'
       >
         <path
           clipRule='evenodd'
@@ -272,29 +352,49 @@ export const VerificationStatus = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          'animate-slide-up rounded-xl border p-4',
+          'relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200',
           displayConfig.bgColor,
+          displayConfig.priority === 'high' && 'ring-2 ring-offset-1',
+          displayConfig.priority === 'high' && displayConfig.ringColor,
           {
-            'p-2': size === 'sm',
+            'p-3': size === 'sm',
             'p-4': size === 'md',
             'p-6': size === 'lg',
           },
+          'focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 hover:shadow-md',
           className
         )}
         role='status'
-        aria-label={`Verification status: ${displayConfig.label}`}
+        aria-label={displayConfig.accessibility.ariaLabel}
         {...props}
       >
-        <div className='flex items-start gap-3'>
+        {/* Accessibility enhancement for screen readers */}
+        <div className='sr-only'>
+          {displayConfig.accessibility.colorBlindText}
+        </div>
+
+        {/* Priority pulse animation for high-priority statuses */}
+        {displayConfig.priority === 'high' && (
+          <div
+            className={cn(
+              'absolute inset-0 rounded-xl opacity-20',
+              displayConfig.pulseColor
+            )}
+            aria-hidden='true'
+          />
+        )}
+
+        <div className='relative flex items-start gap-3 sm:gap-4'>
           {showIcon && (
             <div
               className={cn(
-                'flex-shrink-0 rounded-full p-1',
+                'flex-shrink-0 rounded-full p-1 shadow-inner',
                 displayConfig.color,
+                'ring-2 ring-white ring-offset-1',
                 {
-                  'p-0.5': size === 'sm',
-                  'p-1': size === 'md',
-                  'p-1.5': size === 'lg',
+                  'p-1': size === 'sm',
+                  'p-2': size === 'md',
+                  'p-2.5': size === 'lg',
                 }
               )}
               aria-hidden='true'
@@ -303,69 +403,180 @@ export const VerificationStatus = React.forwardRef<
                 className: cn(
                   size === 'sm' && 'h-4 w-4',
                   size === 'md' && 'h-5 w-5',
-                  size === 'lg' && 'h-6 w-6'
+                  size === 'lg' && 'h-7 w-7'
                 ),
               })}
             </div>
           )}
 
           <div className='min-w-0 flex-1'>
-            <div className='flex items-center justify-between'>
-              <h3
-                className={cn('font-semibold', displayConfig.textColor, {
-                  'text-sm': size === 'sm',
-                  'text-base': size === 'md',
-                  'text-lg': size === 'lg',
-                })}
-              >
-                {displayConfig.label}
-              </h3>
+            <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+              <div className='flex items-center gap-2'>
+                <h3
+                  className={cn('font-bold', displayConfig.textColor, {
+                    'text-base': size === 'sm',
+                    'text-lg': size === 'md',
+                    'text-xl': size === 'lg',
+                  })}
+                >
+                  {displayConfig.label}
+                </h3>
 
-              {(status === 'verified' || status === 'pending') && (
+                {/* Priority indicator badge */}
+                {displayConfig.priority === 'high' && (
+                  <span className='inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 ring-1 ring-red-200'>
+                    URGENT
+                  </span>
+                )}
+              </div>
+
+              {/* Enhanced status badge with better mobile layout */}
+              <div className='flex items-center gap-2'>
+                {lastVerified && (
+                  <span
+                    className={cn(
+                      'text-xs font-medium',
+                      displayConfig.textColor.replace('-800', '-600')
+                    )}
+                  >
+                    Updated {getRelativeTime(lastVerified)}
+                  </span>
+                )}
+
                 <div
                   className={cn(
-                    'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
+                    'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide',
                     displayConfig.color,
-                    displayConfig.bgColor.replace('bg-', 'bg- bg-opacity-20')
+                    'bg-white/80 shadow-inner ring-1',
+                    displayConfig.ringColor
                   )}
                 >
-                  {status === 'verified' ? '✓' : '⏳'} {displayConfig.label}
+                  <span className='text-sm' aria-hidden='true'>
+                    {status === 'verified' && '✅'}
+                    {status === 'pending' && '⏳'}
+                    {status === 'rejected' && '❌'}
+                    {status === 'expired' && '⚠️'}
+                    {status === 'unverified' && '❓'}
+                    {status === 'created' && '🆕'}
+                    {status === 'processing' && '🔄'}
+                  </span>
+                  <span className={displayConfig.textColor}>
+                    {displayConfig.label.replace(/^[^a-zA-Z]+/, '')}
+                  </span>
                 </div>
-              )}
+              </div>
             </div>
 
             {showDetails && (
               <>
                 <p
-                  className={cn('mt-1', displayConfig.textColor, {
-                    'text-xs': size === 'sm',
-                    'text-sm': size === 'md',
-                    'text-base': size === 'lg',
-                  })}
+                  className={cn(
+                    'mt-3 leading-relaxed',
+                    displayConfig.textColor.replace('-800', '-700'),
+                    {
+                      'text-sm': size === 'sm',
+                      'text-base': size === 'md',
+                      'text-lg': size === 'lg',
+                    }
+                  )}
                 >
                   {customMessage || displayConfig.description}
                 </p>
 
-                {lastVerified && (
-                  <p
-                    className={cn(
-                      'mt-2 text-xs',
-                      displayConfig.textColor.replace('-700', '-600')
-                    )}
-                  >
-                    Last verified: {getRelativeTime(lastVerified)}
-                  </p>
+                {/* Enhanced metadata grid with better mobile layout */}
+                <div className='mt-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2'>
+                  {lastVerified && (
+                    <div className='flex items-center gap-2 text-gray-600'>
+                      <svg
+                        className='h-4 w-4 text-gray-400'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path
+                          fillRule='evenodd'
+                          d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
+                          clipRule='evenodd'
+                        />
+                      </svg>
+                      <span className='text-gray-500'>Last verified:</span>
+                      <span className='font-medium text-gray-900'>
+                        {getRelativeTime(lastVerified)}
+                      </span>
+                    </div>
+                  )}
+
+                  {expiresAt && status === 'verified' && !isExpired && (
+                    <div className='flex items-center gap-2 text-gray-600'>
+                      <svg
+                        className='h-4 w-4 text-gray-400'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path
+                          fillRule='evenodd'
+                          d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                          clipRule='evenodd'
+                        />
+                      </svg>
+                      <span className='text-gray-500'>Expires:</span>
+                      <span className='font-medium text-gray-900'>
+                        {formatDate(new Date(expiresAt).getTime(), {
+                          dateStyle: 'medium',
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action suggestions based on status */}
+                {displayStatus === 'expired' && (
+                  <div className='mt-4 rounded-lg bg-orange-100 p-3 ring-1 ring-orange-200'>
+                    <div className='flex items-start gap-2'>
+                      <svg
+                        className='mt-0.5 h-4 w-4 flex-shrink-0 text-orange-600'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path
+                          fillRule='evenodd'
+                          d='M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z'
+                          clipRule='evenodd'
+                        />
+                      </svg>
+                      <div className='text-sm text-orange-800'>
+                        <p className='font-medium'>Action Required</p>
+                        <p className='mt-1'>
+                          This product needs re-verification to ensure continued
+                          authenticity.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
 
-                {expiresAt && status === 'verified' && !isExpired && (
-                  <p
-                    className={cn(
-                      'mt-1 text-xs',
-                      displayConfig.textColor.replace('-700', '-600')
-                    )}
-                  >
-                    Expires: {formatDate(new Date(expiresAt).getTime())}
-                  </p>
+                {displayStatus === 'rejected' && (
+                  <div className='mt-4 rounded-lg bg-red-100 p-3 ring-1 ring-red-200'>
+                    <div className='flex items-start gap-2'>
+                      <svg
+                        className='mt-0.5 h-4 w-4 flex-shrink-0 text-red-600'
+                        fill='currentColor'
+                        viewBox='0 0 20 20'
+                      >
+                        <path
+                          fillRule='evenodd'
+                          d='M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z'
+                          clipRule='evenodd'
+                        />
+                      </svg>
+                      <div className='text-sm text-red-800'>
+                        <p className='font-medium'>Warning</p>
+                        <p className='mt-1'>
+                          This product may not be authentic. Exercise caution
+                          before purchasing.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </>
             )}

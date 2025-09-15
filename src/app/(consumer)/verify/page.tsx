@@ -62,7 +62,7 @@ export default function VerifyPage() {
             Product Verification
           </h1>
           <p className='text-gray-600'>
-            Enter a product ID to verify its authenticity and view its supply
+            Scan a QR code with your camera or enter a product ID to verify its authenticity and view its supply
             chain journey.
           </p>
         </div>
@@ -83,6 +83,7 @@ export default function VerifyPage() {
                 : null
             }
             autoFocus={true}
+            enableQrScanning={true}
           />
         </div>
 

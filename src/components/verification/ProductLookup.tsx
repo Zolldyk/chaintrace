@@ -18,7 +18,9 @@ import * as React from 'react';
 import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { ScanningInterface } from '@/components/verification/ScanningInterface';
 import { ProductVerificationError } from '@/types';
+import { validateQRCode } from '@/lib/qr-scanner';
 
 export interface ProductLookupProps {
   /** Callback when search is triggered */
@@ -70,180 +72,6 @@ const Input = React.forwardRef<
 });
 Input.displayName = 'Input';
 
-/**
- * QR Scanner component for scanning QR codes
- */
-const QRScanner: React.FC<{
-  onScan: (data: string) => void;
-  onError: (error: string) => void;
-  onClose: () => void;
-}> = ({ onScan, onError, onClose }) => {
-  const videoRef = React.useRef<HTMLVideoElement>(null);
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const [hasPermission, setHasPermission] = React.useState<boolean | null>(
-    null
-  );
-  const [scanning, setScanning] = React.useState(false);
-
-  React.useEffect(() => {
-    let stream: MediaStream | null = null;
-
-    const startCamera = async () => {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: 'environment', // Use back camera for mobile
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-        });
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setHasPermission(true);
-          setScanning(true);
-        }
-      } catch (error) {
-        setHasPermission(false);
-        onError('Camera access denied or not available');
-      }
-    };
-
-    startCamera();
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-      setScanning(false);
-    };
-  }, [onError]);
-
-  // Simple QR detection (in a real implementation, you'd use a proper QR code library)
-  React.useEffect(() => {
-    if (!scanning || !videoRef.current || !canvasRef.current) return;
-
-    const interval = setInterval(() => {
-      // Mock QR detection - in real implementation, would use a QR library
-      // For demo purposes, we'll show the interface but not actual scanning
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [scanning, onScan]);
-
-  if (hasPermission === null) {
-    return (
-      <div className='flex h-48 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800'>
-        <div className='text-center'>
-          <svg
-            className='mx-auto h-8 w-8 animate-spin text-gray-400'
-            xmlns='http://www.w3.org/2000/svg'
-            fill='none'
-            viewBox='0 0 24 24'
-          >
-            <circle
-              className='opacity-25'
-              cx='12'
-              cy='12'
-              r='10'
-              stroke='currentColor'
-              strokeWidth='4'
-            />
-            <path
-              className='opacity-75'
-              fill='currentColor'
-              d='m4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-            />
-          </svg>
-          <p className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
-            Requesting camera permission...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (hasPermission === false) {
-    return (
-      <div className='rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-800 dark:bg-red-900/20'>
-        <svg
-          className='mx-auto mb-2 h-8 w-8 text-red-600 dark:text-red-400'
-          fill='none'
-          viewBox='0 0 24 24'
-          stroke='currentColor'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeWidth={2}
-            d='M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.96-.833-2.732 0L3.732 16.5C2.962 18.333 3.924 20 5.464 20z'
-          />
-        </svg>
-        <p className='text-sm text-red-700 dark:text-red-300'>
-          Camera access is required for QR scanning
-        </p>
-        <p className='mt-1 text-xs text-red-600 dark:text-red-400'>
-          Please enable camera permissions and try again
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className='relative'>
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className='h-48 w-full rounded-lg bg-black object-cover'
-      />
-      <canvas ref={canvasRef} className='hidden' />
-
-      {/* Scanning overlay */}
-      <div className='pointer-events-none absolute inset-0 flex items-center justify-center'>
-        <div className='animate-pulse rounded-lg border-2 border-white p-4'>
-          <div className='flex h-32 w-32 items-center justify-center rounded-lg border border-white/50'>
-            <svg
-              className='h-8 w-8 text-white'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5v5H4V4z'
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      {/* Close button */}
-      <button
-        onClick={onClose}
-        className='absolute right-2 top-2 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/75'
-        type='button'
-      >
-        <svg
-          className='h-5 w-5'
-          fill='none'
-          viewBox='0 0 24 24'
-          stroke='currentColor'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            strokeWidth={2}
-            d='M6 18L18 6M6 6l12 12'
-          />
-        </svg>
-      </button>
-    </div>
-  );
-};
 
 /**
  * ProductLookup component for entering and searching product IDs
@@ -354,35 +182,25 @@ export const ProductLookup = React.forwardRef<
      */
     const handleQrScan = useCallback(
       (data: string) => {
-        // Extract product ID from QR code data
-        let extractedId = data;
+        // Use the QR validation utility to extract product data
+        const validation = validateQRCode(data);
 
-        // If it's a URL, extract the product ID from it
-        if (data.includes('/verify/')) {
-          const matches = data.match(/\/verify\/([^?]+)/);
-          if (matches && matches[1]) {
-            extractedId = matches[1];
-          }
-        }
+        if (validation.valid && validation.productId) {
+          setProductId(validation.productId);
+          setIsScanning(false);
+          onQrScanToggle?.(false);
 
-        setProductId(extractedId);
-        setIsScanning(false);
-        onQrScanToggle?.(false);
-
-        // Auto-submit if valid
-        if (validateProductId(extractedId)) {
-          onSearch(extractedId);
+          // Auto-submit since validation already confirmed it's valid
+          onSearch(validation.productId);
+        } else {
+          // Handle invalid QR code
+          setTouched(true);
+          // Keep scanning mode active for retry
         }
       },
-      [onSearch, onQrScanToggle, validateProductId]
+      [onSearch, onQrScanToggle]
     );
 
-    /**
-     * Handles QR scanning errors
-     */
-    const handleQrError = useCallback((_error: string) => {
-      // Error handled silently - could show error to user here if needed
-    }, []);
 
     /**
      * Toggles QR scanning mode
@@ -408,29 +226,12 @@ export const ProductLookup = React.forwardRef<
         {...props}
       >
         {isScanning ? (
-          <div className='space-y-4'>
-            <div className='flex items-center justify-between'>
-              <h3 className='text-secondary-900 text-lg font-medium dark:text-secondary-100'>
-                Scan QR Code
-              </h3>
-              <Button
-                type='button'
-                variant='outline'
-                size='sm'
-                onClick={toggleQrScanning}
-              >
-                Cancel
-              </Button>
-            </div>
-            <QRScanner
-              onScan={handleQrScan}
-              onError={handleQrError}
-              onClose={toggleQrScanning}
-            />
-            <p className='dark:text-secondary-400 text-center text-sm text-secondary-600'>
-              Position the QR code within the frame to scan
-            </p>
-          </div>
+          <ScanningInterface
+            isScanning={isScanning}
+            onScan={handleQrScan}
+            onCancel={toggleQrScanning}
+            showTips={true}
+          />
         ) : (
           <>
             {/* QR Scan Button */}

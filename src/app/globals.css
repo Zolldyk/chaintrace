@@ -66,4 +66,23 @@
   .slide-up {
     @apply animate-slide-up;
   }
+
+  /* QR Scanner animations */
+  .animate-scan-line {
+    animation: scan-line 2s ease-in-out infinite;
+  }
+}
+
+@keyframes scan-line {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(192px); /* Height of scanning frame */
+    opacity: 0;
+  }
 }

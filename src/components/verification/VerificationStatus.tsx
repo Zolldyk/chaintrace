@@ -172,7 +172,7 @@ const statusConfig: Record<
   rejected: {
     label: '❌ Verification Failed',
     description:
-      'This product failed verification or has been flagged. Do not purchase.',
+      'This product could not be verified. Please exercise caution.',
     color: 'text-red-700',
     bgColor: 'bg-red-50 border-red-200',
     textColor: 'text-red-800',
@@ -352,16 +352,14 @@ export const VerificationStatus = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          'relative overflow-hidden rounded-xl border shadow-sm transition-all duration-200',
+          'relative overflow-hidden rounded border transition-all duration-200',
           displayConfig.bgColor,
-          displayConfig.priority === 'high' && 'ring-2 ring-offset-1',
+          displayConfig.priority === 'high' && 'ring-1',
           displayConfig.priority === 'high' && displayConfig.ringColor,
           {
-            'p-3': size === 'sm',
-            'p-4': size === 'md',
-            'p-6': size === 'lg',
+            'p-2': size === 'sm' || size === 'md',
+            'p-3': size === 'lg',
           },
-          'focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2 hover:shadow-md',
           className
         )}
         role='status'
@@ -384,39 +382,39 @@ export const VerificationStatus = React.forwardRef<
           />
         )}
 
-        <div className='relative flex items-start gap-3 sm:gap-4'>
+        <div className='relative flex items-start gap-2'>
           {showIcon && (
             <div
               className={cn(
                 'flex-shrink-0 rounded-full p-1 shadow-inner',
                 displayConfig.color,
-                'ring-2 ring-white ring-offset-1',
+                'ring-1 ring-white ring-offset-1',
                 {
-                  'p-1': size === 'sm',
-                  'p-2': size === 'md',
-                  'p-2.5': size === 'lg',
+                  'p-0.5': size === 'sm',
+                  'p-1': size === 'md',
+                  'p-1.5': size === 'lg',
                 }
               )}
               aria-hidden='true'
             >
               {React.cloneElement(displayConfig.icon as React.ReactElement, {
                 className: cn(
-                  size === 'sm' && 'h-4 w-4',
-                  size === 'md' && 'h-5 w-5',
-                  size === 'lg' && 'h-7 w-7'
+                  size === 'sm' && 'h-3 w-3',
+                  size === 'md' && 'h-4 w-4',
+                  size === 'lg' && 'h-5 w-5'
                 ),
               })}
             </div>
           )}
 
           <div className='min-w-0 flex-1'>
-            <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+            <div className='flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between'>
               <div className='flex items-center gap-2'>
                 <h3
                   className={cn('font-bold', displayConfig.textColor, {
-                    'text-base': size === 'sm',
-                    'text-lg': size === 'md',
-                    'text-xl': size === 'lg',
+                    'text-sm': size === 'sm',
+                    'text-base': size === 'md',
+                    'text-lg': size === 'lg',
                   })}
                 >
                   {displayConfig.label}
@@ -424,15 +422,15 @@ export const VerificationStatus = React.forwardRef<
 
                 {/* Priority indicator badge */}
                 {displayConfig.priority === 'high' && (
-                  <span className='inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800 ring-1 ring-red-200'>
+                  <span className='inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-800 ring-1 ring-red-200'>
                     URGENT
                   </span>
                 )}
               </div>
 
-              {/* Enhanced status badge with better mobile layout */}
-              <div className='flex items-center gap-2'>
-                {lastVerified && (
+              {/* Last updated info only */}
+              {lastVerified && (
+                <div className='flex items-center gap-2'>
                   <span
                     className={cn(
                       'text-xs font-medium',
@@ -441,42 +439,20 @@ export const VerificationStatus = React.forwardRef<
                   >
                     Updated {getRelativeTime(lastVerified)}
                   </span>
-                )}
-
-                <div
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide',
-                    displayConfig.color,
-                    'bg-white/80 shadow-inner ring-1',
-                    displayConfig.ringColor
-                  )}
-                >
-                  <span className='text-sm' aria-hidden='true'>
-                    {status === 'verified' && '✅'}
-                    {status === 'pending' && '⏳'}
-                    {status === 'rejected' && '❌'}
-                    {status === 'expired' && '⚠️'}
-                    {status === 'unverified' && '❓'}
-                    {status === 'created' && '🆕'}
-                    {status === 'processing' && '🔄'}
-                  </span>
-                  <span className={displayConfig.textColor}>
-                    {displayConfig.label.replace(/^[^a-zA-Z]+/, '')}
-                  </span>
                 </div>
-              </div>
+              )}
             </div>
 
             {showDetails && (
               <>
                 <p
                   className={cn(
-                    'mt-3 leading-relaxed',
+                    'mt-1 leading-tight',
                     displayConfig.textColor.replace('-800', '-700'),
                     {
-                      'text-sm': size === 'sm',
-                      'text-base': size === 'md',
-                      'text-lg': size === 'lg',
+                      'text-xs': size === 'sm',
+                      'text-sm': size === 'md',
+                      'text-base': size === 'lg',
                     }
                   )}
                 >
@@ -484,7 +460,7 @@ export const VerificationStatus = React.forwardRef<
                 </p>
 
                 {/* Enhanced metadata grid with better mobile layout */}
-                <div className='mt-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2'>
+                <div className='mt-2 grid grid-cols-1 gap-1 text-xs sm:grid-cols-2'>
                   {lastVerified && (
                     <div className='flex items-center gap-2 text-gray-600'>
                       <svg
@@ -555,10 +531,10 @@ export const VerificationStatus = React.forwardRef<
                 )}
 
                 {displayStatus === 'rejected' && (
-                  <div className='mt-4 rounded-lg bg-red-100 p-3 ring-1 ring-red-200'>
-                    <div className='flex items-start gap-2'>
+                  <div className='mt-1 rounded bg-red-50 px-2 py-1 ring-1 ring-red-200'>
+                    <div className='flex items-center gap-1'>
                       <svg
-                        className='mt-0.5 h-4 w-4 flex-shrink-0 text-red-600'
+                        className='h-3 w-3 flex-shrink-0 text-red-600'
                         fill='currentColor'
                         viewBox='0 0 20 20'
                       >
@@ -568,13 +544,7 @@ export const VerificationStatus = React.forwardRef<
                           clipRule='evenodd'
                         />
                       </svg>
-                      <div className='text-sm text-red-800'>
-                        <p className='font-medium'>Warning</p>
-                        <p className='mt-1'>
-                          This product may not be authentic. Exercise caution
-                          before purchasing.
-                        </p>
-                      </div>
+                      <span className='text-xs text-red-700 font-medium'>Exercise caution before purchasing</span>
                     </div>
                   </div>
                 )}

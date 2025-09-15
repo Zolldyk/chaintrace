@@ -433,7 +433,7 @@ export function sanitizeQROptions(
   options: Partial<QRCodeOptions>
 ): QRCodeOptions {
   const sanitized: QRCodeOptions = {
-    format: 'png',
+    format: 'PNG',
     size: 256,
     errorCorrectionLevel: 'M',
     margin: 4,

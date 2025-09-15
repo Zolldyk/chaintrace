@@ -94,25 +94,25 @@ const FORMAT_OPTIONS: Array<{
   recommended: string[];
 }> = [
   {
-    value: 'png',
+    value: 'PNG',
     label: 'PNG',
     description: 'Best for web display and general use',
     recommended: ['Web', 'Email', 'Digital'],
   },
   {
-    value: 'svg',
+    value: 'SVG',
     label: 'SVG',
     description: 'Perfect for printing and scaling',
     recommended: ['Print', 'Packaging', 'Large sizes'],
   },
   {
-    value: 'jpeg',
+    value: 'JPEG',
     label: 'JPEG',
     description: 'Smaller file size, good compression',
     recommended: ['Mobile', 'Social media'],
   },
   {
-    value: 'webp',
+    value: 'WebP',
     label: 'WebP',
     description: 'Modern format with excellent compression',
     recommended: ['Modern browsers', 'Performance'],
@@ -230,7 +230,7 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
     initialProductIds.join('\n')
   );
   const [options, setOptions] = useState<QRCodeOptions>({
-    format: 'png',
+    format: 'PNG',
     size: 256,
     errorCorrectionLevel: 'M',
     margin: 2,
@@ -329,7 +329,7 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
         // TODO: Restore QR generation after fixing crypto dependencies
         const result = {
           data: 'placeholder',
-          format: 'png' as const,
+          format: 'PNG' as const,
           filename: 'placeholder.png',
           dimensions: { width: 256, height: 256 },
           timestamp: new Date(),
@@ -448,7 +448,7 @@ export const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
       );
       */
 
-      if (qrCode.format === 'svg') {
+      if (qrCode.format === 'SVG') {
         // Download SVG
         const blob = new Blob([qrCode.data], { type: 'image/svg+xml' });
         const url = URL.createObjectURL(blob);

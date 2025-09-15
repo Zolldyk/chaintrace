@@ -542,7 +542,7 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
             : undefined
         }
       >
-        {qrCode.format === 'svg' ? (
+        {qrCode.format === 'SVG' ? (
           <div
             className={config.image}
             dangerouslySetInnerHTML={{ __html: qrCode.data }}

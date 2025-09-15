@@ -244,12 +244,15 @@ export function CredentialDisplay({
             <QRCodeDisplay
               qrCode={{
                 data: generateCredentialQRData(credential),
-                format: 'png' as const,
+                format: 'PNG' as const,
                 dimensions: { width: 200, height: 200 },
                 timestamp: new Date(),
                 size: Math.ceil(
                   generateCredentialQRData(credential).length * 0.75
                 ), // Estimate size
+                productId: credential.productId,
+                errorCorrectionLevel: 'M' as const,
+                filename: `credential-${credential.productId}.png`,
                 mimeType: 'image/png',
                 encodedData: generateCredentialQRData(credential),
                 metadata: {

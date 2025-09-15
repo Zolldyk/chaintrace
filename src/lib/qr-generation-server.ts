@@ -13,7 +13,7 @@ import type { QRCodeOptions, QRCodeFormat } from '../types/qr';
  * Gets file extension for a given format (crypto-free version)
  */
 function getFileExtension(format: QRCodeFormat): string {
-  return format === 'jpeg' ? 'jpg' : format;
+  return format === 'JPEG' ? 'jpg' : format.toLowerCase();
 }
 
 /**

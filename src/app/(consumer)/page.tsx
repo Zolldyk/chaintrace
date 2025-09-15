@@ -71,10 +71,10 @@ export default function ConsumerHomePage() {
         <div className='border-secondary-200 animate-fade-in rounded-xl border bg-white p-6 shadow-card'>
           <div className='mb-6 text-center'>
             <h2 className='mb-2 text-2xl font-semibold text-secondary-600'>
-              Manual Product Lookup
+              Scan or Enter Product ID
             </h2>
             <p className='text-sm text-secondary-500'>
-              Enter your product ID below to verify its authenticity
+              Use your camera to scan a QR code or enter the product ID manually
             </p>
           </div>
 
@@ -94,7 +94,8 @@ export default function ConsumerHomePage() {
                   : null
               }
               autoFocus={true}
-              placeholder='Enter product ID (e.g., PROD-2024-001)'
+              placeholder='Enter product ID (e.g., CT-2024-123-ABC123)'
+              enableQrScanning={true}
             />
           </div>
         </div>

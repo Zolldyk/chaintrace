@@ -437,7 +437,7 @@ export default function BatchCreatePage() {
                     `PROD-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`
                 )}
                 defaultOptions={{
-                  format: 'png',
+                  format: 'PNG',
                   size: 256,
                   errorCorrectionLevel: 'M',
                 }}

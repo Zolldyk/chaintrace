@@ -33,27 +33,33 @@ const DEFAULT_QR_OPTIONS: Required<Omit<QRCodeOptions, 'format'>> = {
     light: '#ffffff',
   },
   quality: 85,
-  quietZone: true,
+  quietZone: 2,
+  verificationPath: '/verify',
+  logo: {
+    src: '',
+    width: 32,
+    height: 32,
+  },
 };
 
 /**
  * Maximum sizes for different formats to prevent memory issues
  */
 const MAX_SIZES: Record<QRCodeFormat, number> = {
-  png: 2048,
-  svg: 4096,
-  jpeg: 2048,
-  webp: 2048,
+  PNG: 2048,
+  SVG: 4096,
+  JPEG: 2048,
+  WebP: 2048,
 };
 
 /**
  * MIME types for different QR code formats
  */
 const MIME_TYPES: Record<QRCodeFormat, string> = {
-  png: 'image/png',
-  svg: 'image/svg+xml',
-  jpeg: 'image/jpeg',
-  webp: 'image/webp',
+  PNG: 'image/png',
+  SVG: 'image/svg+xml',
+  JPEG: 'image/jpeg',
+  WebP: 'image/webp',
 };
 
 /**
@@ -112,7 +118,7 @@ function validateQROptions(options: QRCodeOptions): void {
   }
 
   // Validate JPEG quality
-  if (format === 'jpeg' && quality && (quality < 1 || quality > 100)) {
+  if (format === 'JPEG' && quality && (quality < 1 || quality > 100)) {
     throw new QRCodeError(
       'INVALID_FORMAT',
       'JPEG quality must be between 1 and 100',
@@ -165,7 +171,7 @@ function buildVerificationUrl(
  * @since 2.4.0
  */
 function getFileExtension(format: QRCodeFormat): string {
-  return format === 'jpeg' ? 'jpg' : format;
+  return format === 'JPEG' ? 'jpg' : format.toLowerCase();
 }
 
 /**
@@ -180,13 +186,13 @@ function estimateFileSize(format: QRCodeFormat, size: number): number {
   const pixelCount = size * size;
 
   switch (format) {
-    case 'png':
+    case 'PNG':
       return Math.round(pixelCount * 0.5); // PNG compression estimate
-    case 'jpeg':
+    case 'JPEG':
       return Math.round(pixelCount * 0.1); // JPEG compression estimate
-    case 'webp':
+    case 'WebP':
       return Math.round(pixelCount * 0.08); // WebP compression estimate
-    case 'svg':
+    case 'SVG':
       return Math.round(size * 50); // SVG is size-independent, rough estimate
     default:
       return pixelCount;
@@ -269,7 +275,7 @@ export async function generateProductQRCode(
     // Configure QRCode library options
     const qrOptions = {
       errorCorrectionLevel: finalOptions.errorCorrectionLevel,
-      type: options.format === 'svg' ? 'svg' : 'image/png',
+      type: options.format === 'SVG' ? 'svg' : 'image/png',
       quality: finalOptions.quality / 100,
       margin: finalOptions.margin,
       color: finalOptions.color,
@@ -281,13 +287,13 @@ export async function generateProductQRCode(
     let qrData: string;
     let actualMimeType: string;
 
-    if (options.format === 'svg') {
+    if (options.format === 'SVG') {
       qrData = await QRCode.toString(verificationUrl, {
         ...qrOptions,
         type: 'svg',
         width: finalOptions.size,
       });
-      actualMimeType = MIME_TYPES.svg;
+      actualMimeType = MIME_TYPES.SVG;
     } else {
       // Generate as data URL for raster formats
       qrData = await QRCode.toDataURL(verificationUrl, {
@@ -319,6 +325,9 @@ export async function generateProductQRCode(
       dimensions,
       timestamp: new Date(),
       size: estimatedSize,
+      productId,
+      errorCorrectionLevel: finalOptions.errorCorrectionLevel,
+      filename: `${productId}-qr.${options.format.toLowerCase()}`,
       mimeType: actualMimeType,
       encodedData: verificationUrl,
       metadata,
@@ -415,7 +424,6 @@ export async function generateProductQRCodeBatch(
 
   const results: QRCodeBatchResult['results'] = [];
   const errors: QRCodeBatchResult['errors'] = [];
-  const { filenamePrefix = 'qr' } = request;
 
   // Process all products sequentially for simpler indexing
   for (let i = 0; i < request.productIds.length; i++) {
@@ -423,26 +431,21 @@ export async function generateProductQRCodeBatch(
     try {
       const qrCode = await generateProductQRCode(
         productId,
-        request.options,
+        request.options || { format: 'PNG' },
         urlConfig
       );
-      const filename = `${filenamePrefix}-${productId}-${i + 1}.${getFileExtension(request.options.format)}`;
-
       results.push({
         productId,
         qrCode,
-        filename,
+        success: true,
       });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      const errorDetails =
-        error instanceof QRCodeError ? error.details : undefined;
 
       errors.push({
         productId,
         error: errorMessage,
-        details: errorDetails,
       });
     }
   }
@@ -450,7 +453,14 @@ export async function generateProductQRCodeBatch(
   const processingTime = Date.now() - startTime;
 
   const batchResult: QRCodeBatchResult = {
+    qrCodes: results.map(r => r.qrCode),
+    batchId: request.batchId || `batch-${Date.now()}`,
+    timestamp: new Date(),
+    totalGenerated: request.productIds.length,
+    failures: errors,
+    successRate: request.productIds.length > 0 ? (results.length / request.productIds.length) * 100 : 0,
     results,
+    errors,
     batchMetadata: {
       totalGenerated: request.productIds.length,
       successCount: results.length,
@@ -458,7 +468,6 @@ export async function generateProductQRCodeBatch(
       processingTime,
       timestamp: new Date(),
     },
-    errors,
   };
 
   return batchResult;
@@ -493,6 +502,7 @@ export function validateQRCode(
   urlConfig: QRCodeUrlConfig = DEFAULT_URL_CONFIG
 ): QRCodeVerification {
   const verification: QRCodeVerification = {
+    valid: false,
     isValid: false,
     verifiedAt: new Date(),
     errors: [],
@@ -501,7 +511,7 @@ export function validateQRCode(
   try {
     // Basic data validation
     if (!qrData || typeof qrData !== 'string') {
-      verification.errors.push('QR code data is empty or invalid');
+      verification.errors!.push('QR code data is empty or invalid');
       return verification;
     }
 
@@ -620,7 +630,7 @@ export function getDefaultQROptions(
     case 'web':
       return {
         ...baseOptions,
-        format: 'png',
+        format: 'PNG',
         size: 200,
         errorCorrectionLevel: 'M',
       };
@@ -628,7 +638,7 @@ export function getDefaultQROptions(
     case 'print':
       return {
         ...baseOptions,
-        format: 'svg',
+        format: 'SVG',
         size: 512,
         errorCorrectionLevel: 'H', // Higher error correction for print
         margin: 4, // Larger margin for print reliability
@@ -637,14 +647,14 @@ export function getDefaultQROptions(
     case 'mobile':
       return {
         ...baseOptions,
-        format: 'png',
+        format: 'PNG',
         size: 256,
         errorCorrectionLevel: 'L', // Lower correction for faster scanning
         margin: 1, // Smaller margin for compact display
       };
 
     default:
-      return { ...baseOptions, format: 'png' };
+      return { ...baseOptions, format: 'PNG' };
   }
 }
 

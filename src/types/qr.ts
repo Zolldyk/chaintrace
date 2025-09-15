@@ -1,364 +1,457 @@
 /**
- * QR Code types and interfaces for ChainTrace application
+ * QR code scanning related type definitions.
  *
- * Provides comprehensive type definitions for QR code generation,
- * storage, and verification workflows.
- *
- * @since 2.4.0
+ * @since 1.0.0
  */
 
 /**
- * Supported QR code output formats for download and printing
+ * QR Scanner configuration options
  */
-export type QRCodeFormat = 'png' | 'svg' | 'jpeg' | 'webp';
+export interface QRScannerConfig {
+  /** Enable torch/flashlight functionality */
+  enableTorch?: boolean;
 
-/**
- * QR code error correction levels
- * Higher levels provide better error tolerance but larger code size
- */
-export type QRCodeErrorLevel = 'L' | 'M' | 'Q' | 'H';
+  /** Scanning timeout in milliseconds */
+  timeout?: number;
 
-/**
- * QR code generation options for customization
- *
- * @interface QRCodeOptions
- * @since 2.4.0
- */
-export interface QRCodeOptions {
-  /** Output format for the QR code */
-  format: QRCodeFormat;
+  /** Preferred video constraints */
+  videoConstraints?: MediaTrackConstraints;
 
-  /** Size of the QR code in pixels (for raster formats) */
-  size?: number;
-
-  /** Error correction level */
-  errorCorrectionLevel?: QRCodeErrorLevel;
-
-  /** Margin around the QR code */
-  margin?: number;
-
-  /** Color configuration */
-  color?: {
-    /** Foreground (dark) color */
-    dark?: string;
-    /** Background (light) color */
-    light?: string;
-  };
-
-  /** Quality for JPEG format (0-100) */
-  quality?: number;
-
-  /** Include quiet zone around the code */
-  quietZone?: boolean;
+  /** Whether to try harder for QR detection (may be slower) */
+  tryHarder?: boolean;
 }
 
 /**
- * QR code generation result with metadata
- *
- * @interface QRCodeResult
- * @since 2.4.0
+ * QR Scanner state interface
  */
-export interface QRCodeResult {
-  /** Generated QR code data (base64 or SVG string) */
+export interface QRScannerState {
+  /** Camera permission status */
+  hasPermission: boolean | null;
+
+  /** Whether scanner is actively scanning */
+  isScanning: boolean;
+
+  /** Whether torch is supported on device */
+  torchSupported: boolean;
+
+  /** Whether torch is currently enabled */
+  torchEnabled: boolean;
+
+  /** Current error message, if any */
+  error: string | null;
+}
+
+/**
+ * QR Scan result interface
+ */
+export interface QRScanResult {
+  /** Raw scanned data */
   data: string;
 
-  /** Format of the generated code */
+  /** Timestamp when scan completed */
+  timestamp: Date;
+
+  /** Whether the scan result is a valid product ID */
+  isValid: boolean;
+
+  /** Extracted product ID if applicable */
+  productId?: string;
+
+  /** QR code format detected */
+  format?: string;
+}
+
+/**
+ * QR Scanner error types
+ */
+export enum QRScannerErrorType {
+  CAMERA_ACCESS_DENIED = 'CAMERA_ACCESS_DENIED',
+  NO_CAMERA_FOUND = 'NO_CAMERA_FOUND',
+  BROWSER_NOT_SUPPORTED = 'BROWSER_NOT_SUPPORTED',
+  SCANNING_TIMEOUT = 'SCANNING_TIMEOUT',
+  INVALID_QR_FORMAT = 'INVALID_QR_FORMAT',
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}
+
+/**
+ * QR Scanner error interface
+ */
+export interface QRScannerError {
+  /** Error type */
+  type: QRScannerErrorType;
+
+  /** Human-readable error message */
+  message: string;
+
+  /** Original error object if available */
+  originalError?: Error;
+
+  /** Whether error is recoverable */
+  recoverable: boolean;
+}
+
+/**
+ * Camera capabilities interface
+ */
+export interface CameraCapabilities {
+  /** Whether camera is available */
+  available: boolean;
+
+  /** Whether torch is supported */
+  torchSupported: boolean;
+
+  /** Whether facing mode selection is supported */
+  facingModeSupported: boolean;
+
+  /** Available video resolutions */
+  resolutions: Array<{
+    width: number;
+    height: number;
+  }>;
+}
+
+/**
+ * QR Code format validation result
+ */
+export interface QRValidationResult {
+  /** Whether the QR code data is valid */
+  valid: boolean;
+
+  /** Extracted product ID if valid */
+  productId?: string;
+
+  /** Error message if invalid */
+  error?: string;
+
+  /** Detected QR code type (URL, raw text, etc.) */
+  type: 'url' | 'product_id' | 'text' | 'unknown';
+}
+
+/**
+ * QR Scanner event handlers
+ */
+export interface QRScannerEvents {
+  /** Called when QR code is successfully scanned */
+  onScan?: (result: QRScanResult) => void;
+
+  /** Called when scanning error occurs */
+  onError?: (error: QRScannerError) => void;
+
+  /** Called when scanner is closed/stopped */
+  onClose?: () => void;
+
+  /** Called when camera permission state changes */
+  onPermissionChange?: (granted: boolean) => void;
+
+  /** Called when torch state changes */
+  onTorchChange?: (enabled: boolean) => void;
+}
+
+/**
+ * Product QR code data structure
+ */
+export interface ProductQRData {
+  /** Product ID */
+  productId: string;
+
+  /** Verification URL */
+  verificationUrl?: string;
+
+  /** Batch ID if applicable */
+  batchId?: string;
+
+  /** Additional metadata */
+  metadata?: Record<string, any>;
+}
+
+/**
+ * QR Code generation options
+ */
+export interface QRCodeGenerationOptions {
+  /** QR code size in pixels */
+  size?: number;
+
+  /** Error correction level */
+  errorCorrectionLevel?: 'L' | 'M' | 'Q' | 'H';
+
+  /** Margin around QR code */
+  margin?: number;
+
+  /** Quiet zone around QR code */
+  quietZone?: number;
+
+  /** QR code color */
+  color?: {
+    dark?: string;
+    light?: string;
+  };
+
+  /** Include logo in center */
+  logo?: {
+    src: string;
+    width?: number;
+    height?: number;
+  };
+}
+
+/**
+ * Legacy QR Code options (for backward compatibility)
+ */
+export interface QRCodeOptions extends QRCodeGenerationOptions {
+  /** Output format for generated QR code */
   format: QRCodeFormat;
 
-  /** Size information */
+  /** Image quality for JPEG format (0-1) */
+  quality?: number;
+
+  /** Verification path for URL generation */
+  verificationPath?: string;
+}
+
+/**
+ * QR Code generation result
+ */
+export interface QRCodeResult {
+  /** Generated QR code data URL */
+  dataUrl?: string;
+
+  /** Raw binary/base64 data for download */
+  data: string;
+
+  /** Raw SVG content */
+  svg?: string;
+
+  /** QR code size */
+  size: number;
+
+  /** Product ID encoded */
+  productId: string;
+
+  /** Generation timestamp */
+  timestamp: Date;
+
+  /** Error correction level used */
+  errorCorrectionLevel: 'L' | 'M' | 'Q' | 'H';
+
+  /** Output format used */
+  format: QRCodeFormat;
+
+  /** Whether generation was successful */
+  success?: boolean;
+
+  /** Error message if generation failed */
+  error?: string;
+
+  /** File name for download */
+  filename: string;
+
+  /** QR code dimensions */
   dimensions: {
     width: number;
     height: number;
   };
 
-  /** Generation timestamp */
-  timestamp: Date;
-
-  /** File size in bytes */
-  size: number;
-
-  /** MIME type for the format */
+  /** MIME type of the generated image */
   mimeType: string;
 
-  /** Original input data that was encoded */
-  encodedData: string;
+  /** Additional metadata */
+  metadata: Record<string, any>;
 
-  /** Generation metadata */
-  metadata: {
-    /** Error correction level used */
-    errorLevel: QRCodeErrorLevel;
-    /** QR code version (size) */
-    version: number;
-    /** Data mode used */
-    mode: string;
-  };
+  /** Encoded data for internal use */
+  encodedData: string;
 }
 
 /**
- * Bulk QR code generation request
- *
- * @interface QRCodeBatchRequest
- * @since 2.4.0
+ * QR Code format types
+ */
+export type QRCodeFormat = 'PNG' | 'SVG' | 'JPEG' | 'WebP';
+
+/**
+ * Batch QR code generation request
  */
 export interface QRCodeBatchRequest {
   /** Product IDs to generate QR codes for */
   productIds: string[];
 
-  /** Generation options applied to all codes */
-  options: QRCodeOptions;
+  /** QR code generation options */
+  options?: QRCodeOptions;
 
-  /** Optional prefix for generated file names */
+  /** Output format */
+  format?: QRCodeFormat;
+
+  /** Batch identifier */
+  batchId?: string;
+
+  /** Filename prefix for generated files */
   filenamePrefix?: string;
 
-  /** Include individual metadata files */
+  /** Whether to include metadata */
   includeMetadata?: boolean;
 }
 
 /**
- * Bulk QR code generation result
- *
- * @interface QRCodeBatchResult
- * @since 2.4.0
+ * Batch QR code generation result
  */
 export interface QRCodeBatchResult {
-  /** Individual QR code results */
+  /** Generated QR codes */
+  qrCodes: QRCodeResult[];
+
+  /** Batch metadata */
+  batchId: string;
+
+  /** Generation timestamp */
+  timestamp: Date;
+
+  /** Total codes generated */
+  totalGenerated: number;
+
+  /** Failed generations */
+  failures: Array<{
+    productId: string;
+    error: string;
+  }>;
+
+  /** Success rate */
+  successRate: number;
+
+  /** Batch processing results */
   results: Array<{
     productId: string;
     qrCode: QRCodeResult;
-    filename: string;
+    success: boolean;
   }>;
 
-  /** Overall batch metadata */
-  batchMetadata: {
-    /** Total number of codes generated */
-    totalGenerated: number;
-    /** Number of successful generations */
-    successCount: number;
-    /** Number of failed generations */
-    failureCount: number;
-    /** Batch processing time in milliseconds */
-    processingTime: number;
-    /** Batch generation timestamp */
-    timestamp: Date;
-  };
-
-  /** Any errors encountered during batch processing */
+  /** Batch processing errors */
   errors: Array<{
     productId: string;
     error: string;
-    details?: Record<string, any>;
   }>;
-}
 
-/**
- * QR code storage information
- *
- * @interface QRCodeStorage
- * @since 2.4.0
- */
-export interface QRCodeStorage {
-  /** Storage provider (Vercel Blob, local, etc.) */
-  provider: 'vercel-blob' | 'local' | 's3' | 'cloudinary';
-
-  /** Storage URL or path */
-  url: string;
-
-  /** Storage key/identifier */
-  key: string;
-
-  /** Upload timestamp */
-  uploadedAt: Date;
-
-  /** Storage metadata */
-  metadata: {
-    /** File size in bytes */
-    size: number;
-    /** Content type */
-    contentType: string;
-    /** Storage region/location */
-    region?: string;
-    /** Expiry date (if applicable) */
-    expiresAt?: Date;
+  /** Batch metadata */
+  batchMetadata: {
+    totalGenerated: number;
+    successCount: number;
+    failureCount: number;
+    processingTime: number;
+    timestamp: Date;
   };
 }
 
 /**
- * QR code verification result
- *
- * @interface QRCodeVerification
- * @since 2.4.0
+ * QR Code verification result
  */
 export interface QRCodeVerification {
-  /** Whether the QR code is valid */
-  isValid: boolean;
+  /** Whether QR code is valid */
+  valid: boolean;
 
-  /** Decoded product ID */
+  /** Whether QR code is valid (alias for backward compatibility) */
+  isValid?: boolean;
+
+  /** Verified product ID */
   productId?: string;
 
   /** Verification timestamp */
   verifiedAt: Date;
 
-  /** QR code format detected */
-  detectedFormat?: QRCodeFormat;
+  /** Error message if invalid */
+  error?: string;
 
-  /** Verification errors (if any) */
+  /** Error messages (array for backward compatibility) */
   errors: string[];
 
-  /** Additional verification metadata */
-  metadata?: {
-    /** QR code version detected */
-    version: number;
-    /** Error correction level */
-    errorLevel: QRCodeErrorLevel;
-    /** Data capacity used */
-    dataCapacity: number;
+  /** Security metadata */
+  security?: {
+    tampered: boolean;
+    originalChecksum?: string;
+    currentChecksum?: string;
   };
 }
 
 /**
- * Error types for QR code operations
- */
-export type QRCodeErrorType =
-  | 'INVALID_FORMAT'
-  | 'GENERATION_FAILED'
-  | 'INVALID_DATA'
-  | 'SIZE_TOO_LARGE'
-  | 'STORAGE_ERROR'
-  | 'NETWORK_ERROR'
-  | 'VALIDATION_FAILED'
-  | 'UNKNOWN_ERROR';
-
-/**
- * QR code operation error class
- */
-export class QRCodeError extends Error {
-  constructor(
-    public code: QRCodeErrorType,
-    message: string,
-    public details?: Record<string, any>
-  ) {
-    super(message);
-    this.name = 'QRCodeError';
-  }
-}
-
-/**
- * QR code scanning/reading result
- *
- * @interface QRCodeScanResult
- * @since 2.4.0
- */
-export interface QRCodeScanResult {
-  /** Successfully decoded data */
-  data: string;
-
-  /** Detected QR code format */
-  format: string;
-
-  /** Scan timestamp */
-  scannedAt: Date;
-
-  /** Confidence level of the scan (0-100) */
-  confidence: number;
-
-  /** Additional scan metadata */
-  metadata?: {
-    /** QR code version */
-    version: number;
-    /** Error correction level */
-    errorLevel: QRCodeErrorLevel;
-    /** Scan source (camera, file, etc.) */
-    source: 'camera' | 'file' | 'clipboard';
-  };
-}
-
-/**
- * QR code verification URL configuration
- *
- * @interface QRCodeUrlConfig
- * @since 2.4.0
+ * QR Code URL configuration
  */
 export interface QRCodeUrlConfig {
-  /** Base URL for verification pages */
+  /** Base URL for verification */
   baseUrl: string;
 
-  /** URL pattern for product verification */
-  verificationPath: string;
+  /** Additional query parameters */
+  queryParams?: Record<string, string>;
 
-  /** Include tracking parameters */
+  /** URL scheme (http/https) */
+  scheme?: 'http' | 'https';
+
+  /** Whether to include batch information */
+  includeBatch?: boolean;
+
+  /** Verification path for URL generation */
+  verificationPath?: string;
+
+  /** Whether to include tracking parameters */
   includeTracking?: boolean;
 
-  /** Custom URL parameters */
+  /** Custom parameters to add to URL */
   customParams?: Record<string, string>;
 }
 
 /**
- * QR code print settings for physical output
- *
- * @interface QRCodePrintSettings
- * @since 2.4.0
+ * QR Code error interface
  */
-export interface QRCodePrintSettings {
-  /** Print size in millimeters */
-  printSize: {
-    width: number;
-    height: number;
-  };
+export interface QRCodeError {
+  /** Error code */
+  code: string;
 
-  /** Print resolution in DPI */
-  dpi: number;
+  /** Error message */
+  message: string;
 
-  /** Include product information text */
-  includeText?: boolean;
+  /** Error details */
+  details?: any;
 
-  /** Print layout configuration */
-  layout?: {
-    /** Number of codes per page */
-    codesPerPage: number;
-    /** Page orientation */
-    orientation: 'portrait' | 'landscape';
-    /** Margin settings */
-    margins: {
-      top: number;
-      right: number;
-      bottom: number;
-      left: number;
-    };
-  };
+  /** Whether error is recoverable */
+  recoverable: boolean;
 }
 
 /**
- * QR code analytics data
- *
- * @interface QRCodeAnalytics
- * @since 2.4.0
+ * QR Code error class implementation
  */
-export interface QRCodeAnalytics {
-  /** Number of times the QR code was scanned */
-  scanCount: number;
+export class QRCodeError extends Error implements QRCodeError {
+  public code: string;
+  public details?: any;
+  public recoverable: boolean;
 
-  /** First scan timestamp */
-  firstScanned?: Date;
+  constructor(code: string, message: string, details?: any, recoverable: boolean = false) {
+    super(message);
+    this.name = 'QRCodeError';
+    this.code = code;
+    this.details = details;
+    this.recoverable = recoverable;
+  }
+}
 
-  /** Last scan timestamp */
-  lastScanned?: Date;
+/**
+ * QR Code storage configuration
+ */
+export interface QRCodeStorage {
+  /** Storage provider */
+  provider: 'local' | 'vercel-blob' | 's3' | 'cloudinary';
 
-  /** Geographic distribution of scans */
-  scanLocations?: Array<{
-    country: string;
-    region: string;
-    count: number;
-  }>;
+  /** Storage configuration */
+  config?: Record<string, any>;
 
-  /** Device types used for scanning */
-  deviceTypes?: Array<{
-    type: 'mobile' | 'tablet' | 'desktop';
-    count: number;
-  }>;
+  /** File naming pattern */
+  filePattern?: string;
 
-  /** Scanner applications used */
-  scannerApps?: Array<{
-    app: string;
-    count: number;
-  }>;
+  /** Whether to store metadata */
+  includeMetadata?: boolean;
+
+  /** Public URL for accessing the stored QR code */
+  url?: string;
+
+  /** Storage key for the QR code */
+  key?: string;
+
+  /** Upload timestamp */
+  uploadedAt?: Date;
+
+  /** Additional metadata */
+  metadata?: Record<string, any>;
 }

@@ -549,6 +549,7 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
             aria-hidden='true'
           />
         ) : (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={qrCode.data}
             alt={qrAltText}

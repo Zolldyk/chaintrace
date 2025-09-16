@@ -226,6 +226,7 @@ export default function BatchCreatePage() {
         console.log(`Successfully generated ${productIds.length} QR codes`);
       }
     } catch (error) {
+      /* eslint-disable-next-line no-console */
       console.error('QR code generation failed:', error);
       alert('Failed to generate QR codes. Please try again.');
     }
@@ -445,10 +446,12 @@ export default function BatchCreatePage() {
                 maxBatchSize={formState.products.length}
                 onGenerated={results => {
                   if (process.env.NODE_ENV === 'development') {
+                    /* eslint-disable-next-line no-console */
                     console.log('QR codes generated:', results);
                   }
                 }}
                 onError={error => {
+                  /* eslint-disable-next-line no-console */
                   console.error('QR generation error:', error);
                 }}
                 className='compact-layout min-h-0'

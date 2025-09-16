@@ -7,3 +7,5 @@
 export * from './product';
 export * from './hedera';
 export * from './compliance';
+export * from './qr';
+export * from './search';

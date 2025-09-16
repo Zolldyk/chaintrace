@@ -25,13 +25,13 @@ import {
   QRScannerConfig,
   QRScanResult,
   QRScannerError,
-  QRScannerErrorType
+  QRScannerErrorType,
 } from '@/types/qr';
 import {
   validateQRCode,
   createScanResult,
   isCameraScanningSupported,
-  formatScannerError
+  formatScannerError,
 } from '@/lib/qr-scanner';
 
 export interface UseQRScannerOptions extends QRScannerConfig {
@@ -83,7 +83,9 @@ export interface UseQRScannerReturn {
 /**
  * Custom hook for QR code scanning functionality
  */
-export function useQRScanner(options: UseQRScannerOptions = {}): UseQRScannerReturn {
+export function useQRScanner(
+  options: UseQRScannerOptions = {}
+): UseQRScannerReturn {
   const {
     onScan,
     onError,
@@ -119,60 +121,67 @@ export function useQRScanner(options: UseQRScannerOptions = {}): UseQRScannerRet
   /**
    * Handle successful QR code scan
    */
-  const handleScan = useCallback((data: string) => {
-    // Prevent duplicate scans
-    if (lastScanRef.current === data) {
-      return;
-    }
-
-    lastScanRef.current = data;
-
-    const result = createScanResult(data, 'QR_CODE');
-
-    // Auto-validate if enabled
-    if (autoValidate) {
-      const validation = validateQRCode(data);
-      if (!validation.valid) {
-        const scanError: QRScannerError = {
-          type: QRScannerErrorType.INVALID_QR_FORMAT,
-          message: validation.error || 'Invalid QR code format',
-          recoverable: true,
-        };
-        setError(scanError);
-        onError?.(scanError);
+  const handleScan = useCallback(
+    (data: string) => {
+      // Prevent duplicate scans
+      if (lastScanRef.current === data) {
         return;
       }
-    }
 
-    setScanResult(result);
-    setError(null);
+      lastScanRef.current = data;
 
-    // Auto-stop if enabled
-    if (autoStop) {
-      stopScanning();
-    }
+      const result = createScanResult(data, 'QR_CODE');
 
-    onScan?.(result);
-  }, [autoValidate, autoStop, onScan, onError]);
+      // Auto-validate if enabled
+      if (autoValidate) {
+        const validation = validateQRCode(data);
+        if (!validation.valid) {
+          const scanError: QRScannerError = {
+            type: QRScannerErrorType.INVALID_QR_FORMAT,
+            message: validation.error || 'Invalid QR code format',
+            recoverable: true,
+          };
+          setError(scanError);
+          onError?.(scanError);
+          return;
+        }
+      }
+
+      setScanResult(result);
+      setError(null);
+
+      // Auto-stop if enabled
+      if (autoStop) {
+        stopScanning();
+      }
+
+      onScan?.(result);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [autoValidate, autoStop, onScan, onError]
+  ); // stopScanning causes circular dependency
 
   /**
    * Handle scanning errors
    */
-  const handleError = useCallback((err: Error | string) => {
-    const message = formatScannerError(err);
-    const errorType = getErrorType(err);
+  const handleError = useCallback(
+    (err: Error | string) => {
+      const message = formatScannerError(err);
+      const errorType = getErrorType(err);
 
-    const scanError: QRScannerError = {
-      type: errorType,
-      message,
-      originalError: err instanceof Error ? err : undefined,
-      recoverable: errorType !== QRScannerErrorType.BROWSER_NOT_SUPPORTED,
-    };
+      const scanError: QRScannerError = {
+        type: errorType,
+        message,
+        originalError: err instanceof Error ? err : undefined,
+        recoverable: errorType !== QRScannerErrorType.BROWSER_NOT_SUPPORTED,
+      };
 
-    setError(scanError);
-    setIsScanning(false);
-    onError?.(scanError);
-  }, [onError]);
+      setError(scanError);
+      setIsScanning(false);
+      onError?.(scanError);
+    },
+    [onError]
+  );
 
   /**
    * Start QR code scanning
@@ -252,9 +261,15 @@ export function useQRScanner(options: UseQRScannerOptions = {}): UseQRScannerRet
    */
   useEffect(() => {
     return () => {
-      stopScanning();
+      // Cleanup function doesn't need stopScanning in deps to avoid circular dependency
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      setIsScanning(false);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // stopScanning causes circular dependency
 
   return {
     isScanning,
@@ -276,7 +291,10 @@ export function useQRScanner(options: UseQRScannerOptions = {}): UseQRScannerRet
 function getErrorType(error: Error | string): QRScannerErrorType {
   const message = typeof error === 'string' ? error : error.message;
 
-  if (message.includes('Permission denied') || message.includes('access denied')) {
+  if (
+    message.includes('Permission denied') ||
+    message.includes('access denied')
+  ) {
     return QRScannerErrorType.CAMERA_ACCESS_DENIED;
   }
 
@@ -284,7 +302,10 @@ function getErrorType(error: Error | string): QRScannerErrorType {
     return QRScannerErrorType.NO_CAMERA_FOUND;
   }
 
-  if (message.includes('NotSupportedError') || message.includes('not supported')) {
+  if (
+    message.includes('NotSupportedError') ||
+    message.includes('not supported')
+  ) {
     return QRScannerErrorType.BROWSER_NOT_SUPPORTED;
   }
 

@@ -161,8 +161,8 @@ export async function POST(
   try {
     // Get client IP for rate limiting
     const clientIp =
-      request.ip ||
       request.headers.get('x-forwarded-for')?.split(',')[0] ||
+      request.headers.get('x-real-ip') ||
       'unknown';
 
     // Check rate limiting

@@ -48,7 +48,7 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    domains: [],
+    remotePatterns: [],
     formats: ['image/webp', 'image/avif'],
   },
 

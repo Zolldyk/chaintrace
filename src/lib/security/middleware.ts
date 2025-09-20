@@ -511,8 +511,8 @@ function getClientIP(request: NextRequest): string {
     }
   }
 
-  // Fallback to connection info (may not be available in all environments)
-  return request.ip || 'unknown';
+  // Fallback (Next.js 15 doesn't have request.ip)
+  return 'unknown';
 }
 
 /**

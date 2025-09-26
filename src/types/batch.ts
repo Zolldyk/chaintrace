@@ -18,6 +18,9 @@ export interface CreateProductRequest {
   /** Human-readable product name */
   name: string;
 
+  /** Product description */
+  description?: string;
+
   /** Product classification */
   category: ProductCategory;
 
@@ -30,8 +33,23 @@ export interface CreateProductRequest {
   /** Geographic origin with cooperative details */
   origin: Location;
 
+  /** Quality grade */
+  qualityGrade?: string;
+
+  /** Production date */
+  productionDate?: Date;
+
+  /** Expiry date */
+  expiryDate?: Date;
+
+  /** Certifications */
+  certifications?: string[];
+
+  /** Additional product metadata */
+  metadata?: Record<string, any>;
+
   /** Additional processing information */
-  processingDetails: Record<string, any>;
+  processingDetails?: Record<string, any>;
 }
 
 /**
@@ -60,20 +78,41 @@ export interface CreateProductBatch {
 }
 
 /**
+ * Compliance rule validation result
+ */
+export interface ComplianceRuleResult {
+  ruleId: string;
+  status: 'passed' | 'failed';
+  message: string;
+}
+
+/**
+ * Compliance validation details
+ */
+export interface ComplianceDetails {
+  rules: ComplianceRuleResult[];
+  overallStatus: 'compliant' | 'non-compliant';
+  lastChecked: string;
+}
+
+/**
  * Form validation state for individual product rows
  */
 export interface ProductFormValidation {
-  /** Field-specific validation errors */
-  errors: Record<string, string>;
+  /** Product index in the batch */
+  productIndex: number;
 
   /** Whether the entire product is valid */
   isValid: boolean;
 
+  /** Field-specific validation errors */
+  errors: string[];
+
   /** Compliance validation status */
   complianceStatus: 'pending' | 'validating' | 'valid' | 'invalid' | 'error';
 
-  /** Compliance validation messages */
-  complianceMessages: string[];
+  /** Detailed compliance validation results */
+  complianceDetails: ComplianceDetails;
 }
 
 /**
@@ -131,6 +170,35 @@ export interface ProductCreationResult {
 }
 
 /**
+ * Failed product information
+ */
+export interface FailedProduct {
+  index: number;
+  productName: string;
+  errors: string[];
+}
+
+/**
+ * Batch processing results
+ */
+export interface BatchResults {
+  successful: number;
+  failed: number;
+  total: number;
+}
+
+/**
+ * Batch processing metadata
+ */
+export interface BatchMetadata {
+  processingTimeMs: number;
+  validationTimeMs: number;
+  hcsSubmissionTimeMs: number;
+  totalWeightKg: number;
+  totalVolumeL: number;
+}
+
+/**
  * Batch creation response from API
  */
 export interface BatchCreationResponse {
@@ -140,11 +208,23 @@ export interface BatchCreationResponse {
   /** Generated batch ID */
   batchId: string;
 
-  /** Array of created products */
-  products: ProductCreationResult[];
+  /** Creation timestamp */
+  createdAt: string;
 
-  /** Processing time in milliseconds */
-  processingTime: number;
+  /** Batch processing results summary */
+  results: BatchResults;
+
+  /** Array of product IDs (successful and failed) */
+  productIds: string[];
+
+  /** Array of failed products with error details */
+  failedProducts: FailedProduct[];
+
+  /** HCS transaction ID */
+  hcsTransactionId: string;
+
+  /** Processing metadata */
+  metadata: BatchMetadata;
 
   /** Error information if unsuccessful */
   error?: {

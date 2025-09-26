@@ -213,8 +213,22 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           batchId: '',
-          products: [],
-          processingTime: monitor.getElapsedTime(),
+          createdAt: new Date().toISOString(),
+          results: {
+            successful: 0,
+            failed: 0,
+            total: 0,
+          },
+          productIds: [],
+          failedProducts: [],
+          hcsTransactionId: '',
+          metadata: {
+            processingTimeMs: monitor.getElapsedTime(),
+            validationTimeMs: 0,
+            hcsSubmissionTimeMs: 0,
+            totalWeightKg: 0,
+            totalVolumeL: 0,
+          },
           error: {
             code: 'VALIDATION_ERROR',
             message: 'Batch validation failed',
@@ -375,8 +389,28 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           batchId,
-          products: results,
-          processingTime: monitor.getElapsedTime(),
+          createdAt: new Date().toISOString(),
+          results: {
+            successful: 0,
+            failed: results.length,
+            total: results.length,
+          },
+          productIds: [],
+          failedProducts: results.map((r, index) => ({
+            index,
+            productName: r.name,
+            errors: r.complianceValidation.violations || [
+              'Compliance validation failed',
+            ],
+          })),
+          hcsTransactionId: '',
+          metadata: {
+            processingTimeMs: monitor.getElapsedTime(),
+            validationTimeMs: 0,
+            hcsSubmissionTimeMs: 0,
+            totalWeightKg: 0,
+            totalVolumeL: 0,
+          },
           error: {
             code: 'ALL_PRODUCTS_REJECTED',
             message: 'All products failed compliance validation',
@@ -399,8 +433,33 @@ export async function POST(request: NextRequest) {
     const response: BatchCreationResponse = {
       success: true,
       batchId,
-      products: results,
-      processingTime: monitor.getElapsedTime(),
+      createdAt: new Date().toISOString(),
+      results: {
+        successful: successfulProducts.length,
+        failed: results.length - successfulProducts.length,
+        total: results.length,
+      },
+      productIds: results.map(r => r.id),
+      failedProducts: results
+        .filter(r => !r.complianceValidation.approved)
+        .map((r, index) => ({
+          index,
+          productName: r.name,
+          errors: r.complianceValidation.violations || [
+            'Compliance validation failed',
+          ],
+        })),
+      hcsTransactionId: 'mock-hcs-transaction-id',
+      metadata: {
+        processingTimeMs: monitor.getElapsedTime(),
+        validationTimeMs: 0,
+        hcsSubmissionTimeMs: 0,
+        totalWeightKg: results.reduce(
+          (sum, r) => sum + (r.qrCode ? 100 : 0),
+          0
+        ), // Mock calculation
+        totalVolumeL: 0,
+      },
     };
 
     // Log performance metrics for monitoring
@@ -424,8 +483,22 @@ export async function POST(request: NextRequest) {
           {
             success: false,
             batchId: '',
-            products: [],
-            processingTime: monitor.getElapsedTime(),
+            createdAt: new Date().toISOString(),
+            results: {
+              successful: 0,
+              failed: 0,
+              total: 0,
+            },
+            productIds: [],
+            failedProducts: [],
+            hcsTransactionId: '',
+            metadata: {
+              processingTimeMs: monitor.getElapsedTime(),
+              validationTimeMs: 0,
+              hcsSubmissionTimeMs: 0,
+              totalWeightKg: 0,
+              totalVolumeL: 0,
+            },
             error: {
               code: 'PROCESSING_TIMEOUT',
               message: 'Batch processing exceeded time limit',
@@ -444,8 +517,22 @@ export async function POST(request: NextRequest) {
           {
             success: false,
             batchId: '',
-            products: [],
-            processingTime: monitor.getElapsedTime(),
+            createdAt: new Date().toISOString(),
+            results: {
+              successful: 0,
+              failed: 0,
+              total: 0,
+            },
+            productIds: [],
+            failedProducts: [],
+            hcsTransactionId: '',
+            metadata: {
+              processingTimeMs: monitor.getElapsedTime(),
+              validationTimeMs: 0,
+              hcsSubmissionTimeMs: 0,
+              totalWeightKg: 0,
+              totalVolumeL: 0,
+            },
             error: {
               code: 'UNAUTHORIZED',
               message: 'Insufficient permissions for batch creation',
@@ -460,8 +547,22 @@ export async function POST(request: NextRequest) {
           {
             success: false,
             batchId: '',
-            products: [],
-            processingTime: monitor.getElapsedTime(),
+            createdAt: new Date().toISOString(),
+            results: {
+              successful: 0,
+              failed: 0,
+              total: 0,
+            },
+            productIds: [],
+            failedProducts: [],
+            hcsTransactionId: '',
+            metadata: {
+              processingTimeMs: monitor.getElapsedTime(),
+              validationTimeMs: 0,
+              hcsSubmissionTimeMs: 0,
+              totalWeightKg: 0,
+              totalVolumeL: 0,
+            },
             error: {
               code: 'SERVICE_UNAVAILABLE',
               message: 'Required services are temporarily unavailable',
@@ -477,8 +578,22 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         batchId: '',
-        products: [],
-        processingTime: monitor.getElapsedTime(),
+        createdAt: new Date().toISOString(),
+        results: {
+          successful: 0,
+          failed: 0,
+          total: 0,
+        },
+        productIds: [],
+        failedProducts: [],
+        hcsTransactionId: '',
+        metadata: {
+          processingTimeMs: monitor.getElapsedTime(),
+          validationTimeMs: 0,
+          hcsSubmissionTimeMs: 0,
+          totalWeightKg: 0,
+          totalVolumeL: 0,
+        },
         error: {
           code: 'INTERNAL_SERVER_ERROR',
           message: 'An unexpected error occurred during batch creation',

@@ -106,12 +106,29 @@ const createEmptyProduct = (): CreateProductRequest => ({
 /**
  * Create empty validation state for product
  */
-const createEmptyValidation = (): ProductFormValidation => ({
-  errors: {},
+const createEmptyValidation = (index: number = 0): ProductFormValidation => ({
+  productIndex: index,
+  errors: [],
   isValid: false,
   complianceStatus: 'pending',
-  complianceMessages: [],
+  complianceDetails: {
+    rules: [],
+    overallStatus: 'non-compliant',
+    lastChecked: new Date().toISOString(),
+  },
 });
+
+/**
+ * Helper to get field error from validation errors array
+ */
+const getFieldError = (
+  errors: string[],
+  fieldName: string
+): string | undefined => {
+  return errors.find(error =>
+    error.toLowerCase().includes(fieldName.toLowerCase())
+  );
+};
 
 /**
  * ProductBatchForm Component
@@ -136,7 +153,7 @@ export function ProductBatchForm({
       processingNotes: initialData?.batchInfo?.processingNotes || '',
     },
     productValidations: initialData?.productValidations || [
-      createEmptyValidation(),
+      createEmptyValidation(0),
     ],
     batchValidation: initialData?.batchValidation || {
       isValid: false,
@@ -193,7 +210,10 @@ export function ProductBatchForm({
     setFormState(prev => ({
       ...prev,
       products: [...prev.products, createEmptyProduct()],
-      productValidations: [...prev.productValidations, createEmptyValidation()],
+      productValidations: [
+        ...prev.productValidations,
+        createEmptyValidation(prev.productValidations.length),
+      ],
     }));
   };
 
@@ -240,24 +260,30 @@ export function ProductBatchForm({
         index
       );
       const updatedValidations = [...prev.productValidations];
+
+      // Update errors array with field validation
+      const fieldErrors = [...updatedValidations[index].errors];
+      const fieldErrorIndex = fieldErrors.findIndex(error =>
+        error.toLowerCase().includes(field.toLowerCase())
+      );
+
+      if (validation.error) {
+        if (fieldErrorIndex >= 0) {
+          fieldErrors[fieldErrorIndex] = validation.error;
+        } else {
+          fieldErrors.push(validation.error);
+        }
+      } else {
+        if (fieldErrorIndex >= 0) {
+          fieldErrors.splice(fieldErrorIndex, 1);
+        }
+      }
+
       updatedValidations[index] = {
         ...updatedValidations[index],
-        errors: {
-          ...updatedValidations[index].errors,
-          [field]: validation.error || '',
-        },
+        errors: fieldErrors,
+        isValid: fieldErrors.length === 0,
       };
-
-      // Remove empty error messages
-      Object.keys(updatedValidations[index].errors).forEach(key => {
-        if (!updatedValidations[index].errors[key]) {
-          delete updatedValidations[index].errors[key];
-        }
-      });
-
-      // Update product validity
-      updatedValidations[index].isValid =
-        Object.keys(updatedValidations[index].errors).length === 0;
 
       return {
         ...prev,
@@ -305,7 +331,7 @@ export function ProductBatchForm({
         productValidations: prev.productValidations.map(
           (validation, index) => ({
             ...validation,
-            errors: validationResult.productErrors[index] || {},
+            errors: Object.values(validationResult.productErrors[index] || {}),
           })
         ),
       }));
@@ -332,7 +358,7 @@ export function ProductBatchForm({
       setFormState(prev => ({
         ...prev,
         products: [createEmptyProduct()],
-        productValidations: [createEmptyValidation()],
+        productValidations: [createEmptyValidation(0)],
         batchInfo: {
           ...prev.batchInfo,
           processingNotes: '',
@@ -509,7 +535,7 @@ function ProductRow({
           label='Product Name'
           value={product.name}
           onChange={e => onUpdate(index, 'name', e.target.value)}
-          error={validation.errors.name}
+          error={getFieldError(validation.errors, 'name')}
           required
           placeholder='Enter product name'
         />
@@ -519,7 +545,7 @@ function ProductRow({
           value={product.category}
           onChange={value => onUpdate(index, 'category', value)}
           options={PRODUCT_CATEGORIES}
-          error={validation.errors.category}
+          error={getFieldError(validation.errors, 'category')}
           required
         />
 
@@ -535,7 +561,7 @@ function ProductRow({
                 parseFloat(e.target.value) || 0
               )
             }
-            error={validation.errors['quantity.amount']}
+            error={getFieldError(validation.errors, 'quantity.amount')}
             required
             min='0'
             step='0.01'
@@ -545,7 +571,7 @@ function ProductRow({
             value={product.quantity.unit}
             onChange={value => onUpdate(index, 'quantity.unit', value)}
             options={QUANTITY_UNITS}
-            error={validation.errors['quantity.unit']}
+            error={getFieldError(validation.errors, 'quantity.unit')}
             required
           />
         </div>
@@ -555,7 +581,7 @@ function ProductRow({
           label='Address'
           value={product.origin.address}
           onChange={e => onUpdate(index, 'origin.address', e.target.value)}
-          error={validation.errors['origin.address']}
+          error={getFieldError(validation.errors, 'origin.address')}
           required
           placeholder='Street address'
         />
@@ -564,7 +590,7 @@ function ProductRow({
           label='City'
           value={product.origin.city}
           onChange={e => onUpdate(index, 'origin.city', e.target.value)}
-          error={validation.errors['origin.city']}
+          error={getFieldError(validation.errors, 'origin.city')}
           required
           placeholder='City name'
         />
@@ -574,7 +600,7 @@ function ProductRow({
           value={product.origin.state}
           onChange={value => onUpdate(index, 'origin.state', value)}
           options={NIGERIAN_STATES}
-          error={validation.errors['origin.state']}
+          error={getFieldError(validation.errors, 'origin.state')}
           required
         />
 
@@ -583,7 +609,7 @@ function ProductRow({
           value={product.origin.region}
           onChange={value => onUpdate(index, 'origin.region', value)}
           options={REGIONS}
-          error={validation.errors['origin.region']}
+          error={getFieldError(validation.errors, 'origin.region')}
           required
         />
 
@@ -599,7 +625,10 @@ function ProductRow({
                 parseFloat(e.target.value) || 0
               )
             }
-            error={validation.errors['origin.coordinates.latitude']}
+            error={getFieldError(
+              validation.errors,
+              'origin.coordinates.latitude'
+            )}
             placeholder='6.5244'
             step='0.000001'
             min='-90'
@@ -616,7 +645,10 @@ function ProductRow({
                 parseFloat(e.target.value) || 0
               )
             }
-            error={validation.errors['origin.coordinates.longitude']}
+            error={getFieldError(
+              validation.errors,
+              'origin.coordinates.longitude'
+            )}
             placeholder='3.3792'
             step='0.000001'
             min='-180'
@@ -643,10 +675,10 @@ function ProductRow({
             <p className='font-medium'>
               Compliance Status: {validation.complianceStatus}
             </p>
-            {validation.complianceMessages.length > 0 && (
+            {validation.complianceDetails.rules.length > 0 && (
               <ul className='mt-1 list-inside list-disc space-y-1'>
-                {validation.complianceMessages.map((message, i) => (
-                  <li key={i}>{message}</li>
+                {validation.complianceDetails.rules.map((rule, i) => (
+                  <li key={i}>{rule.message}</li>
                 ))}
               </ul>
             )}

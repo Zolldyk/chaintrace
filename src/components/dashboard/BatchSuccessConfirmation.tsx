@@ -299,12 +299,19 @@ export function BatchSuccessConfirmation({
     return null;
   }
 
-  const successfulProducts = batchResult.products.filter(
-    p => p.complianceValidation.approved
-  );
-  const failedProducts = batchResult.products.filter(
-    p => !p.complianceValidation.approved
-  );
+  // Get successful products from productIds
+  const successfulProducts = batchResult.productIds.map(id => ({
+    id,
+    name: `Product ${id}`,
+    qrCode: id, // Use the ID as QR code for now
+    status: 'verified' as const,
+    complianceValidation: {
+      approved: true,
+      complianceId: `comp-${id}`,
+      violations: [],
+    },
+  }));
+  const failedProducts = batchResult.failedProducts;
 
   const handleNavigation = (action: NavigationAction, data?: any) => {
     onNavigate?.(action, data);
@@ -321,7 +328,7 @@ export function BatchSuccessConfirmation({
   };
 
   const successRate =
-    (successfulProducts.length / batchResult.products.length) * 100;
+    (successfulProducts.length / batchResult.results.total) * 100;
 
   return (
     <div className='space-y-6'>
@@ -338,7 +345,7 @@ export function BatchSuccessConfirmation({
           </h2>
           <p className='text-green-800'>
             {customMessage ||
-              `Your product batch has been created with ${successfulProducts.length} of ${batchResult.products.length} products approved.`}
+              `Your product batch has been created with ${successfulProducts.length} of ${batchResult.results.total} products approved.`}
           </p>
         </div>
 
@@ -358,7 +365,7 @@ export function BatchSuccessConfirmation({
           </div>
           <div className='text-center'>
             <div className='text-2xl font-bold text-green-700'>
-              {Math.floor((batchResult.processingTime || 0) / 1000)}s
+              {Math.floor((batchResult.metadata.processingTimeMs || 0) / 1000)}s
             </div>
             <div className='text-sm text-green-600'>Processing Time</div>
           </div>
@@ -461,8 +468,18 @@ export function BatchSuccessConfirmation({
           <div className='space-y-3'>
             {failedProducts.map((product, index) => (
               <ProductResultCard
-                key={product.id}
-                product={product}
+                key={product.index}
+                product={{
+                  id: `failed-${product.index}`,
+                  name: product.productName,
+                  qrCode: '',
+                  status: 'rejected' as const,
+                  complianceValidation: {
+                    approved: false,
+                    complianceId: '',
+                    violations: product.errors,
+                  },
+                }}
                 index={successfulProducts.length + index}
                 showQRPreview={false}
               />

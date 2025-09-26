@@ -49,30 +49,23 @@ interface HederaSnapAccount {
   };
 }
 
-/**
- * Snap connection parameters
- */
-interface SnapConnectParams {
-  network: 'testnet' | 'mainnet';
-  mirrorNodeUrl?: string;
-}
+// Interface removed as it's currently unused
 
 /**
  * MetaMask Snap connector implementation
  */
 export class SnapConnector implements WalletConnector {
   private status: WalletStatus = 'disconnected';
-  private config: WalletConfig;
   private snapId = 'npm:@hashgraph/hedera-wallet-snap';
   private account: HederaSnapAccount | null = null;
 
   /**
    * Creates a new SnapConnector instance
    *
-   * @param config - Wallet configuration
+   * @param _config - Wallet configuration (currently unused)
    */
-  constructor(config: WalletConfig) {
-    this.config = config;
+  constructor(_config: WalletConfig) {
+    // Configuration currently unused in this implementation
   }
 
   /**
@@ -584,14 +577,7 @@ export class SnapConnector implements WalletConnector {
     }
   }
 
-  /**
-   * Get Mirror Node URL for the current network
-   */
-  private getMirrorNodeUrl(): string {
-    return this.config.networkType === 'testnet'
-      ? 'https://testnet.mirrornode.hedera.com'
-      : 'https://mainnet-public.mirrornode.hedera.com';
-  }
+  // getMirrorNodeUrl method removed as it's currently unused
 }
 
 // Extend Window interface for TypeScript

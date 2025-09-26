@@ -36,8 +36,11 @@ export type QuantityUnit = 'kg' | 'tons' | 'pieces' | 'liters' | 'boxes';
  */
 export type EventType =
   | 'created'
+  | 'planted'
+  | 'harvested'
   | 'processed'
   | 'quality_check'
+  | 'quality_tested'
   | 'transported'
   | 'verified'
   | 'rejected';

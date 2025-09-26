@@ -174,11 +174,16 @@ const createEmptyProduct = (): CreateProductRequest => ({
 /**
  * Create empty validation state
  */
-const createEmptyValidation = (): ProductFormValidation => ({
-  errors: {},
+const createEmptyValidation = (index: number = 0): ProductFormValidation => ({
+  productIndex: index,
+  errors: [],
   isValid: false,
   complianceStatus: 'pending',
-  complianceMessages: [],
+  complianceDetails: {
+    rules: [],
+    overallStatus: 'non-compliant',
+    lastChecked: new Date().toISOString(),
+  },
 });
 
 /**
@@ -266,7 +271,16 @@ export function useBatchCreation(
             updatedValidations[productIndex] = {
               ...updatedValidations[productIndex],
               complianceStatus: 'validating',
-              complianceMessages: ['Validating with Compliance Engine...'],
+              complianceDetails: {
+                ...updatedValidations[productIndex].complianceDetails,
+                rules: [
+                  {
+                    ruleId: 'validating',
+                    status: 'failed',
+                    message: 'Validating with Compliance Engine...',
+                  },
+                ],
+              },
             };
             return { ...prev, productValidations: updatedValidations };
           });
@@ -291,7 +305,18 @@ export function useBatchCreation(
               updatedValidations[productIndex] = {
                 ...updatedValidations[productIndex],
                 complianceStatus: result.approved ? 'valid' : 'invalid',
-                complianceMessages: result.violations || [],
+                complianceDetails: {
+                  ...updatedValidations[productIndex].complianceDetails,
+                  rules:
+                    result.violations?.map((violation, index) => ({
+                      ruleId: `rule-${index}`,
+                      status: 'failed' as const,
+                      message: violation,
+                    })) || [],
+                  overallStatus: result.approved
+                    ? 'compliant'
+                    : 'non-compliant',
+                },
               };
               return { ...prev, productValidations: updatedValidations };
             });
@@ -301,9 +326,17 @@ export function useBatchCreation(
               updatedValidations[productIndex] = {
                 ...updatedValidations[productIndex],
                 complianceStatus: 'error',
-                complianceMessages: [
-                  'Failed to validate with Compliance Engine',
-                ],
+                complianceDetails: {
+                  ...updatedValidations[productIndex].complianceDetails,
+                  rules: [
+                    {
+                      ruleId: 'error',
+                      status: 'failed' as const,
+                      message: 'Failed to validate with Compliance Engine',
+                    },
+                  ],
+                  overallStatus: 'non-compliant',
+                },
               };
               return { ...prev, productValidations: updatedValidations };
             });
@@ -343,24 +376,32 @@ export function useBatchCreation(
           index
         );
         const updatedValidations = [...prev.productValidations];
+
+        // Update errors array with field validation
+        const fieldErrors = [...updatedValidations[index].errors];
+        const fieldErrorIndex = fieldErrors.findIndex(error =>
+          error.toLowerCase().includes(field.toLowerCase())
+        );
+
+        if (validation.error) {
+          if (fieldErrorIndex >= 0) {
+            fieldErrors[fieldErrorIndex] = validation.error;
+          } else {
+            fieldErrors.push(validation.error);
+          }
+        } else {
+          if (fieldErrorIndex >= 0) {
+            fieldErrors.splice(fieldErrorIndex, 1);
+          }
+        }
+
         updatedValidations[index] = {
           ...updatedValidations[index],
-          errors: {
-            ...updatedValidations[index].errors,
-            [field]: validation.error || '',
-          },
+          errors: fieldErrors,
+          isValid: fieldErrors.length === 0,
         };
 
-        // Remove empty error messages
-        Object.keys(updatedValidations[index].errors).forEach(key => {
-          if (!updatedValidations[index].errors[key]) {
-            delete updatedValidations[index].errors[key];
-          }
-        });
-
-        // Update validity
-        updatedValidations[index].isValid =
-          Object.keys(updatedValidations[index].errors).length === 0;
+        // Validity is already set above
 
         // Trigger compliance validation if product is valid
         if (updatedValidations[index].isValid && product.name) {
@@ -513,8 +554,10 @@ export function useBatchCreation(
           productCount: formState.products.length,
           averageTimePerProduct: totalTime / formState.products.length,
           results: {
-            successful: result.success ? result.products.length : 0,
-            failed: result.success ? 0 : result.products.length,
+            successful: result.success ? result.results.successful : 0,
+            failed: result.success
+              ? result.results.failed
+              : result.results.total,
             errors: result.success
               ? []
               : [result.error?.message || 'Unknown error'],
@@ -527,7 +570,7 @@ export function useBatchCreation(
           setFormState(prev => ({
             ...prev,
             products: [createEmptyProduct()],
-            productValidations: [createEmptyValidation()],
+            productValidations: [createEmptyValidation(0)],
             batchInfo: {
               ...prev.batchInfo,
               processingNotes: '',

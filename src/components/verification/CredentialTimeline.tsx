@@ -337,8 +337,11 @@ function EventTimelineEntry({
 }) {
   const eventIcons = {
     created: '🆕',
+    planted: '🌱',
+    harvested: '🌾',
     processed: '⚙️',
     quality_check: '✅',
+    quality_tested: '🧪',
     transported: '🚚',
     verified: '🔍',
     rejected: '❌',

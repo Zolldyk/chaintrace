@@ -8,18 +8,80 @@
  * @since 1.0.0
  */
 
-import type {
-  CreateProductRequest,
-  ProductFormValidation,
-  BatchCreationResponse,
-  HCSEventMessage,
-} from '@/types';
-import type { ProductWithEvents } from '@/types';
+import type { ProductWithEvents, HCSEventMessage } from '@/types';
+
+// Simple interfaces for sample data
+interface SimpleCreateProductRequest {
+  name: string;
+  description: string;
+  category: string;
+  quantity: {
+    amount: number;
+    unit: string;
+  };
+  origin: {
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+    region: string;
+  };
+  qualityGrade: string;
+  productionDate: Date;
+  expiryDate: Date;
+  certifications: string[];
+  metadata: Record<string, any>;
+}
+
+interface SimpleProductFormValidation {
+  productIndex: number;
+  isValid: boolean;
+  errors: string[];
+  complianceStatus: string;
+  complianceDetails: {
+    rules: Array<{
+      ruleId: string;
+      status: string;
+      message: string;
+    }>;
+    overallStatus: string;
+    lastChecked: string;
+  };
+}
+
+interface SimpleBatchCreationResponse {
+  success: boolean;
+  batchId: string;
+  createdAt: string;
+  results: {
+    successful: number;
+    failed: number;
+    total: number;
+  };
+  productIds: string[];
+  failedProducts: Array<{
+    index: number;
+    productName: string;
+    errors: string[];
+  }>;
+  hcsTransactionId: string;
+  metadata: {
+    processingTimeMs: number;
+    validationTimeMs: number;
+    hcsSubmissionTimeMs: number;
+    totalWeightKg: number;
+    totalVolumeL: number;
+  };
+}
 
 /**
  * Good Product - Complete supply chain with successful verification
  */
-export const SAMPLE_GOOD_PRODUCT: CreateProductRequest = {
+export const SAMPLE_GOOD_PRODUCT: SimpleCreateProductRequest = {
   name: 'Premium Organic Cocoa Beans',
   description:
     'High-quality organic cocoa beans from certified sustainable farms in Ogun State',
@@ -61,7 +123,7 @@ export const SAMPLE_GOOD_PRODUCT: CreateProductRequest = {
 /**
  * Bad Product - Incomplete/problematic supply chain that fails verification
  */
-export const SAMPLE_BAD_PRODUCT: CreateProductRequest = {
+export const SAMPLE_BAD_PRODUCT: SimpleCreateProductRequest = {
   name: 'Unverified Palm Oil',
   description: 'Palm oil with questionable origin and processing',
   category: 'agricultural',
@@ -348,13 +410,13 @@ export const SAMPLE_GOOD_PRODUCT_VERIFIED: ProductWithEvents = {
       name: event.actor.organizationId || 'Unknown Actor',
     },
     timestamp: new Date(event.timestamp),
-    location: event.location || {
-      coordinates: { latitude: 0, longitude: 0 },
-      address: 'Location unavailable',
-      city: 'Unknown',
-      state: 'Unknown',
-      country: 'Unknown',
-      region: 'Unknown',
+    location: {
+      coordinates: event.location?.coordinates || { latitude: 0, longitude: 0 },
+      address: event.location?.address || 'Location unavailable',
+      city: 'Abeokuta', // Default city for Nigeria
+      state: 'Ogun State', // Default state
+      country: 'Nigeria',
+      region: event.location?.region || 'Unknown',
     },
     data: event.eventData,
     hcsMessageId: `hcs-msg-${index + 1}`,
@@ -421,13 +483,13 @@ export const SAMPLE_BAD_PRODUCT_UNVERIFIED: ProductWithEvents = {
       name: event.actor.organizationId || 'Unknown Actor',
     },
     timestamp: new Date(event.timestamp),
-    location: event.location || {
-      coordinates: { latitude: 0, longitude: 0 },
-      address: 'Location unavailable',
-      city: 'Unknown',
-      state: 'Unknown',
-      country: 'Unknown',
-      region: 'Unknown',
+    location: {
+      coordinates: event.location?.coordinates || { latitude: 0, longitude: 0 },
+      address: event.location?.address || 'Location unavailable',
+      city: 'Abeokuta', // Default city for Nigeria
+      state: 'Ogun State', // Default state
+      country: 'Nigeria',
+      region: event.location?.region || 'Unknown',
     },
     data: event.eventData,
     hcsMessageId: `bad-hcs-msg-${index + 1}`,
@@ -440,7 +502,7 @@ export const SAMPLE_BAD_PRODUCT_UNVERIFIED: ProductWithEvents = {
 /**
  * Sample batch with both good and bad products
  */
-export const SAMPLE_MIXED_BATCH: CreateProductRequest[] = [
+export const SAMPLE_MIXED_BATCH: SimpleCreateProductRequest[] = [
   SAMPLE_GOOD_PRODUCT,
   SAMPLE_BAD_PRODUCT,
   {
@@ -482,7 +544,7 @@ export const SAMPLE_MIXED_BATCH: CreateProductRequest[] = [
 /**
  * Sample validation results for mixed batch
  */
-export const SAMPLE_BATCH_VALIDATIONS: ProductFormValidation[] = [
+export const SAMPLE_BATCH_VALIDATIONS: SimpleProductFormValidation[] = [
   {
     productIndex: 0,
     isValid: true,
@@ -579,7 +641,7 @@ export const SAMPLE_BATCH_VALIDATIONS: ProductFormValidation[] = [
 /**
  * Sample successful batch creation response
  */
-export const SAMPLE_BATCH_SUCCESS: BatchCreationResponse = {
+export const SAMPLE_BATCH_SUCCESS: SimpleBatchCreationResponse = {
   success: true,
   batchId: 'BATCH-2024-001-OG',
   createdAt: new Date().toISOString(),

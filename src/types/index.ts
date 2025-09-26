@@ -5,6 +5,7 @@
  */
 
 export * from './product';
+export * from './batch';
 export * from './hedera';
 export * from './compliance';
 export * from './qr';

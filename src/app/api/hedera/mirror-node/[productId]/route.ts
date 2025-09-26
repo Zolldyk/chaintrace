@@ -85,8 +85,8 @@ function setCachedResponse(
  * Validate product ID format
  */
 function validateProductId(productId: string): boolean {
-  // ChainTrace product ID format: PROD-YYYY-NNN-XXXXX
-  const productIdRegex = /^[A-Z]{2,6}-\d{4}-\d{3}-[A-Z0-9]{5,10}$/i;
+  // ChainTrace product ID format: CT-YYYY-XXX-ABCDEF (where XXX is 3 digits, ABCDEF is 6 hex chars)
+  const productIdRegex = /^CT-\d{4}-\d{3}-[A-F0-9]{6}$/i;
   return productIdRegex.test(productId);
 }
 
@@ -130,7 +130,7 @@ export async function GET(
         {
           success: false,
           error:
-            'Invalid product ID format. Expected format: PROD-YYYY-NNN-XXXXX',
+            'Invalid product ID format. Expected format: CT-YYYY-XXX-ABCDEF',
           responseTime: Date.now() - startTime,
         },
         { status: 400 }

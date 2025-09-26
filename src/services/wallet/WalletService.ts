@@ -369,7 +369,7 @@ export class WalletService {
    * @since 1.0.0
    */
   async generateChallenge(accountId: string): Promise<AuthChallenge> {
-    const challengeId = `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const challengeId = `ct_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     const timestamp = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
@@ -524,11 +524,33 @@ export class WalletService {
    */
   async getAvailableWallets(): Promise<WalletType[]> {
     const available: WalletType[] = [];
+    const checks: Promise<{ type: WalletType; isAvailable: boolean }>[] = [];
 
+    // Check all wallets in parallel with timeout
     for (const [type, connector] of this.connectors) {
-      if (await connector.isAvailable()) {
-        available.push(type);
+      const check = Promise.race([
+        connector.isAvailable().then(isAvailable => ({ type, isAvailable })),
+        new Promise<{ type: WalletType; isAvailable: boolean }>(resolve =>
+          setTimeout(() => resolve({ type, isAvailable: false }), 3000)
+        ),
+      ]);
+      checks.push(check);
+    }
+
+    try {
+      const results = await Promise.all(checks);
+      for (const { type, isAvailable } of results) {
+        if (isAvailable) {
+          available.push(type);
+        }
       }
+    } catch (error) {
+      console.debug('Error checking wallet availability:', error);
+    }
+
+    // Always return at least both options for user choice
+    if (available.length === 0) {
+      return ['snap', 'hashpack'];
     }
 
     return available;

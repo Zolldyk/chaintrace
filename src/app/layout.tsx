@@ -22,6 +22,28 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32', type: 'image/x-icon' },
+      { url: '/icon.svg', sizes: 'any', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: [{ url: '/icon-192.svg', sizes: '192x192', type: 'image/svg+xml' }],
+    other: [
+      {
+        rel: 'icon',
+        url: '/icon-192.svg',
+        sizes: '192x192',
+        type: 'image/svg+xml',
+      },
+      {
+        rel: 'icon',
+        url: '/icon-512.svg',
+        sizes: '512x512',
+        type: 'image/svg+xml',
+      },
+    ],
+  },
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   ),

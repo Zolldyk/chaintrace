@@ -1,0 +1,12 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#2563eb"/>
+
+  <!-- Chain links effect -->
+  <circle cx="192" cy="192" r="48" fill="none" stroke="white" stroke-width="16"/>
+  <circle cx="320" cy="320" r="48" fill="none" stroke="white" stroke-width="16"/>
+  <line x1="232" y1="232" x2="280" y2="280" stroke="white" stroke-width="16"/>
+
+  <!-- Letter C for ChainTrace -->
+  <text x="256" y="160" font-family="Arial, sans-serif" font-size="224" font-weight="bold" text-anchor="middle" fill="white">C</text>
+</svg>

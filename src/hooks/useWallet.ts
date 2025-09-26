@@ -127,11 +127,21 @@ export function useWallet(config: UseWalletConfig = {}): UseWalletResult {
    */
   const refreshAvailableWallets = useCallback(async () => {
     try {
-      const available = await walletService.getAvailableWallets();
+      // Add timeout to prevent infinite loading
+      const timeout = new Promise<WalletType[]>((_, reject) =>
+        setTimeout(() => reject(new Error('Wallet detection timeout')), 5000)
+      );
+
+      const availablePromise = walletService.getAvailableWallets();
+      const available = await Promise.race([availablePromise, timeout]);
       setAvailableWallets(available);
     } catch (err) {
-      // Silently handle error - this is not critical
-      setAvailableWallets([]);
+      // Always provide at least one option to prevent infinite loading
+      console.debug(
+        'Wallet detection failed, providing fallback options:',
+        err
+      );
+      setAvailableWallets(['snap', 'hashpack']); // Show both options even if detection fails
     }
   }, [walletService]);
 

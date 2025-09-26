@@ -160,13 +160,15 @@ export const SAMPLE_BAD_PRODUCT: SimpleCreateProductRequest = {
 
 /**
  * Sample Product ID for the good product
+ * Format: CT-YYYY-XXX-ABCDEF (year, 3 digits, 6 hex chars)
  */
-export const SAMPLE_GOOD_PRODUCT_ID = 'CT-2024-OGC-001234';
+export const SAMPLE_GOOD_PRODUCT_ID = 'CT-2024-001-ABC123';
 
 /**
  * Sample Product ID for the bad product
+ * Format: CT-YYYY-XXX-ABCDEF (year, 3 digits, 6 hex chars)
  */
-export const SAMPLE_BAD_PRODUCT_ID = 'CT-2024-PAL-999999';
+export const SAMPLE_BAD_PRODUCT_ID = 'CT-2024-999-DEF456';
 
 /**
  * Complete supply chain events for the good product

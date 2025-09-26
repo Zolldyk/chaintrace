@@ -37,6 +37,63 @@ const nextConfig = {
 
     config.externals = [...(config.externals || []), 'canvas'];
 
+    // Fix bundling conflicts and variable naming issues
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        ...config.optimization.splitChunks,
+        chunks: 'all',
+        maxSize: 244000, // Prevent chunks from getting too large
+        cacheGroups: {
+          ...config.optimization.splitChunks?.cacheGroups,
+          // Separate chunk for blockchain dependencies - lazy loaded
+          blockchain: {
+            test: /[\\/]node_modules[\\/](@hashgraph|hashconnect)[\\/]/,
+            name: 'blockchain',
+            chunks: 'async', // Only split async chunks to prevent loading issues
+            priority: 30,
+            reuseExistingChunk: true,
+            enforce: true,
+          },
+          // Separate chunk for crypto polyfills
+          crypto: {
+            test: /[\\/]node_modules[\\/](crypto-browserify|stream-browserify|buffer)[\\/]/,
+            name: 'crypto-polyfills',
+            chunks: 'all',
+            priority: 25,
+            reuseExistingChunk: true,
+            minSize: 0,
+          },
+          // Keep React and core libraries together
+          vendor: {
+            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            name: 'vendor',
+            chunks: 'all',
+            priority: 20,
+            reuseExistingChunk: true,
+          },
+          // Default group for other dependencies
+          default: {
+            minChunks: 2,
+            priority: -10,
+            reuseExistingChunk: true,
+          },
+        },
+      },
+      // Prevent variable name conflicts with deterministic IDs
+      moduleIds: 'deterministic',
+      chunkIds: 'deterministic',
+      // Ensure proper module concatenation
+      concatenateModules: true,
+    };
+
+    // Add resolve alias for better module resolution
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Ensure consistent crypto resolution
+      crypto: require.resolve('crypto-browserify'),
+    };
+
     return config;
   },
 

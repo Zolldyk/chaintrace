@@ -83,20 +83,14 @@ export function Footer({ className }: FooterProps) {
             <h3 className='font-semibold text-secondary-700'>Company</h3>
             <ul className='space-y-2 text-sm'>
               <li>
-                <Link
-                  href='/about'
-                  className='text-secondary-500 hover:text-primary-600'
-                >
-                  About
-                </Link>
+                <span className='text-secondary-400 cursor-not-allowed'>
+                  About (Coming Soon)
+                </span>
               </li>
               <li>
-                <Link
-                  href='/contact'
-                  className='text-secondary-500 hover:text-primary-600'
-                >
-                  Contact
-                </Link>
+                <span className='text-secondary-400 cursor-not-allowed'>
+                  Contact (Coming Soon)
+                </span>
               </li>
               <li>
                 <a
@@ -116,12 +110,9 @@ export function Footer({ className }: FooterProps) {
             <h3 className='font-semibold text-secondary-700'>Support</h3>
             <ul className='space-y-2 text-sm'>
               <li>
-                <Link
-                  href='/help'
-                  className='text-secondary-500 hover:text-primary-600'
-                >
-                  Help center
-                </Link>
+                <span className='text-secondary-400 cursor-not-allowed'>
+                  Help Center (Coming Soon)
+                </span>
               </li>
               <li>
                 <a
@@ -132,12 +123,9 @@ export function Footer({ className }: FooterProps) {
                 </a>
               </li>
               <li>
-                <Link
-                  href='/privacy'
-                  className='text-secondary-500 hover:text-primary-600'
-                >
-                  Privacy policy
-                </Link>
+                <span className='text-secondary-400 cursor-not-allowed'>
+                  Privacy Policy (Coming Soon)
+                </span>
               </li>
             </ul>
           </div>

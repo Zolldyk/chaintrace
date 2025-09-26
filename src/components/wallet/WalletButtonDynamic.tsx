@@ -1,8 +1,8 @@
 /**
- * Dynamic wrapper for WalletButton to prevent crypto bundle issues
+ * Dynamic wrapper for WalletButton with working implementation
  *
- * This component dynamically imports WalletButton only on the client side
- * to avoid bundling crypto dependencies during static generation.
+ * This component tries to load the working wallet implementation first,
+ * then falls back to lightweight version only if everything fails.
  *
  * @since 2.4.0
  */
@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { WalletButtonProps } from './WalletButton';
+import { WalletButtonLightweight } from './WalletButtonLightweight';
 
 /**
  * Fallback component while WalletButton is loading
@@ -40,31 +41,69 @@ function WalletButtonFallback({ className = '' }: { className?: string }) {
 }
 
 /**
- * Dynamically imported WalletButton component
+ * Dynamically imported WalletButton component with working implementation
  */
 export function WalletButtonDynamic(props: WalletButtonProps) {
-  const [WalletButton, setWalletButton] =
+  const [WorkingWalletButton, setWorkingWalletButton] =
     useState<React.ComponentType<WalletButtonProps> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     // Only import WalletButton on the client side
     if (typeof window !== 'undefined') {
-      import('./WalletButton')
+      // Try to load the working wallet implementation first
+      const loadTimeout = setTimeout(() => {
+        console.warn(
+          'Working wallet loading timeout, using lightweight fallback'
+        );
+        setLoadFailed(true);
+        setIsLoading(false);
+      }, 3000);
+
+      // Try working implementation first
+      import('./WorkingWalletButton')
         .then(module => {
-          setWalletButton(() => module.WalletButton);
+          clearTimeout(loadTimeout);
+          setWorkingWalletButton(() => module.WorkingWalletButton);
           setIsLoading(false);
         })
-        .catch(error => {
-          console.error('Failed to load WalletButton:', error);
-          setIsLoading(false);
+        .catch(workingError => {
+          console.warn(
+            'Failed to load WorkingWalletButton, trying original:',
+            workingError
+          );
+
+          // Try original implementation
+          import('./WalletButton')
+            .then(module => {
+              clearTimeout(loadTimeout);
+              setWorkingWalletButton(() => module.WalletButton);
+              setIsLoading(false);
+            })
+            .catch(error => {
+              clearTimeout(loadTimeout);
+              console.warn(
+                'Failed to load any wallet implementation, using lightweight fallback:',
+                error
+              );
+              setLoadFailed(true);
+              setIsLoading(false);
+            });
         });
     }
   }, []);
 
-  if (isLoading || !WalletButton) {
+  // Use lightweight component if all loading failed
+  if (loadFailed) {
+    return <WalletButtonLightweight {...props} />;
+  }
+
+  // Show loading state
+  if (isLoading || !WorkingWalletButton) {
     return <WalletButtonFallback className={props.className} />;
   }
 
-  return <WalletButton {...props} />;
+  // Use working wallet component
+  return <WorkingWalletButton {...props} />;
 }

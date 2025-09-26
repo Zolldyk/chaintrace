@@ -30,16 +30,22 @@ import type { ComplianceCredential } from '@/types/compliance';
 import { ROUTES } from '@/lib/constants';
 
 interface ProductVerificationPageProps {
-  params: {
+  params: Promise<{
     productId: string;
-  };
+  }>;
 }
 
 export default function ProductVerificationPage({
   params,
 }: ProductVerificationPageProps) {
   const router = useRouter();
-  const productId = decodeURIComponent(params.productId);
+  const [productId, setProductId] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    params.then(({ productId }) => {
+      setProductId(decodeURIComponent(productId));
+    });
+  }, [params]);
 
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<ProductWithEvents | null>(null);
@@ -51,6 +57,8 @@ export default function ProductVerificationPage({
    * Fetches product verification data
    */
   const fetchProductVerification = async (skipCache: boolean = false) => {
+    if (!productId) return;
+
     setLoading(true);
     setError(null);
 
@@ -118,7 +126,7 @@ export default function ProductVerificationPage({
       <div className='container mx-auto px-4 py-8'>
         <div className='mx-auto max-w-4xl'>
           <LoadingState
-            message={`Verifying product ${productId}...`}
+            message={`Verifying product ${productId || 'Unknown'}...`}
             showSpinner={true}
           />
         </div>
@@ -146,7 +154,7 @@ export default function ProductVerificationPage({
               <ProductLookup
                 onSearch={handleNewSearch}
                 loading={searchLoading}
-                initialValue={productId}
+                initialValue={productId || ''}
                 placeholder='Enter a different product ID'
               />
             </div>

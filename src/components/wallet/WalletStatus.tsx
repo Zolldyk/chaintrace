@@ -201,7 +201,7 @@ export function WalletStatus({
               />
             </svg>
           ),
-          text: 'Connection Error',
+          text: 'Connection error',
         };
       case 'disconnected':
       default:
@@ -221,7 +221,7 @@ export function WalletStatus({
               />
             </svg>
           ),
-          text: 'Not Connected',
+          text: 'Not connected',
         };
     }
   };

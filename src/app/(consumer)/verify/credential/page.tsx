@@ -38,7 +38,7 @@ export default function CredentialVerificationPage() {
         {/* Page Header */}
         <div className='text-center'>
           <h1 className='mb-4 text-3xl font-bold text-gray-900'>
-            Verify Compliance Credential
+            Verify compliance credential
           </h1>
           <p className='mb-2 text-lg text-gray-600'>
             Verify the authenticity of ChainTrace compliance credentials
@@ -60,14 +60,14 @@ export default function CredentialVerificationPage() {
         {/* How It Works */}
         <Card className='p-6'>
           <h2 className='mb-4 text-lg font-semibold text-gray-900'>
-            How Credential Verification Works
+            How credential verification works
           </h2>
           <div className='space-y-4 text-sm text-gray-600'>
             <div className='flex items-start gap-3'>
               <span className='font-semibold text-blue-600'>1.</span>
               <div>
                 <div className='font-medium text-gray-900'>
-                  Enter Credential ID
+                  Enter credential ID
                 </div>
                 <div>
                   Enter the credential ID manually or scan the QR code provided
@@ -79,7 +79,7 @@ export default function CredentialVerificationPage() {
               <span className='font-semibold text-blue-600'>2.</span>
               <div>
                 <div className='font-medium text-gray-900'>
-                  Verification Checks
+                  Verification checks
                 </div>
                 <div>
                   We verify the credential&apos;s cryptographic signature,
@@ -90,7 +90,7 @@ export default function CredentialVerificationPage() {
             <div className='flex items-start gap-3'>
               <span className='font-semibold text-blue-600'>3.</span>
               <div>
-                <div className='font-medium text-gray-900'>View Results</div>
+                <div className='font-medium text-gray-900'>View results</div>
                 <div>
                   Get instant verification results with detailed information
                   about the credential&apos;s validity.
@@ -104,7 +104,7 @@ export default function CredentialVerificationPage() {
         {recentVerifications.length > 0 && (
           <Card className='p-6'>
             <h2 className='mb-4 text-lg font-semibold text-gray-900'>
-              Recent Verifications
+              Recent verifications
             </h2>
             <div className='space-y-3'>
               {recentVerifications.map((verification, index) => (
@@ -144,7 +144,7 @@ export default function CredentialVerificationPage() {
             <span className='text-2xl'>🔒</span>
             <div>
               <h3 className='mb-2 font-semibold text-blue-900'>
-                Secure Verification Process
+                Secure verification process
               </h3>
               <div className='space-y-2 text-sm text-blue-800'>
                 <p>

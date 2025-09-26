@@ -200,12 +200,12 @@ function transformProductData(
  */
 export async function GET(
   request: NextRequest,
-  context: { params: { productId: string } }
+  context: { params: Promise<{ productId: string }> }
 ): Promise<
   NextResponse<ProductVerificationResponse | ProductVerificationError>
 > {
   const startTime = Date.now();
-  const { productId } = context.params;
+  const { productId } = await context.params;
   const { searchParams } = new URL(request.url);
 
   const skipCache = searchParams.get('skipCache') === 'true';
@@ -254,7 +254,24 @@ export async function GET(
         const mirrorNodeData =
           await mirrorNodeService.getProductVerification(normalizedProductId);
 
-        productData = transformProductData(mirrorNodeData, normalizedProductId);
+        // For sample products, we get complete data directly from MirrorNodeService
+        if (
+          normalizedProductId === 'CT-2024-OGC-001234' ||
+          normalizedProductId === 'CT-2024-PAL-999999'
+        ) {
+          // Use the sample data directly - it's already in the correct format
+          const sampleProductModule = await import('@/lib/sample-data');
+          if (normalizedProductId === 'CT-2024-OGC-001234') {
+            productData = sampleProductModule.SAMPLE_GOOD_PRODUCT_VERIFIED;
+          } else {
+            productData = sampleProductModule.SAMPLE_BAD_PRODUCT_UNVERIFIED;
+          }
+        } else {
+          productData = transformProductData(
+            mirrorNodeData,
+            normalizedProductId
+          );
+        }
 
         // Cache the response
         setCachedVerification(normalizedProductId, productData);

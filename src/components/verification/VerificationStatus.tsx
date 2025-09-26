@@ -77,7 +77,7 @@ const statusConfig: Record<
   }
 > = {
   verified: {
-    label: '✅ Verified',
+    label: 'Verified',
     description:
       'This product has been successfully verified and is authentic. Safe to purchase.',
     color: 'text-green-700',
@@ -171,8 +171,7 @@ const statusConfig: Record<
   },
   rejected: {
     label: '❌ Verification Failed',
-    description:
-      'This product could not be verified. Please exercise caution.',
+    description: 'This product could not be verified. Please exercise caution.',
     color: 'text-red-700',
     bgColor: 'bg-red-50 border-red-200',
     textColor: 'text-red-800',
@@ -201,7 +200,7 @@ const statusConfig: Record<
     ),
   },
   expired: {
-    label: '⚠️ Verification Expired',
+    label: 'Verification expired',
     description:
       "This product's verification has expired and needs to be re-verified. Use caution.",
     color: 'text-orange-700',
@@ -357,7 +356,8 @@ export const VerificationStatus = React.forwardRef<
           displayConfig.priority === 'high' && 'ring-1',
           displayConfig.priority === 'high' && displayConfig.ringColor,
           {
-            'p-2': size === 'sm' || size === 'md',
+            'p-1': size === 'sm',
+            'p-2': size === 'md',
             'p-3': size === 'lg',
           },
           className
@@ -371,8 +371,8 @@ export const VerificationStatus = React.forwardRef<
           {displayConfig.accessibility.colorBlindText}
         </div>
 
-        {/* Priority pulse animation for high-priority statuses */}
-        {displayConfig.priority === 'high' && (
+        {/* Priority pulse animation for high-priority statuses - only for negative statuses */}
+        {displayConfig.priority === 'high' && displayStatus !== 'verified' && (
           <div
             className={cn(
               'absolute inset-0 rounded-xl opacity-20',
@@ -382,7 +382,12 @@ export const VerificationStatus = React.forwardRef<
           />
         )}
 
-        <div className='relative flex items-start gap-2'>
+        <div
+          className={cn('relative flex items-start', {
+            'gap-1': size === 'sm',
+            'gap-2': size === 'md' || size === 'lg',
+          })}
+        >
           {showIcon && (
             <div
               className={cn(
@@ -420,12 +425,13 @@ export const VerificationStatus = React.forwardRef<
                   {displayConfig.label}
                 </h3>
 
-                {/* Priority indicator badge */}
-                {displayConfig.priority === 'high' && (
-                  <span className='inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-800 ring-1 ring-red-200'>
-                    URGENT
-                  </span>
-                )}
+                {/* Priority indicator badge - only show URGENT for negative statuses */}
+                {displayConfig.priority === 'high' &&
+                  displayStatus !== 'verified' && (
+                    <span className='inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-800 ring-1 ring-red-200'>
+                      URGENT
+                    </span>
+                  )}
               </div>
 
               {/* Last updated info only */}
@@ -544,7 +550,9 @@ export const VerificationStatus = React.forwardRef<
                           clipRule='evenodd'
                         />
                       </svg>
-                      <span className='text-xs text-red-700 font-medium'>Exercise caution before purchasing</span>
+                      <span className='text-xs font-medium text-red-700'>
+                        Exercise caution before purchasing
+                      </span>
                     </div>
                   </div>
                 )}

@@ -294,14 +294,14 @@ export default function BatchCreatePage() {
             </div>
           </div>
           <h2 className='mb-2 text-xl font-bold text-red-900'>
-            Batch Creation Failed
+            Batch creation failed
           </h2>
           <p className='mb-6 text-red-800'>
             {error || 'An unexpected error occurred while creating the batch.'}
           </p>
           <div className='space-x-3'>
             <Button variant='outline' onClick={() => setPageState('form')}>
-              Try Again
+              Try again
             </Button>
             <Button
               variant='ghost'
@@ -309,7 +309,7 @@ export default function BatchCreatePage() {
                 // Contact support functionality would go here
               }}
             >
-              Contact Support
+              Contact support
             </Button>
           </div>
         </Card>
@@ -322,7 +322,7 @@ export default function BatchCreatePage() {
     <div className='mx-auto max-w-6xl px-4 py-8'>
       <div className='mb-8'>
         <h1 className='text-3xl font-bold text-gray-900'>
-          Create Product Batch
+          Create product batch
         </h1>
         <p className='mt-2 text-gray-600'>
           Log your cooperative&apos;s products with comprehensive verification
@@ -396,7 +396,7 @@ export default function BatchCreatePage() {
 
           {/* Quick Actions */}
           <Card className='p-6'>
-            <h3 className='mb-3 font-medium text-gray-900'>Quick Actions</h3>
+            <h3 className='mb-3 font-medium text-gray-900'>Quick actions</h3>
             <div className='space-y-3'>
               <Button
                 variant='outline'
@@ -405,7 +405,7 @@ export default function BatchCreatePage() {
                 className='w-full justify-start'
                 disabled={isSubmitting}
               >
-                Validate Batch
+                Validate batch
               </Button>
               <Button
                 variant='outline'
@@ -414,7 +414,7 @@ export default function BatchCreatePage() {
                 className='w-full justify-start'
                 disabled={isSubmitting}
               >
-                Save Backup
+                Save backup
               </Button>
               <Button
                 variant='ghost'
@@ -423,7 +423,7 @@ export default function BatchCreatePage() {
                 className='w-full justify-start text-red-600'
                 disabled={isSubmitting}
               >
-                Clear Form
+                Clear form
               </Button>
             </div>
           </Card>
@@ -461,7 +461,7 @@ export default function BatchCreatePage() {
 
           {/* Help & Support */}
           <Card className='p-6'>
-            <h3 className='mb-3 font-medium text-gray-900'>Need Help?</h3>
+            <h3 className='mb-3 font-medium text-gray-900'>Need help?</h3>
             <div className='space-y-3 text-sm text-gray-600'>
               <p>• Maximum 100 products per batch</p>
               <p>• Daily production limit: 1000kg</p>
@@ -474,7 +474,7 @@ export default function BatchCreatePage() {
                   // Show help documentation
                 }}
               >
-                View Documentation →
+                View documentation →
               </Button>
             </div>
           </Card>

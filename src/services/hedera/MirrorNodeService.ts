@@ -22,6 +22,14 @@
 
 import { getHederaConfig } from '@/config/hedera';
 import { logger } from '@/lib/logger';
+import {
+  SAMPLE_GOOD_PRODUCT_ID,
+  SAMPLE_BAD_PRODUCT_ID,
+  SAMPLE_GOOD_PRODUCT_EVENTS,
+  SAMPLE_BAD_PRODUCT_EVENTS,
+  SAMPLE_GOOD_PRODUCT_VERIFIED,
+  SAMPLE_BAD_PRODUCT_UNVERIFIED,
+} from '@/lib/sample-data';
 
 /**
  * Mirror Node service configuration
@@ -463,6 +471,43 @@ export class MirrorNodeService {
     productId: string
   ): Promise<ProductVerificationData> {
     try {
+      // Check if this is one of our sample products first
+      if (productId === SAMPLE_GOOD_PRODUCT_ID) {
+        return {
+          productId,
+          verified: true,
+          status: 'verified',
+          events: SAMPLE_GOOD_PRODUCT_EVENTS.map(event => ({
+            timestamp: event.timestamp,
+            eventType: event.eventType,
+            actor: event.actor.walletAddress,
+            location: `${event.location.coordinates.latitude},${event.location.coordinates.longitude}`,
+            data: event.eventData,
+          })),
+          lastUpdated:
+            SAMPLE_GOOD_PRODUCT_EVENTS[SAMPLE_GOOD_PRODUCT_EVENTS.length - 1]
+              ?.timestamp || new Date().toISOString(),
+        };
+      }
+
+      if (productId === SAMPLE_BAD_PRODUCT_ID) {
+        return {
+          productId,
+          verified: false,
+          status: 'rejected',
+          events: SAMPLE_BAD_PRODUCT_EVENTS.map(event => ({
+            timestamp: event.timestamp,
+            eventType: event.eventType,
+            actor: event.actor.walletAddress,
+            location: `${event.location.coordinates.latitude},${event.location.coordinates.longitude}`,
+            data: event.eventData,
+          })),
+          lastUpdated:
+            SAMPLE_BAD_PRODUCT_EVENTS[SAMPLE_BAD_PRODUCT_EVENTS.length - 1]
+              ?.timestamp || new Date().toISOString(),
+        };
+      }
+
       // Get HCS topic messages related to this product
       const hederaConfig = getHederaConfig();
       if (!hederaConfig.hcsTopicId) {

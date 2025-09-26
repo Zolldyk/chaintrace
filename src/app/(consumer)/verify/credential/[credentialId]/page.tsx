@@ -265,7 +265,7 @@ export default function SpecificCredentialVerificationPage() {
             onClick={() => (window.location.href = '/verify')}
             variant='ghost'
           >
-            Verify Product
+            Verify product
           </Button>
         </div>
 

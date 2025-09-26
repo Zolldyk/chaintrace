@@ -32,7 +32,7 @@ export default function ManagerDashboardPage() {
     <div className='mx-auto max-w-6xl px-4 py-8'>
       {/* Header */}
       <div className='mb-8'>
-        <h1 className='text-3xl font-bold text-gray-900'>Manager Dashboard</h1>
+        <h1 className='text-3xl font-bold text-gray-900'>Manager dashboard</h1>
         <p className='mt-2 text-gray-600'>
           Manage your cooperative&apos;s product batches and verification
           workflow.
@@ -45,7 +45,7 @@ export default function ManagerDashboardPage() {
           <div className='flex items-center justify-between'>
             <div>
               <h3 className='text-lg font-medium text-gray-900'>
-                Create Product Batch
+                Create product batch
               </h3>
               <p className='mt-1 text-sm text-gray-600'>
                 Log new products with compliance validation
@@ -57,7 +57,7 @@ export default function ManagerDashboardPage() {
           </div>
           <div className='mt-4'>
             <Link href='/batch/create'>
-              <Button className='w-full'>Create Batch</Button>
+              <Button className='w-full'>Create batch</Button>
             </Link>
           </div>
         </Card>
@@ -66,7 +66,7 @@ export default function ManagerDashboardPage() {
           <div className='flex items-center justify-between'>
             <div>
               <h3 className='text-lg font-medium text-gray-900'>
-                View Batches
+                View batches
               </h3>
               <p className='mt-1 text-sm text-gray-600'>
                 Review and manage existing product batches
@@ -78,7 +78,7 @@ export default function ManagerDashboardPage() {
           </div>
           <div className='mt-4'>
             <Button variant='outline' className='w-full' disabled>
-              View Batches
+              View batches
             </Button>
             <p className='mt-1 text-xs text-gray-500'>Coming soon</p>
           </div>
@@ -88,7 +88,7 @@ export default function ManagerDashboardPage() {
           <div className='flex items-center justify-between'>
             <div>
               <h3 className='text-lg font-medium text-gray-900'>
-                Compliance Reports
+                Compliance reports
               </h3>
               <p className='mt-1 text-sm text-gray-600'>
                 View compliance status and reports
@@ -101,7 +101,7 @@ export default function ManagerDashboardPage() {
           <div className='mt-4'>
             <Link href='/compliance'>
               <Button variant='outline' className='w-full'>
-                View Compliance
+                View compliance
               </Button>
             </Link>
           </div>
@@ -112,26 +112,26 @@ export default function ManagerDashboardPage() {
       <div className='mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-gray-900'>0</div>
-          <div className='text-sm text-gray-600'>Total Batches</div>
+          <div className='text-sm text-gray-600'>Total batches</div>
         </Card>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-gray-900'>0</div>
-          <div className='text-sm text-gray-600'>Products Logged</div>
+          <div className='text-sm text-gray-600'>Products logged</div>
         </Card>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-green-600'>0%</div>
-          <div className='text-sm text-gray-600'>Compliance Rate</div>
+          <div className='text-sm text-gray-600'>Compliance rate</div>
         </Card>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-blue-600'>0</div>
-          <div className='text-sm text-gray-600'>Verified Products</div>
+          <div className='text-sm text-gray-600'>Verified products</div>
         </Card>
       </div>
 
       {/* Recent Activity */}
       <div className='mb-8'>
         <h2 className='mb-4 text-xl font-semibold text-gray-900'>
-          Recent Activity
+          Recent activity
         </h2>
         <Card className='p-6'>
           <div className='py-8 text-center'>
@@ -146,7 +146,7 @@ export default function ManagerDashboardPage() {
             </p>
             <div className='mt-4'>
               <Link href='/batch/create'>
-                <Button>Create First Batch</Button>
+                <Button>Create first batch</Button>
               </Link>
             </div>
           </div>
@@ -156,12 +156,12 @@ export default function ManagerDashboardPage() {
       {/* Help Section */}
       <div>
         <h2 className='mb-4 text-xl font-semibold text-gray-900'>
-          Getting Started
+          Getting started
         </h2>
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
           <Card className='p-6'>
             <h3 className='mb-2 text-lg font-medium text-gray-900'>
-              Quick Start Guide
+              Quick start guide
             </h3>
             <ul className='space-y-2 text-sm text-gray-600'>
               <li>• Connect your Hedera wallet</li>
@@ -172,7 +172,7 @@ export default function ManagerDashboardPage() {
           </Card>
           <Card className='p-6'>
             <h3 className='mb-2 text-lg font-medium text-gray-900'>
-              Key Features
+              Key features
             </h3>
             <ul className='space-y-2 text-sm text-gray-600'>
               <li>• Batch operations up to 100 products</li>

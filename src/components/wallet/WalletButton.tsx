@@ -104,7 +104,7 @@ export function WalletButton({ className = '' }: WalletButtonProps) {
       <div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
         <div className='mx-4 w-full max-w-md rounded-lg bg-white p-6'>
           <div className='mb-4 flex items-center justify-between'>
-            <h2 className='text-lg font-semibold'>Connect Wallet</h2>
+            <h2 className='text-lg font-semibold'>Connect wallet</h2>
             <button
               onClick={() => setShowFullConnector(false)}
               className='text-gray-400 hover:text-gray-600'
@@ -142,7 +142,7 @@ export function WalletButton({ className = '' }: WalletButtonProps) {
                 >
                   <path d='M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16l-5.568 9.639L6.432 8.16h11.136z' />
                 </svg>
-                MetaMask Snap
+                MetaMask snap
               </button>
             )}
 
@@ -263,7 +263,7 @@ export function WalletButton({ className = '' }: WalletButtonProps) {
                 d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z'
               />
             </svg>
-            <span>Connect Wallet</span>
+            <span>Connect wallet</span>
           </>
         )}
       </button>
@@ -278,7 +278,7 @@ export function WalletButton({ className = '' }: WalletButtonProps) {
             <div className='font-mono text-sm text-gray-500'>{accountId}</div>
             {walletType && (
               <div className='mt-1 text-xs capitalize text-gray-400'>
-                {walletType === 'snap' ? 'MetaMask Snap' : 'HashPack'}
+                {walletType === 'snap' ? 'MetaMask snap' : 'HashPack'}
               </div>
             )}
           </div>
@@ -293,7 +293,7 @@ export function WalletButton({ className = '' }: WalletButtonProps) {
             onClick={handleDisconnect}
             className='block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50'
           >
-            Disconnect Wallet
+            Disconnect wallet
           </button>
         </div>
       )}

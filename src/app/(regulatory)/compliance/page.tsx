@@ -32,7 +32,7 @@ export default function CompliancePage() {
       {/* Header */}
       <div className='mb-8'>
         <h1 className='text-3xl font-bold text-gray-900'>
-          Compliance Dashboard
+          Compliance dashboard
         </h1>
         <p className='mt-2 text-gray-600'>
           Monitor regulatory compliance across all cooperative product batches.
@@ -43,26 +43,26 @@ export default function CompliancePage() {
       <div className='mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-green-600'>100%</div>
-          <div className='text-sm text-gray-600'>Overall Compliance Rate</div>
+          <div className='text-sm text-gray-600'>Overall compliance rate</div>
           <div className='mt-2 text-xs text-green-600'>
             All products compliant
           </div>
         </Card>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-gray-900'>0</div>
-          <div className='text-sm text-gray-600'>Flagged Products</div>
+          <div className='text-sm text-gray-600'>Flagged products</div>
           <div className='mt-2 text-xs text-gray-500'>
             No violations detected
           </div>
         </Card>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-blue-600'>0</div>
-          <div className='text-sm text-gray-600'>Active Investigations</div>
+          <div className='text-sm text-gray-600'>Active investigations</div>
           <div className='mt-2 text-xs text-gray-500'>No ongoing cases</div>
         </Card>
         <Card className='p-6'>
           <div className='text-2xl font-bold text-purple-600'>0</div>
-          <div className='text-sm text-gray-600'>Reports Generated</div>
+          <div className='text-sm text-gray-600'>Reports generated</div>
           <div className='mt-2 text-xs text-gray-500'>This month</div>
         </Card>
       </div>
@@ -73,7 +73,7 @@ export default function CompliancePage() {
           <div className='flex items-center justify-between'>
             <div>
               <h3 className='text-lg font-medium text-gray-900'>
-                Generate Report
+                Generate report
               </h3>
               <p className='mt-1 text-sm text-gray-600'>
                 Create compliance report for specific period
@@ -85,7 +85,7 @@ export default function CompliancePage() {
           </div>
           <div className='mt-4'>
             <Button className='w-full' disabled>
-              Generate Report
+              Generate report
             </Button>
             <p className='mt-1 text-xs text-gray-500'>Coming soon</p>
           </div>
@@ -95,7 +95,7 @@ export default function CompliancePage() {
           <div className='flex items-center justify-between'>
             <div>
               <h3 className='text-lg font-medium text-gray-900'>
-                Review Violations
+                Review violations
               </h3>
               <p className='mt-1 text-sm text-gray-600'>
                 Investigate flagged products and violations
@@ -107,7 +107,7 @@ export default function CompliancePage() {
           </div>
           <div className='mt-4'>
             <Button variant='outline' className='w-full' disabled>
-              Review Violations
+              Review violations
             </Button>
             <p className='mt-1 text-xs text-gray-500'>
               No violations to review
@@ -118,7 +118,7 @@ export default function CompliancePage() {
         <Card className='p-6'>
           <div className='flex items-center justify-between'>
             <div>
-              <h3 className='text-lg font-medium text-gray-900'>Export Data</h3>
+              <h3 className='text-lg font-medium text-gray-900'>Export data</h3>
               <p className='mt-1 text-sm text-gray-600'>
                 Export compliance data for external analysis
               </p>
@@ -129,7 +129,7 @@ export default function CompliancePage() {
           </div>
           <div className='mt-4'>
             <Button variant='outline' className='w-full' disabled>
-              Export Data
+              Export data
             </Button>
             <p className='mt-1 text-xs text-gray-500'>Coming soon</p>
           </div>
@@ -139,7 +139,7 @@ export default function CompliancePage() {
       {/* Regional Overview */}
       <div className='mb-8'>
         <h2 className='mb-4 text-xl font-semibold text-gray-900'>
-          Regional Compliance Overview
+          Regional compliance overview
         </h2>
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
           <Card className='p-6'>
@@ -185,7 +185,7 @@ export default function CompliancePage() {
 
           <Card className='p-6'>
             <h3 className='mb-4 text-lg font-medium text-gray-900'>
-              Compliance Trends
+              Compliance trends
             </h3>
             <div className='py-8 text-center'>
               <div className='mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100'>
@@ -202,7 +202,7 @@ export default function CompliancePage() {
       {/* Recent Activity */}
       <div className='mb-8'>
         <h2 className='mb-4 text-xl font-semibold text-gray-900'>
-          Recent Compliance Activity
+          Recent compliance activity
         </h2>
         <Card className='p-6'>
           <div className='py-8 text-center'>
@@ -222,12 +222,12 @@ export default function CompliancePage() {
       {/* Help Section */}
       <div>
         <h2 className='mb-4 text-xl font-semibold text-gray-900'>
-          Compliance Resources
+          Compliance resources
         </h2>
         <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
           <Card className='p-6'>
             <h3 className='mb-2 text-lg font-medium text-gray-900'>
-              Regulatory Framework
+              Regulatory framework
             </h3>
             <ul className='space-y-2 text-sm text-gray-600'>
               <li>• Nigeria Food Safety Standards</li>
@@ -238,7 +238,7 @@ export default function CompliancePage() {
           </Card>
           <Card className='p-6'>
             <h3 className='mb-2 text-lg font-medium text-gray-900'>
-              Key Monitoring Areas
+              Key monitoring areas
             </h3>
             <ul className='space-y-2 text-sm text-gray-600'>
               <li>• Daily production limits (1000kg)</li>

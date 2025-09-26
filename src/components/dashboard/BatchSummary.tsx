@@ -1,5 +1,5 @@
 /**
- * Batch Summary Component
+ * Batch summary Component
  *
  * Provides a comprehensive overview of batch operations including totals,
  * validation status, and performance metrics. Supports batch-level operations
@@ -291,7 +291,7 @@ export function BatchSummary({
       {/* Main Statistics Card */}
       <Card className='p-6'>
         <div className='mb-6 flex flex-col gap-4'>
-          <h3 className='text-lg font-semibold text-gray-900'>Batch Summary</h3>
+          <h3 className='text-lg font-semibold text-gray-900'>Batch summary</h3>
           <div className='flex flex-col gap-2 sm:flex-row sm:gap-3'>
             <Button
               variant='outline'
@@ -302,7 +302,7 @@ export function BatchSummary({
               }
               className='flex-1'
             >
-              Select All
+              Select all
             </Button>
             <Button
               variant='outline'
@@ -311,7 +311,7 @@ export function BatchSummary({
               disabled={disabled || selectedProducts.length === 0}
               className='flex-1'
             >
-              Deselect All
+              Deselect all
             </Button>
             <Button
               variant='outline'
@@ -320,7 +320,7 @@ export function BatchSummary({
               disabled={disabled || nonEmptyProductCount === 0}
               className='flex-1 text-red-600 hover:border-red-300 hover:text-red-700'
             >
-              Clear All
+              Clear all
             </Button>
           </div>
         </div>
@@ -362,14 +362,14 @@ export function BatchSummary({
             <div className='text-lg font-semibold text-gray-900'>
               {stats.totalWeight.toFixed(1)} kg
             </div>
-            <div className='text-sm text-gray-500'>Total Weight</div>
+            <div className='text-sm text-gray-500'>Total weight</div>
           </div>
 
           <div className='rounded-lg bg-gray-50 p-4'>
             <div className='text-lg font-semibold text-gray-900'>
               {stats.totalVolume.toFixed(1)} L
             </div>
-            <div className='text-sm text-gray-500'>Total Volume</div>
+            <div className='text-sm text-gray-500'>Total volume</div>
           </div>
 
           <div className='rounded-lg bg-gray-50 p-4'>
@@ -377,7 +377,7 @@ export function BatchSummary({
               {Math.floor(stats.estimatedProcessingTime / 60)}m{' '}
               {stats.estimatedProcessingTime % 60}s
             </div>
-            <div className='text-sm text-gray-500'>Est. Processing Time</div>
+            <div className='text-sm text-gray-500'>Est. processing time</div>
           </div>
         </div>
       </Card>
@@ -385,7 +385,7 @@ export function BatchSummary({
       {/* Warnings and Limits */}
       {(approachingLimit || exceedsWeightLimit || exceedsTimeLimit) && (
         <Card className='border-yellow-200 bg-yellow-50 p-4'>
-          <h4 className='mb-2 font-medium text-yellow-800'>Batch Warnings</h4>
+          <h4 className='mb-2 font-medium text-yellow-800'>Batch warnings</h4>
           <div className='space-y-1 text-sm text-yellow-700'>
             {approachingLimit && (
               <div>
@@ -413,7 +413,7 @@ export function BatchSummary({
       {/* Compliance Status */}
       <Card className='p-6'>
         <h4 className='mb-3 font-medium text-gray-900'>
-          Compliance Validation
+          Compliance validation
         </h4>
         <div className='grid grid-cols-2 gap-4'>
           <div className='flex items-center justify-between'>

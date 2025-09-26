@@ -42,10 +42,10 @@ import { logger } from '@/lib/logger';
  */
 export async function GET(
   request: NextRequest,
-  context: { params: { productId: string } }
+  context: { params: Promise<{ productId: string }> }
 ): Promise<NextResponse> {
   const startTime = Date.now();
-  const { productId } = context.params;
+  const { productId } = await context.params;
   const { searchParams } = new URL(request.url);
 
   try {

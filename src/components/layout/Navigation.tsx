@@ -25,7 +25,7 @@ export function Navigation({ className }: NavigationProps) {
   const pathname = usePathname();
 
   const navigationItems = [
-    { href: ROUTES.VERIFY, label: 'Verify Product', icon: '🔍' },
+    { href: ROUTES.VERIFY, label: 'Verify product', icon: '🔍' },
     { href: ROUTES.MANAGER_DASHBOARD, label: 'Dashboard', icon: '📊' },
     { href: ROUTES.COMPLIANCE_DASHBOARD, label: 'Compliance', icon: '📋' },
   ];

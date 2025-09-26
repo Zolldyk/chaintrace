@@ -48,7 +48,7 @@ export function Footer({ className }: FooterProps) {
                   href={ROUTES.VERIFY}
                   className='text-secondary-500 hover:text-primary-600'
                 >
-                  Verify Products
+                  Verify products
                 </Link>
               </li>
               <li>
@@ -56,7 +56,7 @@ export function Footer({ className }: FooterProps) {
                   href={ROUTES.VERIFY_CREDENTIAL}
                   className='text-secondary-500 hover:text-primary-600'
                 >
-                  Verify Credential
+                  Verify credential
                 </Link>
               </li>
               <li>
@@ -120,7 +120,7 @@ export function Footer({ className }: FooterProps) {
                   href='/help'
                   className='text-secondary-500 hover:text-primary-600'
                 >
-                  Help Center
+                  Help center
                 </Link>
               </li>
               <li>
@@ -136,7 +136,7 @@ export function Footer({ className }: FooterProps) {
                   href='/privacy'
                   className='text-secondary-500 hover:text-primary-600'
                 >
-                  Privacy Policy
+                  Privacy policy
                 </Link>
               </li>
             </ul>

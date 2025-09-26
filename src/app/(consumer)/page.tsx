@@ -59,7 +59,7 @@ export default function ConsumerHomePage() {
         {/* Header Section */}
         <div className='mb-8 text-center'>
           <h1 className='mb-4 animate-fade-in text-4xl font-bold text-secondary-700'>
-            Verify Product Authenticity
+            Verify product authenticity
           </h1>
           <p className='mx-auto max-w-2xl text-lg text-secondary-500'>
             Enter a product ID or scan a QR code to verify authenticity and
@@ -71,7 +71,7 @@ export default function ConsumerHomePage() {
         <div className='border-secondary-200 animate-fade-in rounded-xl border bg-white p-6 shadow-card'>
           <div className='mb-6 text-center'>
             <h2 className='mb-2 text-2xl font-semibold text-secondary-600'>
-              Scan or Enter Product ID
+              Scan or enter product ID
             </h2>
             <p className='text-sm text-secondary-500'>
               Use your camera to scan a QR code or enter the product ID manually
@@ -119,7 +119,7 @@ export default function ConsumerHomePage() {
               </svg>
             </div>
             <h3 className='mb-2 font-semibold text-secondary-700'>
-              Instant Verification
+              Instant verification
             </h3>
             <p className='text-sm text-secondary-500'>
               Get immediate verification status from the Hedera blockchain
@@ -143,7 +143,7 @@ export default function ConsumerHomePage() {
               </svg>
             </div>
             <h3 className='mb-2 font-semibold text-secondary-700'>
-              Supply Chain Journey
+              Supply chain journey
             </h3>
             <p className='text-sm text-secondary-500'>
               Trace the complete journey from origin to current location
@@ -167,7 +167,7 @@ export default function ConsumerHomePage() {
               </svg>
             </div>
             <h3 className='mb-2 font-semibold text-secondary-700'>
-              Blockchain Security
+              Blockchain security
             </h3>
             <p className='text-sm text-secondary-500'>
               Tamper-proof verification powered by Hedera&apos;s secure network

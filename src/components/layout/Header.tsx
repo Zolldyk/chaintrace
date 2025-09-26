@@ -41,19 +41,19 @@ export function Header({ className }: HeaderProps) {
               href={ROUTES.VERIFY}
               className='font-medium text-secondary-600 transition-colors hover:text-primary-600'
             >
-              Verify Product
+              Verify product
             </Link>
             <Link
               href={ROUTES.VERIFY_CREDENTIAL}
               className='font-medium text-secondary-600 transition-colors hover:text-primary-600'
             >
-              Verify Credential
+              Verify credential
             </Link>
             <Link
               href={ROUTES.MANAGER_DASHBOARD}
               className='font-medium text-secondary-600 transition-colors hover:text-primary-600'
             >
-              Manager Dashboard
+              Manager dashboard
             </Link>
             <Link
               href={ROUTES.COMPLIANCE_DASHBOARD}

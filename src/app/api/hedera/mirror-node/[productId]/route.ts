@@ -118,10 +118,10 @@ function validateProductId(productId: string): boolean {
  */
 export async function GET(
   _request: NextRequest,
-  context: { params: { productId: string } }
+  context: { params: Promise<{ productId: string }> }
 ): Promise<NextResponse<ApiResponse>> {
   const startTime = Date.now();
-  const { productId } = context.params;
+  const { productId } = await context.params;
 
   try {
     // Validate product ID format

@@ -37,10 +37,10 @@ import { logger } from '@/lib/logger';
  */
 export async function GET(
   _request: NextRequest,
-  context: { params: { credentialId: string } }
+  context: { params: Promise<{ credentialId: string }> }
 ): Promise<NextResponse> {
   const startTime = Date.now();
-  const { credentialId } = context.params;
+  const { credentialId } = await context.params;
 
   try {
     logger.info('Credential retrieval request', { credentialId });

@@ -153,7 +153,7 @@ export function WalletConnector({
       <div className='space-y-4'>
         <div className='text-center'>
           <h3 className='text-lg font-semibold text-gray-900'>
-            Connect Your Hedera Wallet
+            Connect your Hedera wallet
           </h3>
           <p className='mt-1 text-sm text-gray-600'>
             Choose a wallet to connect to ChainTrace on {networkType}
@@ -178,7 +178,7 @@ export function WalletConnector({
               </div>
               <div className='ml-3'>
                 <h3 className='text-sm font-medium text-red-800'>
-                  Connection Error
+                  Connection error
                 </h3>
                 <div className='mt-1 text-sm text-red-700'>{error}</div>
               </div>
@@ -218,7 +218,7 @@ export function WalletConnector({
                 Connecting...
               </>
             ) : (
-              'Connect Wallet'
+              'Connect wallet'
             )}
           </button>
 
@@ -245,7 +245,7 @@ export function WalletConnector({
                 alt='MetaMask'
                 className='mr-3 h-6 w-6'
               />
-              MetaMask Snap
+              MetaMask snap
             </button>
           )}
 
@@ -305,7 +305,7 @@ export function WalletConnector({
             </a>{' '}
             and{' '}
             <a href='/privacy' className='text-blue-600 hover:text-blue-500'>
-              Privacy Policy
+              Privacy policy
             </a>
             .
           </p>

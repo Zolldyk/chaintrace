@@ -33,6 +33,7 @@ import {
   createComboboxAriaProps,
   DebouncedAnnouncer,
 } from '@/lib/accessibility-helpers';
+import { ClientOnly } from '@/components/common/ClientOnly';
 
 export interface ProductLookupProps {
   /** Callback when search is triggered */
@@ -527,7 +528,7 @@ export const ProductLookup = React.forwardRef<
                       d='M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h2M4 4h5v5H4V4z'
                     />
                   </svg>
-                  Scan QR Code
+                  Scan QR code
                 </Button>
               </div>
             )}
@@ -546,187 +547,193 @@ export const ProductLookup = React.forwardRef<
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className='space-y-4'>
-              <div className='space-y-2'>
-                <div className='flex items-center justify-between'>
-                  <label
-                    htmlFor={inputId}
-                    className='dark:text-secondary-300 text-base font-medium leading-none text-secondary-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+            <ClientOnly
+              fallback={
+                <div className='space-y-4'>
+                  <div className='space-y-2'>
+                    <div className='flex items-center justify-between'>
+                      <label className='dark:text-secondary-300 text-base font-medium leading-none text-secondary-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'>
+                        Product ID
+                      </label>
+                    </div>
+                    <div className='relative'>
+                      <input
+                        type='text'
+                        placeholder={placeholder}
+                        disabled
+                        className='border-secondary-300 placeholder:text-secondary-400 flex h-10 w-full animate-fade-in rounded-md border bg-white px-3 py-2 pr-12 text-sm opacity-50'
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type='button'
+                    disabled
+                    className='h-10 w-full cursor-not-allowed rounded-md bg-gray-100 px-4 py-2 text-gray-400'
                   >
-                    Product ID
-                  </label>
+                    Loading...
+                  </button>
+                </div>
+              }
+            >
+              <form onSubmit={handleSubmit} className='space-y-4'>
+                <div className='space-y-2'>
+                  <div className='flex items-center justify-between'>
+                    <label
+                      htmlFor={inputId}
+                      className='dark:text-secondary-300 text-base font-medium leading-none text-secondary-700 peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
+                    >
+                      Product ID
+                    </label>
 
-                  {/* Enhanced features toggle buttons */}
-                  {enableEnhancedFeatures && (
-                    <div className='flex items-center space-x-2'>
-                      {/* History toggle */}
-                      {showSearchHistory && searchState.history.length > 0 && (
+                    {/* Enhanced features toggle buttons */}
+                    {enableEnhancedFeatures && (
+                      <div className='flex items-center space-x-2'>
+                        {/* History toggle */}
+                        {showSearchHistory &&
+                          searchState.history.length > 0 && (
+                            <button
+                              type='button'
+                              onClick={() => setShowHistory(!showHistory)}
+                              className='dark:text-secondary-400 dark:hover:text-secondary-200 text-xs text-secondary-500 transition-colors hover:text-secondary-700'
+                              title='Toggle search history'
+                            >
+                              <svg
+                                className='h-4 w-4'
+                                fill='currentColor'
+                                viewBox='0 0 20 20'
+                              >
+                                <path
+                                  fillRule='evenodd'
+                                  d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
+                                  clipRule='evenodd'
+                                />
+                              </svg>
+                            </button>
+                          )}
+
+                        {/* Format hints toggle */}
                         <button
                           type='button'
-                          onClick={() => setShowHistory(!showHistory)}
+                          onClick={toggleFormatHints}
                           className='dark:text-secondary-400 dark:hover:text-secondary-200 text-xs text-secondary-500 transition-colors hover:text-secondary-700'
-                          title='Toggle search history'
+                          title='Toggle format hints'
                         >
                           <svg
                             className='h-4 w-4'
-                            fill='currentColor'
-                            viewBox='0 0 20 20'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            stroke='currentColor'
                           >
                             <path
-                              fillRule='evenodd'
-                              d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
-                              clipRule='evenodd'
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
                             />
                           </svg>
                         </button>
-                      )}
+                      </div>
+                    )}
+                  </div>
 
-                      {/* Format hints toggle */}
-                      <button
-                        type='button'
-                        onClick={toggleFormatHints}
-                        className='dark:text-secondary-400 dark:hover:text-secondary-200 text-xs text-secondary-500 transition-colors hover:text-secondary-700'
-                        title='Toggle format hints'
-                      >
+                  <div className='relative' ref={containerRef}>
+                    <EnhancedInput
+                      ref={inputRef}
+                      id={inputId}
+                      type='text'
+                      placeholder={placeholder}
+                      value={displayValue}
+                      onChange={handleInputChange}
+                      onKeyDown={handleKeyDown}
+                      onFocus={handleInputFocus}
+                      onBlur={handleInputBlur}
+                      error={hasError || hasValidationError}
+                      isFormatted={
+                        enableEnhancedFeatures && formatState?.isValid
+                      }
+                      showValidation={enableEnhancedFeatures}
+                      disabled={loading || searchState.isSearching}
+                      autoFocus={autoFocus}
+                      className='pr-12'
+                      {...ariaProps}
+                    />
+
+                    {/* Loading indicator */}
+                    {(loading || searchState.isSearching) && (
+                      <div className='absolute right-3 top-1/2 -translate-y-1/2'>
                         <svg
-                          className='h-4 w-4'
+                          className='text-secondary-400 h-4 w-4 animate-spin'
+                          xmlns='http://www.w3.org/2000/svg'
                           fill='none'
                           viewBox='0 0 24 24'
-                          stroke='currentColor'
                         >
+                          <circle
+                            className='opacity-25'
+                            cx='12'
+                            cy='12'
+                            r='10'
+                            stroke='currentColor'
+                            strokeWidth='4'
+                          />
                           <path
-                            strokeLinecap='round'
-                            strokeLinejoin='round'
-                            strokeWidth={2}
-                            d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                            className='opacity-75'
+                            fill='currentColor'
+                            d='m4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
                           />
                         </svg>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div className='relative' ref={containerRef}>
-                  <EnhancedInput
-                    ref={inputRef}
-                    id={inputId}
-                    type='text'
-                    placeholder={placeholder}
-                    value={displayValue}
-                    onChange={handleInputChange}
-                    onKeyDown={handleKeyDown}
-                    onFocus={handleInputFocus}
-                    onBlur={handleInputBlur}
-                    error={hasError || hasValidationError}
-                    isFormatted={enableEnhancedFeatures && formatState?.isValid}
-                    showValidation={enableEnhancedFeatures}
-                    disabled={loading || searchState.isSearching}
-                    autoFocus={autoFocus}
-                    className='pr-12'
-                    {...ariaProps}
-                  />
-
-                  {/* Loading indicator */}
-                  {(loading || searchState.isSearching) && (
-                    <div className='absolute right-3 top-1/2 -translate-y-1/2'>
-                      <svg
-                        className='text-secondary-400 h-4 w-4 animate-spin'
-                        xmlns='http://www.w3.org/2000/svg'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                      >
-                        <circle
-                          className='opacity-25'
-                          cx='12'
-                          cy='12'
-                          r='10'
-                          stroke='currentColor'
-                          strokeWidth='4'
-                        />
-                        <path
-                          className='opacity-75'
-                          fill='currentColor'
-                          d='m4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'
-                        />
-                      </svg>
-                    </div>
-                  )}
-
-                  {/* Validation indicator */}
-                  {enableEnhancedFeatures &&
-                    !loading &&
-                    !searchState.isSearching &&
-                    searchState.query && (
-                      <div className='absolute right-3 top-1/2 -translate-y-1/2'>
-                        {searchState.validation.valid ? (
-                          <svg
-                            className='h-4 w-4 text-green-500'
-                            fill='currentColor'
-                            viewBox='0 0 20 20'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className='h-4 w-4 text-red-500'
-                            fill='currentColor'
-                            viewBox='0 0 20 20'
-                          >
-                            <path
-                              fillRule='evenodd'
-                              d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                              clipRule='evenodd'
-                            />
-                          </svg>
-                        )}
                       </div>
                     )}
 
-                  {/* Auto-complete dropdown */}
-                  {enableEnhancedFeatures && (
-                    <AutoCompleteDropdown
-                      ref={dropdownRef}
-                      suggestions={searchState.suggestions}
-                      selectedIndex={searchState.selectedSuggestionIndex}
-                      onSelect={handleSuggestionSelect}
-                      visible={searchState.showSuggestions}
-                      maxHeight='240px'
-                      loading={searchState.isSearching}
-                    />
-                  )}
-                </div>
+                    {/* Validation indicator */}
+                    {enableEnhancedFeatures &&
+                      !loading &&
+                      !searchState.isSearching &&
+                      searchState.query && (
+                        <div className='absolute right-3 top-1/2 -translate-y-1/2'>
+                          {searchState.validation.valid ? (
+                            <svg
+                              className='h-4 w-4 text-green-500'
+                              fill='currentColor'
+                              viewBox='0 0 20 20'
+                            >
+                              <path
+                                fillRule='evenodd'
+                                d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+                                clipRule='evenodd'
+                              />
+                            </svg>
+                          ) : (
+                            <svg
+                              className='h-4 w-4 text-red-500'
+                              fill='currentColor'
+                              viewBox='0 0 20 20'
+                            >
+                              <path
+                                fillRule='evenodd'
+                                d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
+                                clipRule='evenodd'
+                              />
+                            </svg>
+                          )}
+                        </div>
+                      )}
 
-                {/* Legacy error display (when enhanced features are disabled) */}
-                {!enableEnhancedFeatures && hasError && error && (
-                  <p
-                    id={errorId}
-                    className='dark:text-error-400 flex items-center gap-1 text-sm text-error-700'
-                    role='alert'
-                  >
-                    <svg
-                      className='h-4 w-4 flex-shrink-0'
-                      fill='currentColor'
-                      viewBox='0 0 20 20'
-                      xmlns='http://www.w3.org/2000/svg'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
-                        clipRule='evenodd'
+                    {/* Auto-complete dropdown */}
+                    {enableEnhancedFeatures && (
+                      <AutoCompleteDropdown
+                        ref={dropdownRef}
+                        suggestions={searchState.suggestions}
+                        selectedIndex={searchState.selectedSuggestionIndex}
+                        onSelect={handleSuggestionSelect}
+                        visible={searchState.showSuggestions}
+                        maxHeight='240px'
+                        loading={searchState.isSearching}
                       />
-                    </svg>
-                    {error.message}
-                  </p>
-                )}
+                    )}
+                  </div>
 
-                {/* Enhanced validation feedback */}
-                {enableEnhancedFeatures &&
-                  hasValidationError &&
-                  searchState.validation.error && (
+                  {/* Legacy error display (when enhanced features are disabled) */}
+                  {!enableEnhancedFeatures && hasError && error && (
                     <p
                       id={errorId}
                       className='dark:text-error-400 flex items-center gap-1 text-sm text-error-700'
@@ -744,28 +751,54 @@ export const ProductLookup = React.forwardRef<
                           clipRule='evenodd'
                         />
                       </svg>
-                      {searchState.validation.error}
+                      {error.message}
                     </p>
                   )}
-              </div>
 
-              <Button
-                type='submit'
-                className='w-full'
-                loading={loading || searchState.isSearching}
-                disabled={
-                  loading ||
-                  searchState.isSearching ||
-                  (enableEnhancedFeatures
-                    ? !searchState.validation.valid
-                    : !searchState.query.trim())
-                }
-              >
-                {loading || searchState.isSearching
-                  ? 'Searching...'
-                  : 'Verify Product'}
-              </Button>
-            </form>
+                  {/* Enhanced validation feedback */}
+                  {enableEnhancedFeatures &&
+                    hasValidationError &&
+                    searchState.validation.error && (
+                      <p
+                        id={errorId}
+                        className='dark:text-error-400 flex items-center gap-1 text-sm text-error-700'
+                        role='alert'
+                      >
+                        <svg
+                          className='h-4 w-4 flex-shrink-0'
+                          fill='currentColor'
+                          viewBox='0 0 20 20'
+                          xmlns='http://www.w3.org/2000/svg'
+                        >
+                          <path
+                            fillRule='evenodd'
+                            d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'
+                            clipRule='evenodd'
+                          />
+                        </svg>
+                        {searchState.validation.error}
+                      </p>
+                    )}
+                </div>
+
+                <Button
+                  type='submit'
+                  className='w-full'
+                  loading={loading || searchState.isSearching}
+                  disabled={
+                    loading ||
+                    searchState.isSearching ||
+                    (enableEnhancedFeatures
+                      ? !searchState.validation.valid
+                      : !searchState.query.trim())
+                  }
+                >
+                  {loading || searchState.isSearching
+                    ? 'Searching...'
+                    : 'Verify product'}
+                </Button>
+              </form>
+            </ClientOnly>
 
             {/* Help text */}
             <div className='dark:text-secondary-400 mt-4 animate-fade-in text-center text-xs text-secondary-500'>

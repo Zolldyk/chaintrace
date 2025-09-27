@@ -37,12 +37,17 @@ const nextConfig = {
 
     config.externals = [...(config.externals || []), 'canvas'];
 
-    // Disable problematic optimizations causing variable conflicts
-    config.optimization = {
-      ...config.optimization,
-      splitChunks: false, // Disable chunk splitting entirely
-      minimize: process.env.NODE_ENV === 'production',
-    };
+    // Completely disable optimization to fix variable conflicts
+    if (process.env.NODE_ENV === 'production') {
+      config.optimization = {
+        minimize: false,
+        splitChunks: false,
+        concatenateModules: false,
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        mergeDuplicateChunks: false,
+      };
+    }
 
     // Add resolve alias for better module resolution
     config.resolve.alias = {

@@ -417,12 +417,15 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
     });
   } catch (error) {
     console.error('HashConnect initialization failed:', error);
+
+    // Fallback: Open HashPack directly for manual connection
+    console.log('Opening HashPack for manual connection...');
+    window.open('https://wallet.hashpack.app/', '_blank');
+
     return {
       success: false,
       error:
-        error instanceof Error
-          ? error.message
-          : 'Failed to connect to HashPack',
+        'HashConnect failed to load. Please connect manually in HashPack and refresh this page.',
     };
   }
 }

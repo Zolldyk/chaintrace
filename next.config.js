@@ -37,43 +37,20 @@ const nextConfig = {
 
     config.externals = [...(config.externals || []), 'canvas'];
 
-    // Fix bundling conflicts and variable naming issues
+    // Simplified optimization to prevent chunking issues
     config.optimization = {
       ...config.optimization,
       splitChunks: {
-        ...config.optimization.splitChunks,
         chunks: 'all',
-        maxSize: 244000, // Prevent chunks from getting too large
         cacheGroups: {
-          ...config.optimization.splitChunks?.cacheGroups,
-          // Separate blockchain dependencies with proper naming
-          blockchain: {
-            test: /[\\/]node_modules[\\/](@hashgraph|hashconnect)[\\/]/,
-            name: 'blockchain-libs',
-            chunks: 'all',
-            priority: 40,
-            reuseExistingChunk: true,
-            enforce: true,
-            minSize: 0,
-          },
-          // Separate chunk for crypto polyfills
-          crypto: {
-            test: /[\\/]node_modules[\\/](crypto-browserify|stream-browserify|buffer)[\\/]/,
-            name: 'crypto-polyfills',
-            chunks: 'all',
-            priority: 25,
-            reuseExistingChunk: true,
-            minSize: 0,
-          },
-          // Keep React and core libraries together
+          // Single vendor chunk for all node_modules
           vendor: {
-            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+            test: /[\\/]node_modules[\\/]/,
             name: 'vendor',
             chunks: 'all',
-            priority: 20,
+            priority: 10,
             reuseExistingChunk: true,
           },
-          // Default group for other dependencies
           default: {
             minChunks: 2,
             priority: -10,
@@ -81,11 +58,9 @@ const nextConfig = {
           },
         },
       },
-      // Use hashed identifiers to prevent naming conflicts
-      moduleIds: 'hashed',
+      // Use deterministic IDs to prevent conflicts
+      moduleIds: 'deterministic',
       chunkIds: 'deterministic',
-      // Ensure proper module concatenation
-      concatenateModules: true,
     };
 
     // Add resolve alias for better module resolution

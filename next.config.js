@@ -46,14 +46,15 @@ const nextConfig = {
         maxSize: 244000, // Prevent chunks from getting too large
         cacheGroups: {
           ...config.optimization.splitChunks?.cacheGroups,
-          // Include blockchain dependencies in main bundle to prevent loading issues
+          // Separate blockchain dependencies with proper naming
           blockchain: {
             test: /[\\/]node_modules[\\/](@hashgraph|hashconnect)[\\/]/,
-            name: 'vendor',
-            chunks: 'all', // Include in main bundle instead of async
+            name: 'blockchain-libs',
+            chunks: 'all',
             priority: 40,
             reuseExistingChunk: true,
-            enforce: false, // Don't enforce separate chunk
+            enforce: true,
+            minSize: 0,
           },
           // Separate chunk for crypto polyfills
           crypto: {
@@ -80,9 +81,9 @@ const nextConfig = {
           },
         },
       },
-      // Use named identifiers to prevent variable conflicts
-      moduleIds: 'named',
-      chunkIds: 'named',
+      // Use hashed identifiers to prevent naming conflicts
+      moduleIds: 'hashed',
+      chunkIds: 'deterministic',
       // Ensure proper module concatenation
       concatenateModules: true,
     };

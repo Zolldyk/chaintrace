@@ -16,6 +16,70 @@ export interface HashPackConnectionResult {
 }
 
 /**
+ * HashConnect instance management
+ */
+let globalHashConnect: any = null;
+
+/**
+ * Initialize HashConnect with proper error handling
+ */
+async function initializeHashConnect(): Promise<any> {
+  if (globalHashConnect) {
+    return globalHashConnect;
+  }
+
+  try {
+    // Dynamic import with timeout
+    const importPromise = import('hashconnect');
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('HashConnect import timeout')), 10000)
+    );
+
+    const { HashConnect } = (await Promise.race([
+      importPromise,
+      timeoutPromise,
+    ])) as any;
+
+    // Import Hedera SDK
+    const { LedgerId } = await import('@hashgraph/sdk');
+
+    const appMetadata = {
+      name: 'ChainTrace',
+      description: 'Supply Chain Verification Platform',
+      icons: ['https://chaintrace.netlify.app/icon-192.png'],
+      url: 'https://chaintrace.netlify.app',
+    };
+
+    const ledgerId = LedgerId.TESTNET;
+    const projectId =
+      process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ||
+      'f1d96f692d709d35c43f9b1d63987ac8';
+
+    globalHashConnect = new HashConnect(
+      ledgerId,
+      projectId,
+      appMetadata,
+      true // Debug mode
+    );
+
+    // Initialize with timeout
+    const initPromise = globalHashConnect.init();
+    const initTimeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('HashConnect init timeout')), 15000)
+    );
+
+    await Promise.race([initPromise, initTimeoutPromise]);
+
+    console.log('HashConnect initialized successfully');
+    return globalHashConnect;
+  } catch (error) {
+    console.error('Failed to initialize HashConnect:', error);
+    globalHashConnect = null;
+    throw error;
+  }
+}
+
+/**
  * Debug function to log localStorage contents for HashPack debugging
  */
 function debugLocalStorage(): void {
@@ -203,7 +267,23 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
       }
     }
 
-    // Method 5: Check for any storage containing Hedera account patterns
+    // Method 5: Check for ChainTrace HashConnect session data
+    const sessionData = localStorage.getItem('chaintrace_hashconnect_session');
+    if (sessionData) {
+      try {
+        const parsed = JSON.parse(sessionData);
+        if (parsed.accountId && parsed.accountId.match(/^0\.0\.\d+$/)) {
+          return {
+            success: true,
+            accountId: parsed.accountId,
+          };
+        }
+      } catch (e) {
+        console.debug('Failed to parse ChainTrace session data:', e);
+      }
+    }
+
+    // Method 6: Check for any storage containing Hedera account patterns
     for (const key of allKeys) {
       try {
         const value = localStorage.getItem(key);
@@ -232,7 +312,7 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
 }
 
 /**
- * Attempt to connect to HashPack using HashConnect
+ * Attempt to connect to HashPack using proper HashConnect pairing
  */
 export async function connectHashPack(): Promise<HashPackConnectionResult> {
   try {
@@ -242,156 +322,101 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
       return existing;
     }
 
-    // Try to use HashConnect for new connection
-    try {
-      // Use dynamic import with better error handling
-      const [{ HashConnect }, { LedgerId }] = await Promise.all([
-        import('hashconnect').catch(() => ({ HashConnect: null })),
-        import('@hashgraph/sdk').catch(() => ({ LedgerId: null })),
-      ]);
+    console.log('Initializing HashConnect for HashPack pairing...');
 
-      if (!HashConnect || !LedgerId) {
-        throw new Error('Failed to load HashConnect dependencies');
-      }
+    // Use proper HashConnect initialization and pairing
+    const hashConnect = await initializeHashConnect();
 
-      const appMetadata = {
-        name: 'ChainTrace',
-        description: 'Supply Chain Verification Platform',
-        icons: ['https://chaintrace.netlify.app/icon-192.png'],
-        url: 'https://chaintrace.netlify.app',
+    // Get pairing string
+    const pairingString = hashConnect.pairingString;
+    if (!pairingString) {
+      throw new Error('Failed to generate pairing string');
+    }
+
+    console.log('Generated HashConnect pairing string, opening HashPack...');
+
+    // Open HashPack for pairing with proper URL
+    const hashPackUrl = `https://wallet.hashpack.app/pairing?data=${encodeURIComponent(pairingString)}`;
+    const hashPackWindow = window.open(hashPackUrl, '_blank');
+
+    // Return a promise that resolves when connected
+    return new Promise(resolve => {
+      const timeout = setTimeout(() => {
+        console.warn('HashConnect pairing timeout');
+        resolve({
+          success: false,
+          error:
+            'Connection timeout. Please ensure you approve the connection in HashPack.',
+        });
+      }, 90000); // 90 second timeout
+
+      // Listen for successful pairing
+      const handlePairing = (sessionData: any) => {
+        console.log('HashConnect pairing successful:', sessionData);
+        clearTimeout(timeout);
+
+        if (sessionData.accountIds && sessionData.accountIds.length > 0) {
+          const accountId = sessionData.accountIds[0];
+
+          // Store session data for future use
+          try {
+            localStorage.setItem(
+              'chaintrace_hashconnect_session',
+              JSON.stringify({
+                accountId,
+                topic: sessionData.topic,
+                pairingData: sessionData,
+                connectedAt: Date.now(),
+              })
+            );
+          } catch (e) {
+            console.warn('Failed to store session data:', e);
+          }
+
+          resolve({
+            success: true,
+            accountId: accountId,
+          });
+        } else {
+          resolve({
+            success: false,
+            error: 'No accounts found in HashPack wallet',
+          });
+        }
       };
 
-      const ledgerId = LedgerId.TESTNET; // Use testnet for development
-      const projectId =
-        process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ||
-        'f1d96f692d709d35c43f9b1d63987ac8';
+      // Listen for connection events
+      const handleConnectionChange = (status: string) => {
+        console.log('HashConnect connection status:', status);
+        if (status === 'Disconnected') {
+          clearTimeout(timeout);
+          resolve({
+            success: false,
+            error: 'Connection was cancelled or failed',
+          });
+        }
+      };
 
-      const hashConnect = new HashConnect(
-        ledgerId,
-        projectId,
-        appMetadata,
-        true
-      );
+      // Set up event listeners
+      hashConnect.pairingEvent.once(handlePairing);
+      hashConnect.connectionStatusChangeEvent.on(handleConnectionChange);
 
-      // Initialize HashConnect
-      await hashConnect.init();
-
-      // Get pairing string
-      const pairingString = hashConnect.pairingString;
-
-      if (pairingString) {
-        // Open HashPack for pairing
-        const hashPackUrl = `https://wallet.hashpack.app/pairing?data=${encodeURIComponent(pairingString)}`;
-        window.open(hashPackUrl, '_blank');
-
-        // Return a promise that resolves when connected
-        return new Promise(resolve => {
-          const timeout = setTimeout(() => {
-            resolve({
-              success: false,
-              error:
-                'Connection timeout. Please try again and ensure you approve the connection in HashPack.',
-            });
-          }, 60000); // 60 second timeout
-
-          // Listen for successful pairing
-          hashConnect.pairingEvent.once((sessionData: any) => {
+      // Clean up if window is closed
+      if (hashPackWindow) {
+        const checkClosed = setInterval(() => {
+          if (hashPackWindow.closed) {
+            clearInterval(checkClosed);
             clearTimeout(timeout);
-
-            if (sessionData.accountIds && sessionData.accountIds.length > 0) {
-              const accountId = sessionData.accountIds[0];
-
-              // Store session data for future use
-              localStorage.setItem(
-                'hashconnect-data',
-                JSON.stringify(sessionData)
-              );
-
-              resolve({
-                success: true,
-                accountId: accountId,
-              });
-            } else {
-              resolve({
-                success: false,
-                error: 'No accounts found in HashPack wallet',
-              });
-            }
-          });
-
-          // Listen for connection status changes
-          hashConnect.connectionStatusChangeEvent.on((status: string) => {
-            if (status === 'Disconnected') {
-              clearTimeout(timeout);
-              resolve({
-                success: false,
-                error: 'Connection was cancelled or failed',
-              });
-            }
-          });
-        });
-      } else {
-        return {
-          success: false,
-          error: 'Failed to generate HashConnect pairing string',
-        };
+            // Don't auto-resolve as user might still complete pairing
+            console.log(
+              'HashPack window closed, but pairing may still be in progress...'
+            );
+          }
+        }, 1000);
       }
-    } catch (hashConnectError) {
-      console.warn(
-        'HashConnect import failed, using polling method:',
-        hashConnectError
-      );
-
-      // Fallback: Open HashPack directly and poll for connection
-      window.open('https://wallet.hashpack.app/', '_blank');
-
-      // Use polling to detect when user completes connection
-      return new Promise(resolve => {
-        let pollCount = 0;
-        const maxPolls = 180; // 3 minutes of polling (1 second intervals)
-
-        const pollForConnection = async () => {
-          pollCount++;
-
-          // Check for connection with more verbose logging
-          const connection = await checkHashPackConnection();
-          if (connection.success) {
-            console.log(
-              'HashPack connection detected via polling:',
-              connection.accountId
-            );
-            resolve(connection);
-            return;
-          }
-
-          // Log polling progress every 10 attempts
-          if (pollCount % 10 === 0) {
-            console.log(
-              `Polling for HashPack connection... (${pollCount}/${maxPolls})`
-            );
-          }
-
-          // Check if we've reached max polling attempts
-          if (pollCount >= maxPolls) {
-            console.warn('HashPack connection polling timeout');
-            resolve({
-              success: false,
-              error:
-                'Connection timeout. Please ensure you completed the connection in HashPack and try again.',
-            });
-            return;
-          }
-
-          // Continue polling with shorter intervals initially
-          const interval = pollCount < 30 ? 500 : 1000; // 0.5s for first 30 attempts, then 1s
-          setTimeout(pollForConnection, interval);
-        };
-
-        // Start polling immediately
-        setTimeout(pollForConnection, 1000);
-      });
-    }
+    });
   } catch (error) {
+    console.error('HashConnect initialization failed:', error);
     return {
       success: false,
       error:

@@ -348,7 +348,7 @@ export function useSimpleWallet(
       } catch (err) {
         console.debug('Error in periodic HashPack check:', err);
       }
-    }, 2000); // Check every 2 seconds while connecting
+    }, 10000); // Check every 10 seconds while connecting
 
     return () => clearInterval(checkInterval);
   }, [status, walletService]);

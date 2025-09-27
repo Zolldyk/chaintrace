@@ -80,38 +80,6 @@ async function initializeHashConnect(): Promise<any> {
 }
 
 /**
- * Debug function to log localStorage contents for HashPack debugging
- */
-function debugLocalStorage(): void {
-  if (typeof window === 'undefined') return;
-
-  console.log('=== HashPack Debug: localStorage contents ===');
-  const allKeys = Object.keys(localStorage);
-
-  allKeys.forEach(key => {
-    const value = localStorage.getItem(key);
-    if (
-      value &&
-      (key.toLowerCase().includes('hashpack') ||
-        key.toLowerCase().includes('hashconnect') ||
-        key.toLowerCase().includes('walletconnect') ||
-        value.includes('0.0.') ||
-        key.toLowerCase().includes('wc@2'))
-    ) {
-      console.log(`Key: ${key}`);
-      console.log(`Value:`, value);
-      console.log('---');
-    }
-  });
-
-  // Check window objects
-  console.log('=== HashPack Debug: window objects ===');
-  console.log('window.hashpack:', (window as any).hashpack);
-  console.log('window.hashConnect:', (window as any).hashConnect);
-  console.log('=======================================');
-}
-
-/**
  * Check if HashPack is available and connected
  */
 export async function checkHashPackConnection(): Promise<HashPackConnectionResult> {
@@ -120,14 +88,11 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
       return { success: false, error: 'Not available in server environment' };
     }
 
-    // Enable debugging in development and when needed for troubleshooting
-    const enableDebug =
-      process.env.NODE_ENV === 'development' ||
-      (typeof window !== 'undefined' &&
-        window.location.hostname.includes('netlify'));
+    // Enable debugging only in development and disable excessive localStorage checking
+    const enableDebug = process.env.NODE_ENV === 'development';
 
     if (enableDebug) {
-      debugLocalStorage();
+      console.log('HashPack connection check - development mode');
     }
 
     // Method 1: Check if HashPack extension is installed and has pairing data
@@ -141,6 +106,59 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
         success: true,
         accountId: hashpack.pairingData.accountIds[0],
       };
+    }
+
+    // Method 1.5: Check for cross-origin message data from HashPack
+    const hashPackMessage = localStorage.getItem('hashpack_connection_data');
+    if (hashPackMessage) {
+      try {
+        const messageData = JSON.parse(hashPackMessage);
+        if (messageData.accountId && messageData.timestamp) {
+          // Check if the data is recent (within last 5 minutes)
+          const now = Date.now();
+          const dataAge = now - messageData.timestamp;
+          if (dataAge < 5 * 60 * 1000) {
+            // 5 minutes
+            return {
+              success: true,
+              accountId: messageData.accountId,
+            };
+          }
+        }
+      } catch (e) {
+        console.debug('Failed to parse HashPack message data:', e);
+      }
+    }
+
+    // Method 1.6: Check URL parameters for HashPack return
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('hashpack_return') === 'true') {
+      const accountId = urlParams.get('account_id');
+      const network = urlParams.get('network');
+
+      if (accountId && network === 'testnet') {
+        // Store this connection for future use
+        localStorage.setItem(
+          'hashpack_connection_data',
+          JSON.stringify({
+            accountId,
+            timestamp: Date.now(),
+            source: 'url_redirect',
+          })
+        );
+
+        // Clean up URL
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('hashpack_return');
+        cleanUrl.searchParams.delete('account_id');
+        cleanUrl.searchParams.delete('network');
+        window.history.replaceState({}, '', cleanUrl.toString());
+
+        return {
+          success: true,
+          accountId: accountId,
+        };
+      }
     }
 
     // Method 2: Check localStorage for HashConnect session data
@@ -391,7 +409,7 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
       hashConnectWorking = false;
     }
 
-    // Open HashPack for connection - either with pairing data or direct connection
+    // Open HashPack for connection - use a message-based approach since HashConnect is failing
     let hashPackWindow: Window | null = null;
 
     if (hashConnectWorking && hashConnect?.pairingString) {
@@ -400,13 +418,52 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
       const hashPackUrl = `https://wallet.hashpack.app/pairing?data=${encodeURIComponent(hashConnect.pairingString)}`;
       hashPackWindow = window.open(hashPackUrl, '_blank');
     } else {
-      // Method 2: Direct HashPack connection (fallback)
-      console.log('Using direct HashPack connection method');
-      hashPackWindow = window.open('https://wallet.hashpack.app/', '_blank');
+      // Method 2: Direct HashPack connection with return URL (fallback)
+      console.log('Using direct HashPack connection method with return URL');
+      const returnUrl = encodeURIComponent(
+        `${window.location.origin}?hashpack_return=true`
+      );
+      const hashPackUrl = `https://wallet.hashpack.app/?return_url=${returnUrl}`;
+      hashPackWindow = window.open(hashPackUrl, '_blank');
     }
 
     // Return a promise that resolves when connected
     return new Promise(resolve => {
+      // Set up cross-origin message listener for HashPack
+      const messageListener = (event: MessageEvent) => {
+        // Only accept messages from HashPack domain
+        if (event.origin !== 'https://wallet.hashpack.app') {
+          return;
+        }
+
+        console.log('Received message from HashPack:', event.data);
+
+        if (event.data.type === 'HASHPACK_CONNECTION') {
+          const { accountId, success } = event.data;
+          if (success && accountId) {
+            // Store the connection data in localStorage with timestamp
+            localStorage.setItem(
+              'hashpack_connection_data',
+              JSON.stringify({
+                accountId,
+                timestamp: Date.now(),
+                source: 'cross_origin_message',
+              })
+            );
+
+            console.log('HashPack connection received via message:', accountId);
+            window.removeEventListener('message', messageListener);
+
+            // Trigger connection detection
+            resolve({
+              success: true,
+              accountId: accountId,
+            });
+          }
+        }
+      };
+
+      window.addEventListener('message', messageListener);
       const timeout = setTimeout(() => {
         console.log(
           'HashPack connection timeout, but connection may still be in progress...'
@@ -461,7 +518,7 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
         }
       }
 
-      // For both methods, periodically check for connection
+      // For both methods, periodically check for connection (less aggressive polling)
       // This is important for the fallback method where we can't listen to events
       const checkInterval = setInterval(async () => {
         try {
@@ -473,6 +530,7 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
             );
             clearTimeout(timeout);
             clearInterval(checkInterval);
+            window.removeEventListener('message', messageListener);
 
             resolve({
               success: true,
@@ -482,7 +540,7 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
         } catch (e) {
           console.debug('Error during connection polling:', e);
         }
-      }, 2000); // Check every 2 seconds
+      }, 5000); // Check every 5 seconds instead of 2
 
       // Clean up if window is closed
       if (hashPackWindow) {
@@ -529,4 +587,19 @@ export async function getHashPackAccountInfo(): Promise<{
   }
 
   return null;
+}
+
+/**
+ * Manually set HashPack connection for testing
+ */
+export function setTestHashPackConnection(accountId: string): void {
+  localStorage.setItem(
+    'hashpack_connection_data',
+    JSON.stringify({
+      accountId,
+      timestamp: Date.now(),
+      source: 'manual_test',
+    })
+  );
+  console.log('Test HashPack connection set:', accountId);
 }

@@ -159,10 +159,20 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
 
           // Check various possible structures
           if (data.accountIds && data.accountIds.length > 0) {
-            return {
-              success: true,
-              accountId: data.accountIds[0],
-            };
+            // Filter out mock accounts
+            const validAccounts = data.accountIds.filter(
+              (account: string) =>
+                account !== '0.0.12345' &&
+                account !== '0.0.2' &&
+                account !== '0.0.3'
+            );
+
+            if (validAccounts.length > 0) {
+              return {
+                success: true,
+                accountId: validAccounts[0],
+              };
+            }
           }
 
           if (data.sessions) {
@@ -170,10 +180,20 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
             const sessions = Object.values(data.sessions) as any[];
             for (const session of sessions) {
               if (session.accountIds && session.accountIds.length > 0) {
-                return {
-                  success: true,
-                  accountId: session.accountIds[0],
-                };
+                // Filter out mock accounts
+                const validAccounts = session.accountIds.filter(
+                  (account: string) =>
+                    account !== '0.0.12345' &&
+                    account !== '0.0.2' &&
+                    account !== '0.0.3'
+                );
+
+                if (validAccounts.length > 0) {
+                  return {
+                    success: true,
+                    accountId: validAccounts[0],
+                  };
+                }
               }
             }
           }
@@ -190,10 +210,18 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
       hashConnect.pairingData &&
       hashConnect.pairingData.accountIds?.length > 0
     ) {
-      return {
-        success: true,
-        accountId: hashConnect.pairingData.accountIds[0],
-      };
+      // Filter out mock accounts
+      const validAccounts = hashConnect.pairingData.accountIds.filter(
+        (account: string) =>
+          account !== '0.0.12345' && account !== '0.0.2' && account !== '0.0.3'
+      );
+
+      if (validAccounts.length > 0) {
+        return {
+          success: true,
+          accountId: validAccounts[0],
+        };
+      }
     }
 
     // Method 4: Check for WalletConnect-style storage and any key containing account IDs
@@ -273,32 +301,57 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
       try {
         const parsed = JSON.parse(sessionData);
         if (parsed.accountId && parsed.accountId.match(/^0\.0\.\d+$/)) {
-          return {
-            success: true,
-            accountId: parsed.accountId,
-          };
+          // Filter out mock accounts
+          if (
+            parsed.accountId !== '0.0.12345' &&
+            parsed.accountId !== '0.0.2' &&
+            parsed.accountId !== '0.0.3'
+          ) {
+            return {
+              success: true,
+              accountId: parsed.accountId,
+            };
+          }
         }
       } catch (e) {
         console.debug('Failed to parse ChainTrace session data:', e);
       }
     }
 
-    // Method 6: Check for any storage containing Hedera account patterns
+    // Method 6: Check for HashPack/HashConnect specific storage patterns only
     for (const key of allKeys) {
-      try {
-        const value = localStorage.getItem(key);
-        if (value && value.includes('0.0.') && value.match(/0\.0\.\d+/)) {
-          // Try to extract account ID from any storage
-          const matches = value.match(/0\.0\.\d+/g);
-          if (matches && matches.length > 0) {
-            return {
-              success: true,
-              accountId: matches[0],
-            };
+      // Only check keys that are clearly HashPack or HashConnect related
+      if (
+        key.toLowerCase().includes('hashpack') ||
+        key.toLowerCase().includes('hashconnect') ||
+        key.toLowerCase().includes('wc@2') ||
+        key.toLowerCase().includes('walletconnect')
+      ) {
+        try {
+          const value = localStorage.getItem(key);
+          if (value && value.includes('0.0.') && value.match(/0\.0\.\d+/)) {
+            // Try to extract account ID from HashPack/HashConnect storage only
+            const matches = value.match(/0\.0\.\d+/g);
+            if (matches && matches.length > 0) {
+              // Filter out known mock/development accounts
+              const validAccounts = matches.filter(
+                account =>
+                  account !== '0.0.12345' && // SnapConnector mock account
+                  account !== '0.0.2' && // Hedera treasury account
+                  account !== '0.0.3' // Hedera fee collection account
+              );
+
+              if (validAccounts.length > 0) {
+                return {
+                  success: true,
+                  accountId: validAccounts[0],
+                };
+              }
+            }
           }
+        } catch (e) {
+          console.debug(`Failed to check HashPack key ${key}:`, e);
         }
-      } catch (e) {
-        console.debug(`Failed to check key ${key}:`, e);
       }
     }
 

@@ -37,30 +37,11 @@ const nextConfig = {
 
     config.externals = [...(config.externals || []), 'canvas'];
 
-    // Simplified optimization to prevent chunking issues
+    // Disable problematic optimizations causing variable conflicts
     config.optimization = {
       ...config.optimization,
-      splitChunks: {
-        chunks: 'all',
-        cacheGroups: {
-          // Single vendor chunk for all node_modules
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendor',
-            chunks: 'all',
-            priority: 10,
-            reuseExistingChunk: true,
-          },
-          default: {
-            minChunks: 2,
-            priority: -10,
-            reuseExistingChunk: true,
-          },
-        },
-      },
-      // Use deterministic IDs to prevent conflicts
-      moduleIds: 'deterministic',
-      chunkIds: 'deterministic',
+      splitChunks: false, // Disable chunk splitting entirely
+      minimize: process.env.NODE_ENV === 'production',
     };
 
     // Add resolve alias for better module resolution

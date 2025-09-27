@@ -16,12 +16,54 @@ export interface HashPackConnectionResult {
 }
 
 /**
+ * Debug function to log localStorage contents for HashPack debugging
+ */
+function debugLocalStorage(): void {
+  if (typeof window === 'undefined') return;
+
+  console.log('=== HashPack Debug: localStorage contents ===');
+  const allKeys = Object.keys(localStorage);
+
+  allKeys.forEach(key => {
+    const value = localStorage.getItem(key);
+    if (
+      value &&
+      (key.toLowerCase().includes('hashpack') ||
+        key.toLowerCase().includes('hashconnect') ||
+        key.toLowerCase().includes('walletconnect') ||
+        value.includes('0.0.') ||
+        key.toLowerCase().includes('wc@2'))
+    ) {
+      console.log(`Key: ${key}`);
+      console.log(`Value:`, value);
+      console.log('---');
+    }
+  });
+
+  // Check window objects
+  console.log('=== HashPack Debug: window objects ===');
+  console.log('window.hashpack:', (window as any).hashpack);
+  console.log('window.hashConnect:', (window as any).hashConnect);
+  console.log('=======================================');
+}
+
+/**
  * Check if HashPack is available and connected
  */
 export async function checkHashPackConnection(): Promise<HashPackConnectionResult> {
   try {
     if (typeof window === 'undefined') {
       return { success: false, error: 'Not available in server environment' };
+    }
+
+    // Enable debugging in development and when needed for troubleshooting
+    const enableDebug =
+      process.env.NODE_ENV === 'development' ||
+      (typeof window !== 'undefined' &&
+        window.location.hostname.includes('netlify'));
+
+    if (enableDebug) {
+      debugLocalStorage();
     }
 
     // Method 1: Check if HashPack extension is installed and has pairing data
@@ -90,34 +132,93 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
       };
     }
 
-    // Method 4: Check for WalletConnect-style storage
-    const walletConnectKeys = Object.keys(localStorage).filter(
-      key =>
+    // Method 4: Check for WalletConnect-style storage and any key containing account IDs
+    const allKeys = Object.keys(localStorage);
+
+    // Look for any storage that might contain Hedera account IDs
+    for (const key of allKeys) {
+      if (
         key.includes('walletconnect') ||
         key.includes('wc@2') ||
         key.includes('hashpack')
-    );
+      ) {
+        try {
+          const data = JSON.parse(localStorage.getItem(key) || '{}');
 
-    for (const key of walletConnectKeys) {
-      try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
-        if (data.accounts && data.accounts.length > 0) {
-          // Extract Hedera account from accounts array
-          const hederaAccount = data.accounts.find((acc: string) =>
-            acc.includes('hedera:')
-          );
-          if (hederaAccount) {
-            const accountId = hederaAccount.split(':').pop();
-            if (accountId) {
-              return {
-                success: true,
-                accountId: accountId,
-              };
+          // Check accounts array
+          if (data.accounts && data.accounts.length > 0) {
+            const hederaAccount = data.accounts.find((acc: string) =>
+              acc.includes('hedera:')
+            );
+            if (hederaAccount) {
+              const accountId = hederaAccount.split(':').pop();
+              if (accountId) {
+                return {
+                  success: true,
+                  accountId: accountId,
+                };
+              }
             }
+          }
+
+          // Check for direct account ID patterns
+          if (typeof data === 'string' && data.match(/0\.0\.\d+/)) {
+            return {
+              success: true,
+              accountId: data,
+            };
+          }
+
+          // Recursively search for account IDs in nested objects
+          const findAccountId = (obj: any): string | null => {
+            if (typeof obj === 'string' && obj.match(/^0\.0\.\d+$/)) {
+              return obj;
+            }
+            if (typeof obj === 'object' && obj !== null) {
+              for (const [k, v] of Object.entries(obj)) {
+                if (
+                  k.toLowerCase().includes('account') &&
+                  typeof v === 'string' &&
+                  v.match(/^0\.0\.\d+$/)
+                ) {
+                  return v;
+                }
+                const result = findAccountId(v);
+                if (result) return result;
+              }
+            }
+            return null;
+          };
+
+          const foundAccountId = findAccountId(data);
+          if (foundAccountId) {
+            return {
+              success: true,
+              accountId: foundAccountId,
+            };
+          }
+        } catch (e) {
+          console.debug(`Failed to parse data for key ${key}:`, e);
+        }
+      }
+    }
+
+    // Method 5: Check for any storage containing Hedera account patterns
+    for (const key of allKeys) {
+      try {
+        const value = localStorage.getItem(key);
+        if (value && value.includes('0.0.') && value.match(/0\.0\.\d+/)) {
+          // Try to extract account ID from any storage
+          const matches = value.match(/0\.0\.\d+/g);
+          if (matches && matches.length > 0) {
+            return {
+              success: true,
+              accountId: matches[0],
+            };
           }
         }
       } catch (e) {
-        console.debug(`Failed to parse WalletConnect data for key ${key}:`, e);
+        console.debug(`Failed to check key ${key}:`, e);
       }
     }
 
@@ -143,8 +244,15 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
 
     // Try to use HashConnect for new connection
     try {
-      const { HashConnect } = await import('hashconnect');
-      const { LedgerId } = await import('@hashgraph/sdk');
+      // Use dynamic import with better error handling
+      const [{ HashConnect }, { LedgerId }] = await Promise.all([
+        import('hashconnect').catch(() => ({ HashConnect: null })),
+        import('@hashgraph/sdk').catch(() => ({ LedgerId: null })),
+      ]);
+
+      if (!HashConnect || !LedgerId) {
+        throw new Error('Failed to load HashConnect dependencies');
+      }
 
       const appMetadata = {
         name: 'ChainTrace',
@@ -240,20 +348,32 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
       // Use polling to detect when user completes connection
       return new Promise(resolve => {
         let pollCount = 0;
-        const maxPolls = 120; // 2 minutes of polling (1 second intervals)
+        const maxPolls = 180; // 3 minutes of polling (1 second intervals)
 
         const pollForConnection = async () => {
           pollCount++;
 
-          // Check for connection
+          // Check for connection with more verbose logging
           const connection = await checkHashPackConnection();
           if (connection.success) {
+            console.log(
+              'HashPack connection detected via polling:',
+              connection.accountId
+            );
             resolve(connection);
             return;
           }
 
+          // Log polling progress every 10 attempts
+          if (pollCount % 10 === 0) {
+            console.log(
+              `Polling for HashPack connection... (${pollCount}/${maxPolls})`
+            );
+          }
+
           // Check if we've reached max polling attempts
           if (pollCount >= maxPolls) {
+            console.warn('HashPack connection polling timeout');
             resolve({
               success: false,
               error:
@@ -262,12 +382,13 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
             return;
           }
 
-          // Continue polling
-          setTimeout(pollForConnection, 1000);
+          // Continue polling with shorter intervals initially
+          const interval = pollCount < 30 ? 500 : 1000; // 0.5s for first 30 attempts, then 1s
+          setTimeout(pollForConnection, interval);
         };
 
-        // Start polling after a brief delay
-        setTimeout(pollForConnection, 2000);
+        // Start polling immediately
+        setTimeout(pollForConnection, 1000);
       });
     }
   } catch (error) {

@@ -46,14 +46,14 @@ const nextConfig = {
         maxSize: 244000, // Prevent chunks from getting too large
         cacheGroups: {
           ...config.optimization.splitChunks?.cacheGroups,
-          // Separate chunk for blockchain dependencies - lazy loaded
+          // Include blockchain dependencies in main bundle to prevent loading issues
           blockchain: {
             test: /[\\/]node_modules[\\/](@hashgraph|hashconnect)[\\/]/,
-            name: 'blockchain',
-            chunks: 'async', // Only split async chunks to prevent loading issues
-            priority: 30,
+            name: 'vendor',
+            chunks: 'all', // Include in main bundle instead of async
+            priority: 40,
             reuseExistingChunk: true,
-            enforce: true,
+            enforce: false, // Don't enforce separate chunk
           },
           // Separate chunk for crypto polyfills
           crypto: {
@@ -80,9 +80,9 @@ const nextConfig = {
           },
         },
       },
-      // Prevent variable name conflicts with deterministic IDs
-      moduleIds: 'deterministic',
-      chunkIds: 'deterministic',
+      // Use named identifiers to prevent variable conflicts
+      moduleIds: 'named',
+      chunkIds: 'named',
       // Ensure proper module concatenation
       concatenateModules: true,
     };
@@ -92,6 +92,16 @@ const nextConfig = {
       ...config.resolve.alias,
       // Ensure consistent crypto resolution
       crypto: require.resolve('crypto-browserify'),
+      // Add fallbacks for problematic modules
+      '@hashgraph/sdk': '@hashgraph/sdk',
+      hashconnect: 'hashconnect',
+    };
+
+    // Add error handling for chunk loading
+    config.output = {
+      ...config.output,
+      chunkLoadingGlobal: 'webpackChunkLoadingGlobal',
+      publicPath: '/_next/',
     };
 
     return config;

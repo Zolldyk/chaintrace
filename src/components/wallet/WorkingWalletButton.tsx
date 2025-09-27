@@ -324,12 +324,20 @@ export function WorkingWalletButton({
 
       {/* Dropdown Menu */}
       {isDropdownOpen && isConnected && (
-        <div className='absolute right-0 z-50 mt-2 w-64 rounded-md border border-gray-200 bg-white py-1 shadow-lg'>
+        <div className='absolute right-0 z-50 mt-2 w-80 rounded-md border border-gray-200 bg-white py-1 shadow-lg'>
           <div className='border-b border-gray-100 px-4 py-3'>
             <div className='text-sm font-medium text-gray-900'>
               {accountAlias || 'Connected Account'}
             </div>
-            <div className='font-mono text-sm text-gray-500'>{accountId}</div>
+            <div className='break-all font-mono text-sm text-gray-500'>
+              {formatAccountId(accountId!)}
+            </div>
+            {/* Show full address on hover */}
+            {accountId && accountId.length > 12 && (
+              <div className='mt-1 text-xs text-gray-400' title={accountId}>
+                Hover to see full address
+              </div>
+            )}
             {walletType && (
               <div className='mt-1 text-xs capitalize text-gray-400'>
                 Connected via {walletType === 'snap' ? 'MetaMask' : 'HashPack'}

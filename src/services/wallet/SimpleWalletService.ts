@@ -192,7 +192,7 @@ export class SimpleWalletService {
   }
 
   /**
-   * Connect to HashPack (simplified implementation)
+   * Connect to HashPack wallet using real integration
    */
   async connectHashPack(): Promise<WalletConnectionResult> {
     const startTime = Date.now();
@@ -200,33 +200,50 @@ export class SimpleWalletService {
     try {
       this.status = 'connecting';
 
-      // For now, we'll implement a simplified HashPack connection
-      // This opens HashPack in a new window and provides instructions
+      // Import the HashPack integration service
+      const { connectHashPack, checkHashPackConnection } = await import(
+        './HashPackIntegration'
+      );
 
-      if (typeof window !== 'undefined') {
-        const hashPackUrl = 'https://wallet.hashpack.app/';
-        window.open(hashPackUrl, '_blank');
-
-        // Simulate connection after user interaction
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // For demo purposes, create a mock connection
-        const mockAccount = '0.0.123456';
-
-        this.currentAccount = mockAccount;
+      // First check if already connected
+      const existingConnection = await checkHashPackConnection();
+      if (existingConnection.success && existingConnection.accountId) {
+        this.currentAccount = existingConnection.accountId;
         this.currentWalletType = 'hashpack';
         this.status = 'connected';
 
         return {
           success: true,
           walletType: 'hashpack',
-          accountId: mockAccount,
-          accountAlias: `HashPack Account ${mockAccount}`,
+          accountId: existingConnection.accountId,
+          accountAlias: `HashPack Account ${existingConnection.accountId}`,
           responseTime: Date.now() - startTime,
         };
       }
 
-      throw new Error('HashPack connection not available in this environment');
+      // Attempt new connection
+      const connectionResult = await connectHashPack();
+
+      if (connectionResult.success && connectionResult.accountId) {
+        this.currentAccount = connectionResult.accountId;
+        this.currentWalletType = 'hashpack';
+        this.status = 'connected';
+
+        return {
+          success: true,
+          walletType: 'hashpack',
+          accountId: connectionResult.accountId,
+          accountAlias: `HashPack Account ${connectionResult.accountId}`,
+          responseTime: Date.now() - startTime,
+        };
+      } else {
+        this.status = 'error';
+        return {
+          success: false,
+          error: connectionResult.error || 'Failed to connect to HashPack',
+          responseTime: Date.now() - startTime,
+        };
+      }
     } catch (error) {
       this.status = 'error';
       const errorMessage =

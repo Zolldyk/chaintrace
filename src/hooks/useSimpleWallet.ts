@@ -275,6 +275,84 @@ export function useSimpleWallet(
     }
   }, [status, accountId, walletType, walletService]);
 
+  // Add visibility change listener for HashPack connection detection
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleVisibilityChange = async () => {
+      // When user returns to tab, check for HashPack connections
+      if (
+        !document.hidden &&
+        (status === 'connecting' || status === 'disconnected')
+      ) {
+        try {
+          // Check for HashPack connection
+          const { checkHashPackConnection } = await import(
+            '@/services/wallet/HashPackIntegration'
+          );
+          const connection = await checkHashPackConnection();
+
+          if (connection.success && connection.accountId) {
+            // Update wallet service state
+            const currentWalletService = walletService as any;
+            currentWalletService.currentAccount = connection.accountId;
+            currentWalletService.currentWalletType = 'hashpack';
+            currentWalletService.status = 'connected';
+
+            // Update local state
+            setStatus('connected');
+            setAccountId(connection.accountId);
+            setAccountAlias(`HashPack Account ${connection.accountId}`);
+            setWalletType('hashpack');
+            setError(null);
+          }
+        } catch (err) {
+          console.debug(
+            'Error checking HashPack connection on visibility change:',
+            err
+          );
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [status, walletService]);
+
+  // Periodic check for HashPack connections when connecting
+  useEffect(() => {
+    if (status !== 'connecting') return;
+
+    const checkInterval = setInterval(async () => {
+      try {
+        const { checkHashPackConnection } = await import(
+          '@/services/wallet/HashPackIntegration'
+        );
+        const connection = await checkHashPackConnection();
+
+        if (connection.success && connection.accountId) {
+          // Update wallet service state
+          const currentWalletService = walletService as any;
+          currentWalletService.currentAccount = connection.accountId;
+          currentWalletService.currentWalletType = 'hashpack';
+          currentWalletService.status = 'connected';
+
+          // Update local state
+          setStatus('connected');
+          setAccountId(connection.accountId);
+          setAccountAlias(`HashPack Account ${connection.accountId}`);
+          setWalletType('hashpack');
+          setError(null);
+        }
+      } catch (err) {
+        console.debug('Error in periodic HashPack check:', err);
+      }
+    }, 2000); // Check every 2 seconds while connecting
+
+    return () => clearInterval(checkInterval);
+  }, [status, walletService]);
+
   return {
     status,
     isConnected,

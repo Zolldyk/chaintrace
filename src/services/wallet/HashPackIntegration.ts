@@ -24,34 +24,100 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
       return { success: false, error: 'Not available in server environment' };
     }
 
-    // Check if HashPack extension is installed
+    // Method 1: Check if HashPack extension is installed and has pairing data
     const hashpack = (window as any).hashpack;
-
     if (
       hashpack &&
       hashpack.pairingData &&
       hashpack.pairingData.accountIds?.length > 0
     ) {
-      // HashPack is connected
       return {
         success: true,
         accountId: hashpack.pairingData.accountIds[0],
       };
     }
 
-    // Check localStorage for existing HashConnect session
-    const existingSession = localStorage.getItem('hashconnect-data');
-    if (existingSession) {
+    // Method 2: Check localStorage for HashConnect session data
+    const hashConnectKeys = [
+      'hashconnect-data',
+      'hashconnect:pairingData',
+      'hashConnect:pairingData',
+      'hashconnect_pairingData',
+    ];
+
+    for (const key of hashConnectKeys) {
+      const sessionData = localStorage.getItem(key);
+      if (sessionData) {
+        try {
+          const data = JSON.parse(sessionData);
+
+          // Check various possible structures
+          if (data.accountIds && data.accountIds.length > 0) {
+            return {
+              success: true,
+              accountId: data.accountIds[0],
+            };
+          }
+
+          if (data.sessions) {
+            // HashConnect v3 structure
+            const sessions = Object.values(data.sessions) as any[];
+            for (const session of sessions) {
+              if (session.accountIds && session.accountIds.length > 0) {
+                return {
+                  success: true,
+                  accountId: session.accountIds[0],
+                };
+              }
+            }
+          }
+        } catch (e) {
+          console.debug(`Failed to parse session data for key ${key}:`, e);
+        }
+      }
+    }
+
+    // Method 3: Check for HashConnect instance in window
+    const hashConnect = (window as any).hashConnect;
+    if (
+      hashConnect &&
+      hashConnect.pairingData &&
+      hashConnect.pairingData.accountIds?.length > 0
+    ) {
+      return {
+        success: true,
+        accountId: hashConnect.pairingData.accountIds[0],
+      };
+    }
+
+    // Method 4: Check for WalletConnect-style storage
+    const walletConnectKeys = Object.keys(localStorage).filter(
+      key =>
+        key.includes('walletconnect') ||
+        key.includes('wc@2') ||
+        key.includes('hashpack')
+    );
+
+    for (const key of walletConnectKeys) {
       try {
-        const sessionData = JSON.parse(existingSession);
-        if (sessionData.accountIds && sessionData.accountIds.length > 0) {
-          return {
-            success: true,
-            accountId: sessionData.accountIds[0],
-          };
+        const data = JSON.parse(localStorage.getItem(key) || '{}');
+        if (data.accounts && data.accounts.length > 0) {
+          // Extract Hedera account from accounts array
+          const hederaAccount = data.accounts.find((acc: string) =>
+            acc.includes('hedera:')
+          );
+          if (hederaAccount) {
+            const accountId = hederaAccount.split(':').pop();
+            if (accountId) {
+              return {
+                success: true,
+                accountId: accountId,
+              };
+            }
+          }
         }
       } catch (e) {
-        console.debug('Failed to parse HashConnect session data:', e);
+        console.debug(`Failed to parse WalletConnect data for key ${key}:`, e);
       }
     }
 
@@ -163,16 +229,46 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
         };
       }
     } catch (hashConnectError) {
-      console.warn('HashConnect import failed:', hashConnectError);
+      console.warn(
+        'HashConnect import failed, using polling method:',
+        hashConnectError
+      );
 
-      // Fallback: Open HashPack directly
+      // Fallback: Open HashPack directly and poll for connection
       window.open('https://wallet.hashpack.app/', '_blank');
 
-      return {
-        success: false,
-        error:
-          'Please connect your HashPack wallet in the opened tab, then refresh this page and try again.',
-      };
+      // Use polling to detect when user completes connection
+      return new Promise(resolve => {
+        let pollCount = 0;
+        const maxPolls = 120; // 2 minutes of polling (1 second intervals)
+
+        const pollForConnection = async () => {
+          pollCount++;
+
+          // Check for connection
+          const connection = await checkHashPackConnection();
+          if (connection.success) {
+            resolve(connection);
+            return;
+          }
+
+          // Check if we've reached max polling attempts
+          if (pollCount >= maxPolls) {
+            resolve({
+              success: false,
+              error:
+                'Connection timeout. Please ensure you completed the connection in HashPack and try again.',
+            });
+            return;
+          }
+
+          // Continue polling
+          setTimeout(pollForConnection, 1000);
+        };
+
+        // Start polling after a brief delay
+        setTimeout(pollForConnection, 2000);
+      });
     }
   } catch (error) {
     return {

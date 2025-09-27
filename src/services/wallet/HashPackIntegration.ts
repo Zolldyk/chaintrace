@@ -365,7 +365,7 @@ export async function checkHashPackConnection(): Promise<HashPackConnectionResul
 }
 
 /**
- * Attempt to connect to HashPack using proper HashConnect pairing
+ * Attempt to connect to HashPack using fallback-first approach
  */
 export async function connectHashPack(): Promise<HashPackConnectionResult> {
   try {
@@ -375,110 +375,143 @@ export async function connectHashPack(): Promise<HashPackConnectionResult> {
       return existing;
     }
 
-    console.log('Initializing HashConnect for HashPack pairing...');
+    console.log('Attempting HashPack connection...');
 
-    // Use proper HashConnect initialization and pairing
-    const hashConnect = await initializeHashConnect();
+    // Try HashConnect initialization, but don't fail if it doesn't work
+    let hashConnectWorking = false;
+    let hashConnect: any = null;
 
-    // Get pairing string
-    const pairingString = hashConnect.pairingString;
-    if (!pairingString) {
-      throw new Error('Failed to generate pairing string');
+    try {
+      console.log('Trying HashConnect initialization...');
+      hashConnect = await initializeHashConnect();
+      hashConnectWorking = true;
+      console.log('HashConnect initialized successfully');
+    } catch (error) {
+      console.log('HashConnect failed, using fallback approach:', error);
+      hashConnectWorking = false;
     }
 
-    console.log('Generated HashConnect pairing string, opening HashPack...');
+    // Open HashPack for connection - either with pairing data or direct connection
+    let hashPackWindow: Window | null = null;
 
-    // Open HashPack for pairing with proper URL
-    const hashPackUrl = `https://wallet.hashpack.app/pairing?data=${encodeURIComponent(pairingString)}`;
-    const hashPackWindow = window.open(hashPackUrl, '_blank');
+    if (hashConnectWorking && hashConnect?.pairingString) {
+      // Method 1: Use HashConnect pairing (preferred)
+      console.log('Using HashConnect pairing method');
+      const hashPackUrl = `https://wallet.hashpack.app/pairing?data=${encodeURIComponent(hashConnect.pairingString)}`;
+      hashPackWindow = window.open(hashPackUrl, '_blank');
+    } else {
+      // Method 2: Direct HashPack connection (fallback)
+      console.log('Using direct HashPack connection method');
+      hashPackWindow = window.open('https://wallet.hashpack.app/', '_blank');
+    }
 
     // Return a promise that resolves when connected
     return new Promise(resolve => {
       const timeout = setTimeout(() => {
-        console.warn('HashConnect pairing timeout');
+        console.log(
+          'HashPack connection timeout, but connection may still be in progress...'
+        );
         resolve({
           success: false,
           error:
-            'Connection timeout. Please ensure you approve the connection in HashPack.',
+            'Connection timeout. Please complete the connection in HashPack and the wallet button will update automatically.',
         });
       }, 90000); // 90 second timeout
 
-      // Listen for successful pairing
-      const handlePairing = (sessionData: any) => {
-        console.log('HashConnect pairing successful:', sessionData);
-        clearTimeout(timeout);
-
-        if (sessionData.accountIds && sessionData.accountIds.length > 0) {
-          const accountId = sessionData.accountIds[0];
-
-          // Store session data for future use
-          try {
-            localStorage.setItem(
-              'chaintrace_hashconnect_session',
-              JSON.stringify({
-                accountId,
-                topic: sessionData.topic,
-                pairingData: sessionData,
-                connectedAt: Date.now(),
-              })
-            );
-          } catch (e) {
-            console.warn('Failed to store session data:', e);
-          }
-
-          resolve({
-            success: true,
-            accountId: accountId,
-          });
-        } else {
-          resolve({
-            success: false,
-            error: 'No accounts found in HashPack wallet',
-          });
-        }
-      };
-
-      // Listen for connection events
-      const handleConnectionChange = (status: string) => {
-        console.log('HashConnect connection status:', status);
-        if (status === 'Disconnected') {
+      // If HashConnect is working, listen for pairing events
+      if (hashConnectWorking && hashConnect) {
+        const handlePairing = (sessionData: any) => {
+          console.log('HashConnect pairing successful:', sessionData);
           clearTimeout(timeout);
-          resolve({
-            success: false,
-            error: 'Connection was cancelled or failed',
-          });
-        }
-      };
 
-      // Set up event listeners
-      hashConnect.pairingEvent.once(handlePairing);
-      hashConnect.connectionStatusChangeEvent.on(handleConnectionChange);
+          if (sessionData.accountIds && sessionData.accountIds.length > 0) {
+            const accountId = sessionData.accountIds[0];
+
+            // Store session data for future use
+            try {
+              localStorage.setItem(
+                'chaintrace_hashconnect_session',
+                JSON.stringify({
+                  accountId,
+                  topic: sessionData.topic,
+                  pairingData: sessionData,
+                  connectedAt: Date.now(),
+                })
+              );
+            } catch (e) {
+              console.warn('Failed to store session data:', e);
+            }
+
+            resolve({
+              success: true,
+              accountId: accountId,
+            });
+            return;
+          }
+        };
+
+        // Set up event listeners for HashConnect
+        try {
+          hashConnect.pairingEvent.once(handlePairing);
+          hashConnect.connectionStatusChangeEvent.on((status: string) => {
+            console.log('HashConnect connection status:', status);
+          });
+        } catch (e) {
+          console.warn('Failed to set up HashConnect event listeners:', e);
+        }
+      }
+
+      // For both methods, periodically check for connection
+      // This is important for the fallback method where we can't listen to events
+      const checkInterval = setInterval(async () => {
+        try {
+          const connection = await checkHashPackConnection();
+          if (connection.success && connection.accountId) {
+            console.log(
+              'HashPack connection detected via polling:',
+              connection.accountId
+            );
+            clearTimeout(timeout);
+            clearInterval(checkInterval);
+
+            resolve({
+              success: true,
+              accountId: connection.accountId,
+            });
+          }
+        } catch (e) {
+          console.debug('Error during connection polling:', e);
+        }
+      }, 2000); // Check every 2 seconds
 
       // Clean up if window is closed
       if (hashPackWindow) {
         const checkClosed = setInterval(() => {
           if (hashPackWindow.closed) {
             clearInterval(checkClosed);
-            clearTimeout(timeout);
-            // Don't auto-resolve as user might still complete pairing
+            // Don't clear timeout - user might still be connecting
             console.log(
-              'HashPack window closed, but pairing may still be in progress...'
+              'HashPack window closed, but monitoring for connection...'
             );
           }
         }, 1000);
       }
+
+      // Clean up interval when promise resolves
+      const originalResolve = resolve;
+      resolve = (
+        result: HashPackConnectionResult | PromiseLike<HashPackConnectionResult>
+      ) => {
+        clearInterval(checkInterval);
+        originalResolve(result);
+      };
     });
   } catch (error) {
-    console.error('HashConnect initialization failed:', error);
-
-    // Fallback: Open HashPack directly for manual connection
-    console.log('Opening HashPack for manual connection...');
-    window.open('https://wallet.hashpack.app/', '_blank');
+    console.error('HashPack connection failed:', error);
 
     return {
       success: false,
-      error:
-        'HashConnect failed to load. Please connect manually in HashPack and refresh this page.',
+      error: 'Failed to initiate HashPack connection. Please try again.',
     };
   }
 }

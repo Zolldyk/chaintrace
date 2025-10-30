@@ -142,3 +142,9 @@ playwright-mcp/
 docs/
 # Local Netlify folder
 .netlify
+
+# Demo and presentation files (keep local, don't commit)
+*demo-flow*.md
+*presentation*.md
+*demo*.md
+project-details-comprehensive.md
